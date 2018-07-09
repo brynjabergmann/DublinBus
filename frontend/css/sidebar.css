@@ -14,12 +14,12 @@
   }
   /* Navbar header */
   .nav-side-menu .brand {
-    background-color: #23282e;
-    color: springgreen;
+    background-color: white;
+    color: black;
     line-height: 50px;
     display: block;
     text-align: center;
-    font-size: 14px;
+    font-size: 16px;
   }
   .nav-side-menu .toggle-btn {
     display: none;

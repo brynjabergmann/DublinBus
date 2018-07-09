@@ -17,14 +17,14 @@
     
     
     <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/libraries/bootstrap.min.css">
     
     <!-- Optional theme -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="css/libraries/bootstrap-theme.min.css">
+    <script src="js/libraries/jquery.min.js"></script>
     
     <!-- Latest compiled and minified JavaScript -->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <script src="js/libraries/bootstrap.min.js"></script>
 
     <!--  Link to an externl style sheet -->
     <link type="text/css" rel="stylesheet" href="css/main.css">
@@ -54,13 +54,12 @@
         <div id="map"></div>
     </div>
 
-
+<!-- Sidebar. Reference from https://bootsnipp.com/snippets/BDKbE -->
     <div id="sidebar" class="nav-side-menu">
         <div class="brand">Dublin Bus</div>
         <i class="fa fa-bars fa-2x toggle-btn" data-toggle="collapse" data-target="#menu-content"></i>
         <div class="menu-list">
             <ul id="menu-content" class="menu-content collapse out">
-                
                 <li>
                     <span>
                         <image id = "weatherImage" src = "http://icons.wxug.com/i/c/k/nt_mostlycloudy.gif"> </image> 
@@ -68,51 +67,42 @@
                     </span>
                 </li>
                 <li>     
+                    <!-- Reference: https://getbootstrap.com/docs/3.3/components/#input-groups -->
                     <div class="input-group">
-                        <div class="input-group-btn search-panel">
-                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                <span id="search_concept">From </span> <span class="caret"></span>
-                            </button>
-                            <ul class="dropdown-menu busStations" role="menu">
-                            </ul>
-                        </div>
-                        <input type="hidden" name="search_param" value="all" id="search_param">         
-                        <div id="box">
-                        <input type="text" class="form-control" name="x" placeholder="Choose a starting point...">
-                        </div>
-                    </div>
+                            <div class="input-group-btn">
+                              <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">From <span class="caret"></span></button>
+                              <ul class="dropdown-menu busStations" id="fromStations">
+                              </ul>
+                            </div><!-- /btn-group -->
+                            <input type="text" class="form-control" aria-label="..." id="fromStation">
+                          </div><!-- /input-group -->
                 </li>
                 <p></p>
                 <li>     
-                        <div class="input-group">
-                            <div class="input-group-btn search-panel">
-                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                    <span id="search_concept">To </span> <span class="caret"></span>
-                                </button>
-                                <ul class="dropdown-menu busStations" role="menu">
-                                </ul>
-                            </div>
-                            <input type="hidden" name="search_param" value="all" id="search_param">         
-                            <div id="box">
-                            <input type="text" class="form-control" name="x" placeholder="Where do you want to go...">
-                            </div>
-                        </div>
-                    </li>
+                    <div class="input-group">
+                            <div class="input-group-btn">
+                              <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">To <span class="caret"></span></button>
+                              <ul class="dropdown-menu busStations" id="toStations">
+                              </ul>
+                            </div><!-- /btn-group -->
+                            <input type="text" class="form-control" aria-label="..." id="toStation">
+                          </div><!-- /input-group -->
+                </li>
 
 
 
                 <li>
                     <div class="btn-group btn-group-toggle" data-toggle="buttons">
                             <label class="btn btn-secondary active">
-                              <input type="radio" name="options" id="option1" autocomplete="off" checked> Depart at
+                                <input type="radio" name="options" id="option1" autocomplete="off" checked> Depart at
                             </label>
                             <label class="btn btn-secondary">
-                              <input type="radio" name="options" id="option2" autocomplete="off"> Arrive by
+                                <input type="radio" name="options" id="option2" autocomplete="off"> Arrive by
                             </label>
-                          </div>
+                            </div>
                 </li>  
                 <li>
-                    <!-- Reference: http://bootstrap-datepicker.readthedocs.io/en/latest/index.html -->
+                    <!-- Date picker. Reference: http://bootstrap-datepicker.readthedocs.io/en/latest/index.html -->
                     <div class="input-group date" data-provide="datepicker" id="datepicker">
                             <input type="text" class="form-control"  autocomplete="off">
                             <div class="input-group-addon">
@@ -122,7 +112,7 @@
                     
                 </li>
                 <li>
-                    <!-- Reference: http://weareoutman.github.io/clockpicker/ -->
+                    <!-- Time picker. Reference: http://weareoutman.github.io/clockpicker/ -->
                     <div class="input-group clockpicker">
                             <input type="text" class="form-control" value="09:30" id="timePicker" autocomplete="off">
                             <span class="input-group-addon">
@@ -133,9 +123,7 @@
                 </li>
                 <li>
                     <!-- Search button -->
-                    <!-- <span class="input-group-btn"> -->
                         <button id="searchButton" class="btn btn-default rounded" type="button"><span class="glyphicon glyphicon-search"> Search</span></button>
-                    <!-- </span> -->
                 </li>
             </ul>
         </div>
