@@ -1,1 +1,156 @@
-<!DOCTYPE html><html><head><meta charset=UTF-8><meta http-equiv=X-UA-Compatible content="IE=edge,chrome=1"><meta name=description content="Dublin Bus Travel Time Estimate"><meta name=keywords content="bus, travel time, dublin, transport"><meta name=authors content="Brynja Halldorsdottir, Mariyana Levova, Neil McKimm, Peter Hanrahan"><meta name=viewport content="width=device-width,initial-scale=1"><base href=/ ><link rel=stylesheet href=https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css integrity=sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u crossorigin=anonymous><link rel=stylesheet href=https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css integrity=sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp crossorigin=anonymous><script src=https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin=anonymous></script><script src=https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js integrity=sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa crossorigin=anonymous></script><link type=text/css rel=stylesheet href=css/navbar-fixed-left.min.css><link type=text/css rel=stylesheet href=css/main.css><link type=text/css rel=stylesheet href=css/datetimepicker/bootstrap-datepicker3.standalone.min.css><link rel="shortcut icon" type=image/ico href=favicon.ico><title>Dublin Bus</title><link as=style href=/css/app.d4aff18b.css rel=preload><link as=style href=/css/chunk-vendors.24679547.css rel=preload><link as=script href=/js/app.fbb80a4e.js rel=preload><link as=script href=/js/chunk-vendors.227f429c.js rel=preload><link href=/css/chunk-vendors.24679547.css rel=stylesheet><link href=/css/app.d4aff18b.css rel=stylesheet></head><body><div id=app></div><script src=js/bootstrap-datepicker.min.js></script><script src=/js/chunk-vendors.227f429c.js></script><script src=/js/app.fbb80a4e.js></script></body></html>
+<!DOCTYPE html>
+<html>
+  <head>
+    <!-- Specify the character encoding for the HTML document -->
+    <meta charset="UTF-8">
+    <!-- Make page able to open in the Microsoft Edge version of Internet Explorer -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <!-- Name of the project, keywords and authors -->
+    <meta name="description" content="Dublin Bus Travel Time Estimate">
+    <meta name="keywords" content="bus, travel time, dublin, transport">
+    <meta name="authors" content="Brynja Halldorsdottir, Mariyana Levova, Neil McKimm, Peter Hanrahan">
+    <!-- The viewport sets the width of the page to follow the screen-width of the device and sets the initial zoom level when the page is first loaded by the browser -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <base href="/">
+
+     
+    
+    
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+    <!--  Link to an externl style sheet -->
+    <link type="text/css" rel="stylesheet" href="css/main.css">
+    <link type="text/css" rel="stylesheet" href="css/sidebar.css">
+    
+    <!-- Bootstrap datepicker  -->
+    <link type="text/css" rel="stylesheet" href="css/libraries/bootstrap-datepicker3.min.css">
+    <script src="js/libraries/bootstrap-datepicker.min.js"></script>
+
+    <!-- Clock picker from: http://weareoutman.github.io/clockpicker/ -->
+    <link type="text/css" rel="stylesheet" href="css/libraries/bootstrap-clockpicker.min.css">
+    <script src="js/libraries/bootstrap-clockpicker.min.js"></script>
+
+    <!-- Tab logo for the website. Reference: https://stackoverflow.com/questions/9943771/adding-a-favicon-to-a-static-html-page -->
+    <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+
+    <!-- The title of the project -->
+    <title> Dublin Bus </title>
+    <!-- IF WE WANT TO IMPORT A SPECIFIC GOOGLE FONT WE CAN USE THIS AND THEN CHANGE "Comfortaa" TO WHATEVER WE WANT --> 
+    <!-- <link href="https://fonts.googleapis.com/css?family=Comfortaa" rel="stylesheet"> -->
+  </head>
+
+  <body>
+  <page-content-wrapper></page-content-wrapper>
+    <!--Id for the map. Reference from https://developers.google.com/maps/documentation/javascript/adding-a-google-map-->
+    <div class="container">
+        <div id="map"></div>
+    </div>
+
+
+    <div id="sidebar" class="nav-side-menu">
+        <div class="brand">Dublin Bus</div>
+        <i class="fa fa-bars fa-2x toggle-btn" data-toggle="collapse" data-target="#menu-content"></i>
+        <div class="menu-list">
+            <ul id="menu-content" class="menu-content collapse out">
+                
+                <li>
+                    <span>
+                        <image id = "weatherImage" src = "http://icons.wxug.com/i/c/k/nt_mostlycloudy.gif"> </image> 
+                        <strong id = "weatherTemp">19</strong>
+                    </span>
+                </li>
+                <li>     
+                    <div class="input-group">
+                        <div class="input-group-btn search-panel">
+                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                <span id="search_concept">From </span> <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu busStations" role="menu">
+                            </ul>
+                        </div>
+                        <input type="hidden" name="search_param" value="all" id="search_param">         
+                        <div id="box">
+                        <input type="text" class="form-control" name="x" placeholder="Choose a starting point...">
+                        </div>
+                    </div>
+                </li>
+                <p></p>
+                <li>     
+                        <div class="input-group">
+                            <div class="input-group-btn search-panel">
+                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                    <span id="search_concept">To </span> <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu busStations" role="menu">
+                                </ul>
+                            </div>
+                            <input type="hidden" name="search_param" value="all" id="search_param">         
+                            <div id="box">
+                            <input type="text" class="form-control" name="x" placeholder="Where do you want to go...">
+                            </div>
+                        </div>
+                    </li>
+
+
+
+                <li>
+                    <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                            <label class="btn btn-secondary active">
+                              <input type="radio" name="options" id="option1" autocomplete="off" checked> Depart at
+                            </label>
+                            <label class="btn btn-secondary">
+                              <input type="radio" name="options" id="option2" autocomplete="off"> Arrive by
+                            </label>
+                          </div>
+                </li>  
+                <li>
+                    <!-- Reference: http://bootstrap-datepicker.readthedocs.io/en/latest/index.html -->
+                    <div class="input-group date" data-provide="datepicker" id="datepicker">
+                            <input type="text" class="form-control"  autocomplete="off">
+                            <div class="input-group-addon">
+                                <span class="glyphicon glyphicon-th"></span>
+                            </div>
+                        </div>
+                    
+                </li>
+                <li>
+                    <!-- Reference: http://weareoutman.github.io/clockpicker/ -->
+                    <div class="input-group clockpicker">
+                            <input type="text" class="form-control" value="09:30" id="timePicker" autocomplete="off">
+                            <span class="input-group-addon">
+                                <span class="glyphicon glyphicon-time"></span>
+                            </span>
+                        </div>
+                    
+                </li>
+                <li>
+                    <!-- Search button -->
+                    <!-- <span class="input-group-btn"> -->
+                        <button id="searchButton" class="btn btn-default rounded" type="button"><span class="glyphicon glyphicon-search"> Search</span></button>
+                    <!-- </span> -->
+                </li>
+            </ul>
+        </div>
+    </div>
+
+     
+   
+
+
+
+    <!-- Link to external javascript file -->
+    <script src="js/main.js"></script>
+
+    <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBUgHP1nB5Nsm9k8IELrBRMpSSueJYA0r4&callback=initMap">
+    </script>
+  </body>
+</html>
