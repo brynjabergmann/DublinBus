@@ -1,5 +1,10 @@
 /* css for the sidebar. Reference https://medium.com/wdstack/bootstrap-sidebar-examples-e363021395ff */
 
+.container2 {
+  float: left;
+  width: 200px;
+}
+
 .nav-side-menu {
     overflow: auto;
     font-family: verdana;
@@ -12,6 +17,12 @@
     color:black;
     text-align: center;
 }
+
+
+#header {
+  margin-bottom:5px;
+}
+
 
 /* Name of the website in the header */
 #header > div {
@@ -28,14 +39,6 @@
 #header > img {
   display: inline-block;
   vertical-align: bottom;
-}
-
-/* The padding of the map */
-body > div.container {
-  padding-left: 0px;
-  margin-top: 0%;
-  margin-bottom: 0%;
-  margin-right: 0%;
 }
 
 /* Make hamburger not appear when the webpage is larger than 767px */

@@ -4,9 +4,9 @@ var map;
 
 // Reference from https://developers.google.com/maps/documentation/javascript/adding-a-google-map
 function initMap() {                                // Function that initialize and adds the map to the website
-    var Dublin = {lat: 53.349805, lng: -6.26031}    // The location of Dublin
+    var Dublin = {lat: 53.342805, lng: -6.27031}    // The location of Dublin
     map = new google.maps.Map(                      // The map, centered at Dublin
-        document.getElementById('map'), {zoom: 13, center: Dublin});
+        document.getElementById('map'), {zoom: 12, center: Dublin});
   }
 
 
@@ -24,20 +24,19 @@ function fetchWeather(){
         });
 }
 
-
-// WeatherIcons
-// function weatherIcons(){
-//     var icons = new Skycons(),
-//             list  = [
-//                 "clear-day", "clear-night", "partly-cloudy-day",
-//                 "partly-cloudy-night", "cloudy", "rain", "sleet", "snow", "wind",
-//                 "fog"
-//             ],
-//             i;
-//         for(i = list.length; i--; )
-//             icons.set(list[i], list[i]);
-//         icons.play();
-// }
+//Function for the weather icons
+function weatherIcons(){
+    var icons = new Skycons(),
+            list  = [
+                "clear-day", "clear-night", "partly-cloudy-day",
+                "partly-cloudy-night", "cloudy", "rain", "sleet", "snow", "wind",
+                "fog"
+            ],
+            i;
+        for(i = list.length; i--; )
+            icons.set(list[i], list[i]);
+        icons.play();
+}
 
 
 // Function that puts bus stations into dropdown menu
@@ -105,7 +104,7 @@ function updateDropDown(element){
 
 
 
-function searchForRoute(){              // Function that searches the best routes from choosen points
+function searchForRoute(){         // Function that searches the best routes from choosen points
     console.log("searching");
     var object = new Object();
     object.From = $("#fromStation").val();
@@ -177,7 +176,7 @@ $(document).ready(function(e){
     // insertBusStations();
     setInitialClock()
     fetchWeather();
+    weatherIcons();
     getLocation();
-    // weatherIcons();
 });
 
