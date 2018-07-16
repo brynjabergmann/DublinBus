@@ -19,7 +19,8 @@ function fetchWeather(){
             // Round the temp to the nearest integer:
             document.getElementById("weatherTemp").innerHTML = Math.round(weatherJSON["temp"]).toString();
             // No Processing for these, just strings:
-            document.getElementById("weatherImage").innerHTML = weatherJSON["icon"];
+            // document.getElementById("weatherImage").innerHTML = weatherJSON["icon"];
+            document.getElementsByClassName("weatherIcons").setAttribute("id", "fog"["icons"]);
         });
 }
 

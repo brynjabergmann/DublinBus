@@ -66,7 +66,7 @@
             <ul id="menu-content" class="menu-content collapse out">
                 <li>
                     <span>
-                        <!-- <figure class="icons">
+                        <figure class="icons">
                             <canvas id="fog" width="64" height="64"></canvas> 
                             <canvas id="clear-day" width="64" height="64"></canvas>
                             <canvas id="clear-night" width="64" height="64"></canvas>
@@ -78,10 +78,10 @@
                             <canvas id="snow" width="64" height="64"></canvas> 
                             <canvas id="wind" width="64" height="64"></canvas>
                             <canvas id="fog" width="64" height="64"></canvas>
-                        </figure>                     -->
+                        </figure>                    
 
                         <!-- hér þarf ég að setja alla id-ana inn undir figure og canvas, tengja html skjalið við sér css weather icon skjal og setja js linkinn neðst í þetta html -->
-                        <image id = "weatherImage" src = "http://icons.wxug.com/i/c/k/nt_mostlycloudy.gif"> </image> 
+                        <!-- <image id = "weatherImage" src = "http://icons.wxug.com/i/c/k/nt_mostlycloudy.gif"> </image>  -->
                         <strong id = "weatherTemp">19</strong>
                     </span>
                 </li>
@@ -162,9 +162,11 @@
     <script src="./js/main.js" async defer></script>
 
     <script async defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBUgHP1nB5Nsm9k8IELrBRMpSSueJYA0r4&callback=initMap">
-    </script>
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBUgHP1nB5Nsm9k8IELrBRMpSSueJYA0r4&callback=initMap"></script>
+
     <script async defer src="./js/libraries/geolocate.jquery.min.js"></script>
+
     <script src="./skycons.js"></script>
+
   </body>
 </html>
