@@ -1,14 +1,10 @@
 /* Set the size of the div element that contains the map */
 #map {
-height: 750PX;  /* The height is 400 pixels */
+height: 100vh;  /* The height is 400 pixels */
 width: 100%;  /* The width is the width of the web page */
 }
 
 .container {
-    margin-right: 0%;
+    margin-right: body0%;
     padding-right: 0%;
-}
-
-#menu-content {
-    text-align: center;
 }
