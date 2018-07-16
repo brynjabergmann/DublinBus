@@ -1,4 +1,4 @@
-/* Reference https://medium.com/wdstack/bootstrap-sidebar-examples-e363021395ff */
+/* css for the sidebar. Reference https://medium.com/wdstack/bootstrap-sidebar-examples-e363021395ff */
 
 .nav-side-menu {
     overflow: auto;
@@ -8,90 +8,187 @@
     background-color: white;
     position: fixed;
     top: 0px;
-    width: 300px;
-    height: 100%;
+    width: 340px;
     color:black;
-  }
-  /* Navbar header */
-  .nav-side-menu .brand {
-    background-color: white;
-    color: black;
-    line-height: 50px;
-    display: block;
     text-align: center;
-    font-size: 16px;
+}
+
+/* Name of the website in the header */
+#header > div {
+  background-color: white;
+  color: black;
+  padding-top: 20px;
+  font-size: 16px;
+  font-weight: bold;
+  display: inline-block;
+  margin-right: 10px;
+}
+
+/* Bus image in the header */
+#header > img {
+  display: inline-block;
+  vertical-align: bottom;
+}
+
+/* The padding of the map */
+body > div.container {
+  padding-left: 0px;
+  margin-top: 0%;
+  margin-bottom: 0%;
+  margin-right: 0%;
+}
+
+/* Make hamburger not appear when the webpage is larger than 767px */
+.nav-side-menu .toggle-btn {
+  display: none;
+}
+
+/* Styling of the selection buttons */
+.btn {
+  border: 1px solid lightgrey;
+  margin-bottom: 0px;
+  /* line-height: 1; */
+}
+
+
+/* Colour of the Depart at\ Arrive by buttons */
+.btn.active {
+  background-color: whitesmoke;
+}
+
+/* Styling of the sidebar list */
+.nav-side-menu ul,
+.nav-side-menu li {
+  list-style: none;
+  padding: 0px;
+  margin: 6px;
+  line-height: 20px;
+  cursor: pointer;
+}
+
+.nav-side-menu li {
+  padding-left: 0px;
+  border-bottom: 1px solid white;
+}
+.nav-side-menu li a {
+  text-decoration: none;
+  color: black;
+}
+.nav-side-menu li a i {
+  padding-left: 10px;
+  width: 20px;
+  padding-right: 20px;
+}
+@media (max-width: 767px) {
+  .nav-side-menu {
+    width: 100%;
+    margin-bottom: 10px;
   }
   .nav-side-menu .toggle-btn {
-    display: none;
-  }
-  .nav-side-menu ul,
-  .nav-side-menu li {
-    list-style: none;
-    padding: 0px;
-    margin: 0px;
-    line-height: 35px;
+    display: block;
     cursor: pointer;
-    /*    
-      .collapsed{
-         .arrow:before{
-                   font-family: FontAwesome;
-                   content: "\f053";
-                   display: inline-block;
-                   padding-left:10px;
-                   padding-right: 10px;
-                   vertical-align: middle;
-                   float:right;
-              }
-       }
-  */
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    z-index: 10 !important;
+    padding: 3px;
+    color: black;
+    width: 40px;
+    text-align: center;
   }
 
-  .nav-side-menu li {
-    padding-left: 0px;
-    border-bottom: 1px solid white;
+}
+@media (min-width: 767px) {
+  .nav-side-menu {
+    height: 100%;
+  }    
+  .nav-side-menu .menu-list .menu-content {
+    display: block;
   }
-  .nav-side-menu li a {
-    text-decoration: none;
-    color: black;
+  #main {
+      width:calc(100% - 300px);
+      float: right;
   }
-  .nav-side-menu li a i {
-    padding-left: 10px;
-    width: 20px;
-    padding-right: 20px;
-  }
-  @media (max-width: 767px) {
-    .nav-side-menu {
-      position: relative;
-      width: 100%;
-      margin-bottom: 10px;
-    }
-    .nav-side-menu .toggle-btn {
-      display: block;
-      cursor: pointer;
-      position: absolute;
-      right: 10px;
-      top: 10px;
-      z-index: 10 !important;
-      padding: 3px;
-      background-color: yellow;
-      color: rgb(163, 42, 42);
-      width: 40px;
-      text-align: center;
-    }
-    /* .brand {
-      text-align: left !important;
-      font-size: 22px;
-      padding-left: 20px;
-      line-height: 50px !important;
-    } */
-  }
-  @media (min-width: 767px) {
-    .nav-side-menu .menu-list .menu-content {
-      display: block;
-    }
-    #main {
-        width:calc(100% - 300px);
-        float: right;
-    }
-  }
-  
+}
+
+
+.input-group date {
+  width: 50px;
+}
+
+/* Styling of the search button */
+#searchButton > span {
+  font-weight: 800;
+}
+
+/* Styling the hamburger that appears on pages smaller than 767px */
+.glyphicon-menu-hamburger {
+  font-size: 25px;
+}
+
+/* Styling datepicker */
+#datepicker {
+  width: 150px !important;
+  float: left;
+  margin-bottom: 0%;
+  margin-right: 20px;
+  line-height: 1;
+}
+
+#menu-content > li:nth-child(5) > div:nth-child(2) > div {
+  width: 120px !important;
+}
+
+#menu-content > li:nth-child(5) > div:nth-child(2) {
+  align-content: center;
+}
+
+
+
+
+
+
+
+
+
+
+
+button {
+  background: rgba(0, 0, 0, 0.25);
+  border: 2px solid white;
+  border-radius: 0.5em;
+  font-size: 1em;
+  cursor: pointer;
+  padding: 0.5em;
+  margin-bottom: 1em;
+  padding-left: 2em;
+  position: inherit;
+}
+button:before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 1em;
+  width: 2px;
+  height: 2px;
+  border: 3px solid white;
+  border-bottom: 0;
+  margin-top: -9px;
+  background: transparent;
+  -webkit-border-top-left-radius: 8px;
+  -webkit-border-top-right-radius: 8px;
+  -moz-border-radius: 8px 8px 0 0;
+  border-radius: 8px 8px 0 0;
+}
+button:after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 1em;
+  border-width: 12px 4px 0;
+  border-color: white transparent;
+  margin-top: -4px;
+}
+button:hover {
+  background-color: rgba(0, 0, 0, 0.15);
+}

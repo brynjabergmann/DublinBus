@@ -1,46 +1,94 @@
-// Initialize and add the map
+// Global variable for map
+var map;
+
+
 // Reference from https://developers.google.com/maps/documentation/javascript/adding-a-google-map
-function initMap() {
-    // The location of Dublin
-    var Dublin = {lat: 53.349805, lng: -6.26031}
-    // The map, centered at Dublin
-    var map = new google.maps.Map(
-        document.getElementById('map'), {zoom: 12, center: Dublin});
-    // The marker, positioned at Dublin - EF VIÐ VILJUM HAFA MARKER
-    // var marker = new google.maps.Marker({position: Dublin, map: map});
+function initMap() {                                // Function that initialize and adds the map to the website
+    var Dublin = {lat: 53.349805, lng: -6.26031}    // The location of Dublin
+    map = new google.maps.Map(                      // The map, centered at Dublin
+        document.getElementById('map'), {zoom: 13, center: Dublin});
   }
 
 
 function fetchWeather(){
-    /*
-    This is on GitLab so you can see the code.
-    To see this in action, go to https://dublinbus.icu/fetch-example
-    */
-    fetch("https://dublinbus.icu/db/current_weather")  // First make a GET request to our endpoint
-        .then(function(rawResponse){    // Once that raw response is received, do something with it,
-            return rawResponse.json();  // in this case, take the string response and convert to a JSON object
+    fetch("https://dublinbus.icu/db/current_weather")   // First make a GET request to our endpoint
+        .then(function(rawResponse){                    // Once that raw response is received, do something with it,
+            return rawResponse.json();                  // in this case, take the string response and convert to a JSON object
         })
         .then(function(weatherJSON){
-            // Here I round the temp to the nearest integer:
+            // Round the temp to the nearest integer:
             document.getElementById("weatherTemp").innerHTML = Math.round(weatherJSON["temp"]).toString();
             // No Processing for these, just strings:
             document.getElementById("weatherImage").innerHTML = weatherJSON["icon"];
         });
 }
 
-// Function for fetching and inserting bus stations to dropdown menus
-function insertBusStations(){
-    //I think we should create our own api in Django that will only send the bus station names
-    //The json file contains too much information and is to slow.
-    //We might want to create an api that would enable us to write the first 3 letters of a bus station 
-    //and then suggest the names that are similar.  
-    $.get("https://data.smartdublin.ie/cgi-bin/rtpi/busstopinformation", (data, status) => { //=> means anonymous function
-        data["results"].forEach((busStation) => {
+
+// WeatherIcons
+// function weatherIcons(){
+//     var icons = new Skycons(),
+//             list  = [
+//                 "clear-day", "clear-night", "partly-cloudy-day",
+//                 "partly-cloudy-night", "cloudy", "rain", "sleet", "snow", "wind",
+//                 "fog"
+//             ],
+//             i;
+//         for(i = list.length; i--; )
+//             icons.set(list[i], list[i]);
+//         icons.play();
+// }
+
+
+// Function that puts bus stations into dropdown menu
+function fetchBusStations() {
+    $.get("https://dublinbus.icu/db/bus_stations", function(data, status) {
+        data["results"].forEach(function(busStation){
             $(".busStations").append(`<li><p class="busStation">${busStation["fullname"]}</p></li>`)
         });
         $(".busStation").on("click", this.currentTarget, updateDropDown)
     });
 }
+
+
+function getLocation(){             // Function to get the users geo location
+    //Reference: https://github.com/rodaine/jQuery-Geolocation/blob/master/demo.html
+    var $button = $('#locate');     
+    var $output = $('#output');     
+    var startCB = function() {      
+        $output.addClass('hide');
+        $button
+            .addClass('working')
+            .attr('disabled', 'disabled'); 
+    }
+    var finishCB = function() { 
+        $button
+            .removeClass('working')
+            .removeAttr('disabled'); 
+    }
+    var errorCB = function(error) { 
+        alert( 'Error ' + error.code + ':' + error.message ); 
+    }
+    var successCB = function(p) {
+        var location = 'Latitude: ' + p.coords.latitude + '<br/>' 
+            + 'Longitude: ' + p.coords.longitude;
+        $output
+            // .html(location)
+            .removeClass('hide');
+
+        var yourLocation = {lat: p.coords.latitude, lng: p.coords.longitude}
+        var marker = new google.maps.Marker({position: yourLocation, map: map});
+    }
+
+    $button.geolocate({
+        onStart: startCB,
+        onFinish: finishCB,
+        onError: errorCB,
+        onSuccess: successCB,
+        timeout: 5000
+    });
+};
+
+
 
 function updateDropDown(element){
     // Reference: https://stackoverflow.com/questions/8482241/selecting-next-input
@@ -54,8 +102,9 @@ function updateDropDown(element){
     
 }
 
-// Function that searches the best routes from choosen points
-function searchForRoute(){
+
+
+function searchForRoute(){              // Function that searches the best routes from choosen points
     console.log("searching");
     var object = new Object();
     object.From = $("#fromStation").val();
@@ -80,11 +129,20 @@ function searchForRoute(){
         });
 }
 
+
+
 // Function for the date picker
 function setInitialDateTime(){
     const date = new Date();
     $("#datepicker input").val(`${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`);
 }
+
+
+function setInitialClock(){
+    const time = new Date();
+    $("#timePicker").val(`${time.getHours()}:${time.getMinutes()}`);
+}
+
 
 // Function for configuring event listeners
 function setEventListeners() {
@@ -99,6 +157,9 @@ function setEventListeners() {
 
 }
 
+
+
+// Initialize everything. Waits for ducoument to fully load and then start running stuff
 $(document).ready(function(e){
     setEventListeners();
 
@@ -112,7 +173,10 @@ $(document).ready(function(e){
         startDate: '1d'
     });
     setInitialDateTime();
-    insertBusStations();
+    // insertBusStations();
+    setInitialClock()
     fetchWeather();
+    getLocation();
+    // weatherIcons();
 });
 
