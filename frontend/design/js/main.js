@@ -4,53 +4,14 @@ var map;
 
 // Reference from https://developers.google.com/maps/documentation/javascript/adding-a-google-map
 function initMap() {                                // Function that initialize and adds the map to the website
-    var Dublin = {lat: 53.342805, lng: -6.27031}    // The location of Dublin
+    var Dublin = {lat: 53.349805, lng: -6.290310}    // The location of Dublin
     map = new google.maps.Map(                      // The map, centered at Dublin
         document.getElementById('map'), {zoom: 12, center: Dublin});
   }
 
-
-function fetchWeather(){
-    fetch("https://dublinbus.icu/db/current_weather")   // First make a GET request to our endpoint
-        .then(function(rawResponse){                    // Once that raw response is received, do something with it,
-            return rawResponse.json();                  // in this case, take the string response and convert to a JSON object
-        })
-        .then(function(weatherJSON){
-            // Round the temp to the nearest integer:
-            document.getElementById("weatherTemp").innerHTML = Math.round(weatherJSON["temp"]).toString();
-            // No Processing for these, just strings:
-            // document.getElementById("weatherImage").innerHTML = weatherJSON["icon"];
-            document.getElementsByClassName("weatherIcons").setAttribute("id", "fog"["icons"]);
-        });
-}
-
-//Function for the weather icons
-function weatherIcons(){
-    var icons = new Skycons(),
-            list  = [
-                "clear-day", "clear-night", "partly-cloudy-day",
-                "partly-cloudy-night", "cloudy", "rain", "sleet", "snow", "wind",
-                "fog"
-            ],
-            i;
-        for(i = list.length; i--; )
-            icons.set(list[i], list[i]);
-        icons.play();
-}
-
-
-// Function that puts bus stations into dropdown menu
-function fetchBusStations() {
-    $.get("https://dublinbus.icu/db/bus_stations", function(data, status) {
-        data["results"].forEach(function(busStation){
-            $(".busStations").append(`<li><p class="busStation">${busStation["fullname"]}</p></li>`)
-        });
-        $(".busStation").on("click", this.currentTarget, updateDropDown)
-    });
-}
-
-
-function getLocation(){             // Function to get the users geo location
+  
+  
+  function getLocation(){             // Function to get the users geo location
     //Reference: https://github.com/rodaine/jQuery-Geolocation/blob/master/demo.html
     var $button = $('#locate');     
     var $output = $('#output');     
@@ -76,9 +37,26 @@ function getLocation(){             // Function to get the users geo location
             .removeClass('hide');
 
         var yourLocation = {lat: p.coords.latitude, lng: p.coords.longitude}
-        var marker = new google.maps.Marker({position: yourLocation, map: map});
+        var marker = new google.maps.Marker({
+            position: yourLocation, 
+            map: map,
+            draggable: true,
+            animation: google.maps.Animation.DROP
+        });
+        marker.addListener('click', toggleBounce);
+
+        // Reference: https://developers.google.com/maps/documentation/javascript/examples/marker-animations
+        function toggleBounce() {
+            if (marker.getAnimation() !== null) {
+              marker.setAnimation(null);
+            } else {
+              marker.setAnimation(google.maps.Animation.BOUNCE);
+            }
+          }
     }
 
+
+    
     $button.geolocate({
         onStart: startCB,
         onFinish: finishCB,
@@ -87,6 +65,54 @@ function getLocation(){             // Function to get the users geo location
         timeout: 5000
     });
 };
+
+
+
+
+
+function fetchWeather(){
+    fetch("https://dublinbus.icu/db/current_weather")   // First make a GET request to our endpoint
+        .then(function(rawResponse){                    // Once that raw response is received, do something with it,
+            return rawResponse.json();                  // in this case, take the string response and convert to a JSON object
+        })
+        .then(function(weatherJSON){
+            // Round the temp to the nearest integer
+            document.getElementById("weatherTemp").innerHTML = Math.round(weatherJSON["temp"]).toString();
+            $(".icon").attr("id", weatherJSON["icon"]);
+            weatherIcons();
+        })
+        .catch(function(){
+            $(".icon").attr("id", "partly-cloudy-day");
+            weatherIcons();
+        });
+}
+
+//Function for the weather icons. Reference: https://github.com/darkskyapp/skycons
+function weatherIcons(){
+    var icons = new Skycons(),
+            list  = [
+                "clear-day", "clear-night", "partly-cloudy-day",
+                "partly-cloudy-night", "cloudy", "rain", "sleet", "snow", "wind",
+                "fog"  ],
+            i;
+        for(i = list.length; i--; )
+            icons.set(list[i], list[i]);
+        icons.play();
+}
+
+
+// Function that puts bus stations into dropdown menu
+function fetchBusStations() {
+    $.get("https://dublinbus.icu/db/bus_stations", function(data, status) {
+        data["results"].forEach(function(busStation){
+            $(".busStations").append(`<li><p class="busStation">${busStation["fullname"]}</p></li>`)
+        });
+        $(".busStation").on("click", this.currentTarget, updateDropDown)
+    });
+}
+
+
+
 
 
 
@@ -176,7 +202,6 @@ $(document).ready(function(e){
     // insertBusStations();
     setInitialClock()
     fetchWeather();
-    weatherIcons();
     getLocation();
 });
 
