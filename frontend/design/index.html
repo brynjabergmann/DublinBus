@@ -15,19 +15,19 @@
     <!-- The viewport sets the width of the page to follow the screen-width of the device and sets the initial zoom level when the page is first loaded by the browser -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <base href="/">
-    
+
     <!-- Latest compiled and minified Bootstrap CSS -->
     <link rel="stylesheet" href="./css/libraries/bootstrap.min.css">
     <link rel="stylesheet" href="./css/libraries/bootstrap-theme.min.css">
-    
+
     <!--  Link to an externl style sheet -->
     <link type="text/css" rel="stylesheet" href="./css/main.css">
     <link type="text/css" rel="stylesheet" href="./css/sidebar.css">
     <link type="text/css" rel="stylesheet" href="./css/weathericons.css">
-    
+
     <!-- jQuery import -->
     <script src="./js/libraries/jquery.min.js"></script>
-    
+
     <!-- Latest compiled and minified Bootstrap JavaScript -->
     <script src="./js/libraries/bootstrap.min.js"></script>
 
@@ -42,7 +42,7 @@
     <!-- Tab logo for the website. Reference: https://stackoverflow.com/questions/9943771/adding-a-favicon-to-a-static-html-page -->
     <link rel="shortcut icon" type="image/ico" href="./favicon.ico" />
 
-    <!-- IF WE WANT TO IMPORT A SPECIFIC GOOGLE FONT WE CAN USE THIS AND THEN CHANGE "Comfortaa" TO WHATEVER WE WANT --> 
+    <!-- IF WE WANT TO IMPORT A SPECIFIC GOOGLE FONT WE CAN USE THIS AND THEN CHANGE "Comfortaa" TO WHATEVER WE WANT -->
     <!-- <link href="https://fonts.googleapis.com/css?family=Comfortaa" rel="stylesheet"> -->
 </head>
 
@@ -66,24 +66,17 @@
             <div class="menu-list">
                 <ul id="menu-content" class="menu-content collapse out">
                     <li>
-                        <span>
-                            <figure class="icons">
-                                <canvas id="fog" width="50" height="50"></canvas> 
-                                <canvas id="clear-day" width="50" height="50"></canvas>
-                                <canvas id="clear-night" width="50" height="50"></canvas>
-                                <canvas id="partly-cloudy-day" width="50" height="50"></canvas>
-                                <canvas id="partly-cloudy-night" width="50" height="50"></canvas>
-                                <canvas id="cloudy" width="50" height="50"></canvas>
-                                <canvas id="rain" width="50" height="50"></canvas> 
-                                <canvas id="sleet" width="50" height="50"></canvas>
-                                <canvas id="snow" width="50" height="50"></canvas> 
-                                <canvas id="wind" width="50" height="50"></canvas>
-                                <canvas id="fog" width="50" height="50"></canvas>
-                            </figure>                    
-
-                            <!-- hér þarf ég að setja alla id-ana inn undir figure og canvas, tengja html skjalið við sér css weather icon skjal og setja js linkinn neðst í þetta html -->
-                            <strong id = "weatherTemp">19</strong>
-                        </span>
+                        <div id="weather">
+                            <span>
+                                    <!-- Reference: https://github.com/darkskyapp/skycons -->
+                                    <figure>
+                                        <canvas class="icon" id="fog" width="35" height="35"></canvas>
+                                    </figure>
+                                    <strong id = "weatherTemp">17</strong>
+                                    <!-- The weather temperature -->
+                                    <!-- <strong id = "weatherTemp">17</strong> -->
+                            </span>
+                        </div>
                     </li>
                     <li>
                             <!-- https://github.com/rodaine/jQuery-Geolocation/blob/master/demo.html -->
@@ -103,7 +96,7 @@
                             </div><!-- /input-group -->
                         </div>
                     </li>
-                    <li>     
+                    <li>
                         <div class="fromto">
                             <div class="input-group">
                                 <div class="input-group-btn">
@@ -124,7 +117,7 @@
                                 <input type="radio" name="options" id="option2" autocomplete="off"> Arrive by
                             </label>
                         </div>
-                    </li>  
+                    </li>
                     <li id="datetimepickers">
                         <div class="datetime-group">
                             <!-- Date picker. Reference: http://bootstrap-datepicker.readthedocs.io/en/latest/index.html -->
@@ -151,22 +144,22 @@
                     </li>
                 </ul>
             </div>
-        </div> 
+        </div>
 </div>
-     
-   
+
+
 
 
 
     <!-- Link to external javascript file -->
+    <script async defer src="./js/libraries/geolocate.jquery.min.js"></script>
+
+    <script src="./js/libraries/skycons.js"></script>
+
     <script src="./js/main.js" async defer></script>
 
     <script async defer
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBUgHP1nB5Nsm9k8IELrBRMpSSueJYA0r4&callback=initMap"></script>
-
-    <script async defer src="./js/libraries/geolocate.jquery.min.js"></script>
-
-    <script src="./js/libraries/skycons.js"></script>
 
   </body>
 </html>
