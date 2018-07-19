@@ -77,14 +77,15 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': credentials["db_name"],
-        'USER': credentials["db_user"],
-        'PASSWORD': credentials["db_pass"]
-    }
-}
+# TODO: PUT BACK FOR LIVE DEPLOY
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': credentials["db_name"],
+#         'USER': credentials["db_user"],
+#         'PASSWORD': credentials["db_pass"]
+#     }
+# }
 
 
 # Password validation
