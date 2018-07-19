@@ -1,0 +1,261 @@
+/* css for the sidebar. Reference https://medium.com/wdstack/bootstrap-sidebar-examples-e363021395ff */
+
+
+/* The sidebar container */
+.container2 {
+  float: left;
+  width: 200px;
+}
+
+.nav-side-menu {
+    overflow: auto;
+    font-family: verdana;
+    font-size: 12px;
+    font-weight: 200;
+    background-color: white;
+    position: fixed;
+    top: 0px;
+    width: 340px;
+    color:black;
+    text-align: center;
+}
+
+/* The header of the sidebar */
+#header {
+  margin-bottom:10px;
+}
+
+/* Bus image in the header */
+#header > img {
+  display: inline-block;
+  vertical-align: bottom;
+}
+
+/* Name of the website in the header */
+#header > div {
+  background-color: white;
+  color: black;
+  padding-top: 20px;
+  font-size: 16px;
+  font-weight: bold;
+  display: inline-block;
+  margin-right: 10px;
+}
+
+/* Make hamburger not appear when the webpage is larger than 767px */
+.nav-side-menu .toggle-btn {
+  display: none;
+}
+
+
+
+
+
+
+/* Styling for the weather container (image and temperature)*/
+#weather {
+  /* padding-left: 30px;
+  text-align: center;
+  margin-right: 38px; */
+  margin-top: 20px;
+  display: inline-block;
+  vertical-align: middle;
+  width: 75px;
+}
+
+#weather > span > figure {
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+/* Styling for the weather icons */
+#weather > figure {
+  vertical-align: middle;
+  display: inline-block;
+
+  /* float: none;
+  vertical-align: bottom; */
+  /* margin-top: 0px;
+  margin-bottom: 5px; */
+  /* display: inline; */
+}
+
+
+
+
+
+
+
+
+
+
+
+
+/* Styling of the selection buttons */
+.btn {
+  border: 1px solid lightgrey;
+  margin-bottom: 0px;
+  /* line-height: 1; */
+}
+
+
+/* Colour of the Depart at\ Arrive by buttons */
+.btn.active {
+  background-color: whitesmoke;
+}
+
+/* Styling of the sidebar list */
+.nav-side-menu ul,
+.nav-side-menu li {
+  list-style: none;
+  padding: 0px;
+  margin: 6px;
+  line-height: 20px;
+  cursor: pointer;
+}
+
+.nav-side-menu li {
+  padding-left: 0px;
+  border-bottom: 1px solid white;
+}
+.nav-side-menu li a {
+  text-decoration: none;
+  color: black;
+}
+.nav-side-menu li a i {
+  padding-left: 10px;
+  width: 20px;
+  padding-right: 20px;
+}
+@media (max-width: 767px) {
+  .nav-side-menu {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  .nav-side-menu .toggle-btn {
+    display: block;
+    cursor: pointer;
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    z-index: 10 !important;
+    padding: 3px;
+    color: black;
+    width: 40px;
+    text-align: center;
+  }
+
+}
+@media (min-width: 767px) {
+  .nav-side-menu {
+    height: 100%;
+  }    
+  .nav-side-menu .menu-list .menu-content {
+    display: block;
+  }
+  #main {
+      width:calc(100% - 300px);
+      float: right;
+  }
+}
+
+
+.input-group date {
+  width: 50px;
+}
+
+/* Styling of the search button */
+#searchButton > span {
+  font-weight: 800;
+}
+
+/* Styling the hamburger that appears on pages smaller than 767px */
+.glyphicon-menu-hamburger {
+  font-size: 25px;
+}
+
+/* Styling datepicker */
+#datepicker {
+  width: 150px !important;
+  float: left;
+  margin-bottom: 0%;
+  margin-right: 20px;
+  line-height: 1;
+}
+
+#menu-content > li:nth-child(5) > div:nth-child(2) > div {
+  width: 120px !important;
+}
+
+#menu-content > li:nth-child(5) > div:nth-child(2) {
+  align-content: center;
+}
+
+
+
+
+
+
+
+
+
+
+
+button {
+  background: rgba(0, 0, 0, 0.25);
+  border: 2px solid white;
+  border-radius: 0.5em;
+  font-size: 1em;
+  cursor: pointer;
+  padding: 0.5em;
+  margin-bottom: 1em;
+  padding-left: 2em;
+  position: inherit;
+}
+button:before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 1em;
+  width: 2px;
+  height: 2px;
+  border: 3px solid white;
+  border-bottom: 0;
+  margin-top: -9px;
+  background: transparent;
+  -webkit-border-top-left-radius: 8px;
+  -webkit-border-top-right-radius: 8px;
+  -moz-border-radius: 8px 8px 0 0;
+  border-radius: 8px 8px 0 0;
+}
+button:after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 1em;
+  border-width: 12px 4px 0;
+  border-color: white transparent;
+  margin-top: -4px;
+}
+button:hover {
+  background-color: rgba(0, 0, 0, 0.15);
+}
+
+
+
+/* Location button */
+#locate{
+  background-color: whitesmoke;
+  border: 1px solid lightgrey;
+  box-shadow: inset 0 3px 5px rgba(0,0,0,.125)
+  position: relative;
+  margin-bottom: 0px;
+  /* display: inline-block; */
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: 400;
+  /* line-height: 1.42857143; */
+  /* text-align: center; */
+  border-radius: 4px;
+  text-shadow: 0 1px 0 #fff;
+}
