@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Sprint 2 Prototype</title>
+    </head>
+    <body>
+        <button onclick="routesDropdown()">Fill in dropdown</button>
+        <button onclick="getLatestWeather()">Get Weather</button>
+        <form>
+            <select id="routesDropdown" name="route">
+            </select>
+        </form>
+        <button onclick="makePredictionNow(
+            tempNow,
+            rainNow,
+            document.getElementById('routesDropdown').options[],
+            1,
+            5,
+            65)">Make Prediction</button>
+        <div id="prediction">
+            <!-- This will be filled in when a prediction is received the server -->
+        </div>
+    </body>
+    <script src="scripts.js"></script>
+</html>
