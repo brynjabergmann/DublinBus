@@ -26,7 +26,9 @@ routes = pd.read_sql_query('SELECT DISTINCT lineid, direction FROM trips_2017', 
 
 for index, row in routes.iterrows():
     df = pd.read_sql_query(f'SELECT * FROM trips_2017 WHERE lineid = "{row[0]}" AND direction = {row[1]}', engine)
-
+    last_stop_on_route = pd.read_sql_query(f'SELECT max(stop_on_route) as end from combined_2017 WHERE line_id = "{row[0]}" AND direction = {row[1]}', engine)
+    last_stop = last_stop_on_route['end'].iloc[0]
+    
     # Replace missing actual time departure values with planned values
     df.actualtime_dep.fillna(df.plannedtime_dep, inplace=True)
 
@@ -72,10 +74,9 @@ for index, row in routes.iterrows():
     # Creating dummy variables for weekday names and name of month
     df_dayofweek_dummies = pd.get_dummies(df['dayofweek'])
 
-    # Removing rows not in the month of March
-    # We chose March as we felt it was the best representation of a typical 'school' month
-    df = df.query('monthofyear == 3')
-
+    # Using data from the end of the Feb mid-term break till the start of the Easter break 
+    # April was on Sunday the 16th April and the timestamps is Monday April 10th, which is the first Monday of Easter Break
+    df = df.query('monthofyear == 2 or monthofyear == 3 or monthofyear == 4 and time >= 1487548800 and time < 1491782400')
 
     # Add day of week columns for each day
     df1 = pd.concat([df, df_dayofweek_dummies], axis=1, join_axes=[df.index])
@@ -141,5 +142,5 @@ for index, row in routes.iterrows():
 
     # Storing the model trained on the full data set to a pickle file
     with open(f"models/{pkl_filename}", 'wb') as file:
-        pickle.dump(gbr, file)
+        pickle.dump([gbr, last_stop], file)
 
