@@ -5,9 +5,8 @@ function makePredictionNow(){
         temp: tempNow,
         rain: rainNow,
         route: document.getElementById("routesDropdown").value,
-        direction: getDirection(),
-        num_stops: countStops(),
-        max_stops: max_stops
+        startStop: document.getElementById("firstStop").value,
+        endStop: document.getElementById("lastStop").value
     };
 
     fetch("https://dublinbus.icu/api/make_prediction", {
@@ -20,7 +19,7 @@ function makePredictionNow(){
             return response.json(); // Currently only returning a single value. Using JSON to allow easier extension later
         })
         .then(function(prediction){
-            document.getElementById("prediction").innerHTML = `Estimated time: <b>${prediction["minutes"]}</b> minutes`;
+            document.getElementById("prediction").innerHTML = `Estimated time: <b>${prediction["result"]}</b> minutes`;
         })
         .catch(function(){
             document.getElementById("prediction").innerHTML = "Prediction server not available."
@@ -48,19 +47,41 @@ function routesDropdown(){
     });
 }
 
-function getDirection(route, stopId){
-    // return SELECT direction FROM combined_2017 WHERE route = route AND stop_number = stopId LIMIT 1;
+function getStopLocation(stopNumber){
+    fetch("https://dublinbus.icu/api/stop_location", {
+        method: "POST",
+        headers: {"Content-Type": "application/json; charset=utf-8"},
+        referrer: "no-referrer",
+        body: JSON.stringify({stop: stopNumber})
+    })
+    .then(function(response){
+        return response.json();
+    })
+    .then(function(myLatLng){
+        new google.maps.Marker({
+            position: myLatLng,
+            map: map,
+        });
+    });
 }
 
-function countStops(firstStopId, lastStopId){
-    // x = SELECT stop_on_route from combined_2017 WHERE stop_number = firstStopId LIMIT 1;
-    // y = SELECT stop_on_route from combined_2017 WHERE stop_number = lastStopId LIMIT 1;
-    // return y - x;
+
+// Taken directly from Brynja's map code:
+
+// Global variable for map
+var map;
+
+
+// Reference from https://developers.google.com/maps/documentation/javascript/adding-a-google-map
+function initMap() {                                // Function that initialize and adds the map to the website
+    var Dublin = {lat: 53.349805, lng: -6.290310}    // The location of Dublin
+    map = new google.maps.Map(                      // The map, centered at Dublin
+        document.getElementById('map'), {zoom: 12, center: Dublin});
 }
 
-function maxStop(route){
-    // return SELECT MAX(stop_on_route) from combined_2017 WHERE line_id = route;
-}
+
+
+
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *                                                                        *
@@ -200,3 +221,9 @@ const allBuses = [
     "84X",
     "9"
 ];
+
+// Do these things as soon as page loads:
+document.addEventListener('DOMContentLoaded', function() {
+    routesDropdown();
+    getLatestWeather();
+});
