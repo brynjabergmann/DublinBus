@@ -85,6 +85,11 @@ function geoAddress(location){
 
 }
 
+// Reference: https://developers.google.com/maps/documentation/javascript/places-autocomplete
+function autocomplete(){
+
+}
+
 
 
 function fetchWeather(){
@@ -244,7 +249,6 @@ $(window).on("load", function(){
     setInitialDateTime();
     // insertBusStations();
     setInitialClock()
-    // fetchWeather();
+    fetchWeather();
     getLocation();
-    // geoAddress();
 });
