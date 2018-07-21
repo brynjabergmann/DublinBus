@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Sprint 2 Prototype</title>
+    </head>
+    <body>
+        <form>
+            First stop number: <input id="firstStop" type="number" value=""> <a href="" onclick="getStopLocation(document.getElementById('firstStop').value); return false;">Show on Map</a>
+            <br>
+            <select id="routesDropdown" name="route"></select>
+            <br>
+            Last stop number: <input id="lastStop" type="number"> <a href="" onclick="getStopLocation(document.getElementById('lastStop').value); return false;">Show on Map</a>
+        </form>
+        <button onclick="makePredictionNow()">Make Prediction</button>
+        <div id="prediction">
+            <!-- This will be filled in when a prediction is received the server -->
+        </div>
+        <div id="map" style="height: 600px; width: 600px;"></div>
+    </body>
+    <script src="scripts.js"></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBUgHP1nB5Nsm9k8IELrBRMpSSueJYA0r4&callback=initMap"></script>
+</html>

@@ -28,7 +28,7 @@ SECRET_KEY = '@02e-fh!fkbd6a09w9l)7r^g0)xuav+g4qvmki9c6v&=surs00'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['dublinbus.icu', '137.43.49.52', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['dublinbus.icu', '137.43.49.52', '127.0.0.1', 'localhost', 'http']
 
 
 # Application definition
@@ -40,10 +40,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'api'
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -52,6 +55,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+CORS_ORIGIN_ALLOW_ALL = True    # TODO: Remove for production
 
 ROOT_URLCONF = 'backend.urls'
 
