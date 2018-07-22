@@ -14,7 +14,6 @@
     <meta name="authors" content="Brynja Halldorsdottir, Mariyana Levova, Neil McKimm, Peter Hanrahan">
     <!-- The viewport sets the width of the page to follow the screen-width of the device and sets the initial zoom level when the page is first loaded by the browser -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <base href="/">
 
     <!-- Latest compiled and minified Bootstrap CSS -->
     <link rel="stylesheet" href="./css/libraries/bootstrap.min.css">
@@ -61,9 +60,8 @@
                                     <figure>
                                         <canvas class="icon" id="fog" width="35" height="35"></canvas>
                                     </figure>
-                                    <strong id = "weatherTemp">17</strong>
                                     <!-- The weather temperature -->
-                                    <!-- <strong id = "weatherTemp">17</strong> -->
+                                    <strong id = "weatherTemp"></strong>
                             </span>
                         </div>
                     </li>
@@ -74,14 +72,14 @@
                     </li>
                     <li>
                     <!-- Reference: https://getbootstrap.com/docs/3.3/components/#input-groups -->
-                        <div class="fromto">
+                        <div class="bus">
                             <div class="input-group">
                                 <div class="input-group-btn">
                                     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Bus <span class="caret"></span></button>
-                                    <ul class="dropdown-menu busStations" id="toStations">
+                                    <ul class="dropdown-menu busStations" id="busStops">
                                     </ul>
                                 </div><!-- /btn-group -->
-                                <input type="text" class="form-control" aria-label="..." placeholder="Choose a bus number"id="toStation">
+                                <input type="text" class="form-control" aria-label="..." placeholder="Choose a bus number"id="Bus">
                             </div><!-- /input-group -->
                         </div>
                     </li>

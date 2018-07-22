@@ -74,20 +74,50 @@ function geoAddress(location){
                 //     return element.types.includes("street_number");})["long_name"];
                 var route = results[0]["address_components"].find(function(element){
                     return element.types.includes("route");})["long_name"];
-                var neighbourhood = results[0]["address_components"].find(function(element){
-                    return element.types.includes("locality", "political");})["long_name"];
-                var postalCode = results[0]["address_components"].find(function(element){
+                var postalcode = results[0]["address_components"].find(function(element){
                     return element.types.includes("postal_town");})["long_name"];
-                $("#fromStation").val(`${route}, ${neighbourhood}, ${postalCode}`);
+                var country = results[0]["address_components"].find(function(element){
+                        return element.types.includes("country", "political");})["long_name"];
+                $("#fromStation").val(`${route}, ${postalcode}, ${country}`);
                 }
         }
+        console.log(results[0]);
     });
 
 }
 
 // Reference: https://developers.google.com/maps/documentation/javascript/places-autocomplete
 function autocomplete(){
+    // var input = $('#fromStation');
+    var inputFrom = document.getElementById('fromStation');
+    var inputTo = document.getElementById('toStation');
 
+    function addAutocomplete(input) {
+        console.log(input);
+        var autocomplete = new google.maps.places.Autocomplete(input);
+        // Bind the map's bounds (viewport) property to the autocomplete object,
+            // so that the autocomplete requests use the current map bounds for the
+            // bounds option in the request.
+            autocomplete.bindTo('bounds', map);
+            // Set the data fields to return when the user selects a place.
+            autocomplete.setFields(
+                ['address_components']);
+            autocomplete.addListener('place_changed', function() {
+                var place = autocomplete.getPlace();
+                
+                var address = '';
+                if (place.address_components) {
+                    address = [
+                    (place.address_components[0] && place.address_components[0].short_name || ''),
+                    (place.address_components[1] && place.address_components[1].short_name || ''),
+                    (place.address_components[2] && place.address_components[2].short_name || '')
+                    ].join(' ');
+                }
+            console.log(address);
+        });
+    }
+    addAutocomplete(inputFrom);
+    addAutocomplete(inputTo);
 }
 
 
@@ -251,4 +281,5 @@ $(window).on("load", function(){
     setInitialClock()
     fetchWeather();
     getLocation();
+    autocomplete();
 });
