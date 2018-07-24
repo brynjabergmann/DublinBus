@@ -88,7 +88,7 @@ def main():
             month = datetime.datetime.fromtimestamp(time).strftime('%m')
             hour = datetime.datetime.fromtimestamp(time).strftime('%H')
             day_of_week = calendar.day_name[datetime.datetime.fromtimestamp(time).weekday()]
-            dow = datetime.datetime.today().weekday()
+            dow = datetime.datetime.fromtimestamp(time).weekday()
 
             data[i] = [time, day_of_week, description, temp, icon, precip_intensity, hour, month, date, dow]
             insertDb(data[i], db)
