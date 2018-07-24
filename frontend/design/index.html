@@ -23,20 +23,9 @@
     <link type="text/css" rel="stylesheet" href="./css/main.css">
     <link type="text/css" rel="stylesheet" href="./css/sidebar.css">
     <link type="text/css" rel="stylesheet" href="./css/weathericons.css">
+    <link type="text/css" rel="stylesheet" href="./css/libraries/bootstrap-datepicker3.min.css"> <!-- Bootstrap datepicker  -->
+    <link type="text/css" rel="stylesheet" href="./css/libraries/bootstrap-clockpicker.min.css"> <!-- Bootstrap clockpicker  -->
 
-    <!-- jQuery import -->
-    <script src="./js/libraries/jquery.min.js"></script>
-
-    <!-- Latest compiled and minified Bootstrap JavaScript -->
-    <script src="./js/libraries/bootstrap.min.js"></script>
-
-    <!-- Bootstrap datepicker  -->
-    <link type="text/css" rel="stylesheet" href="./css/libraries/bootstrap-datepicker3.min.css">
-    <script src="./js/libraries/bootstrap-datepicker.min.js"></script>
-
-    <!-- Clock picker from: http://weareoutman.github.io/clockpicker/ -->
-    <link type="text/css" rel="stylesheet" href="./css/libraries/bootstrap-clockpicker.min.css">
-    <script src="./js/libraries/bootstrap-clockpicker.min.js"></script>
 
     <!-- Tab logo for the website. Reference: https://stackoverflow.com/questions/9943771/adding-a-favicon-to-a-static-html-page -->
     <link rel="shortcut icon" type="image/ico" href="./favicon.ico" />
@@ -69,11 +58,10 @@
                             <span>
                                     <!-- Reference: https://github.com/darkskyapp/skycons -->
                                     <figure>
-                                        <canvas class="icon" id="fog" width="35" height="35"></canvas>
+                                        <canvas class="icon" id="fog" width="30" height="30"></canvas>
                                     </figure>
-                                    <strong id = "weatherTemp">17</strong>
                                     <!-- The weather temperature -->
-                                    <!-- <strong id = "weatherTemp">17</strong> -->
+                                    <strong id = "weatherTemp">18</strong>
                             </span>
                         </div>
                     </li>
@@ -83,11 +71,23 @@
                         <div id="output" class="hide"></div>
                     </li>
                     <li>
-                        <!-- Reference: https://getbootstrap.com/docs/3.3/components/#input-groups -->
+                    <!-- Reference: https://getbootstrap.com/docs/3.3/components/#input-groups -->
+                        <div class="bus">
+                            <div class="input-group">
+                                <div class="input-group-btn">
+                                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Bus <span class="caret"></span></button>
+                                    <ul class="dropdown-menu busStations" id="busStops">
+                                    </ul>
+                                </div><!-- /btn-group -->
+                                <input type="text" class="form-control" aria-label="..." placeholder="Choose a bus number"id="Bus">
+                            </div><!-- /input-group -->
+                        </div>
+                    </li>
+                    <li>
                         <div class="fromto">
                             <div class="input-group">
                                 <div class="input-group-btn">
-                                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> From <span class="caret"></span></button>
+                                    <button type="button" class="btn btn-default" aria-haspopup="true" aria-expanded="false"> From </button>
                                     <ul class="dropdown-menu busStations" id="fromStations">
                                     </ul>
                                 </div><!-- /btn-group -->
@@ -99,7 +99,7 @@
                         <div class="fromto">
                             <div class="input-group">
                                 <div class="input-group-btn">
-                                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> To <span class="caret"></span></button>
+                                    <button type="button" class="btn btn-default" aria-haspopup="true" aria-expanded="false"> To </button>
                                     <ul class="dropdown-menu busStations" id="toStations">
                                     </ul>
                                 </div><!-- /btn-group -->
@@ -118,24 +118,26 @@
                         </div>
                     </li>
                     <li id="datetimepickers">
-                        <div class="datetime-group">
-                            <!-- Date picker. Reference: http://bootstrap-datepicker.readthedocs.io/en/latest/index.html -->
-                            <div class="input-group date" data-provide="datepicker" id="datepicker">
-                                <input type="text" class="form-control"  autocomplete="off">
-                                <div class="input-group-addon">
-                                    <span class="glyphicon glyphicon-th"></span>
+                        <span>
+                            <div class="datetime-group">
+                                <!-- Date picker. Reference: http://bootstrap-datepicker.readthedocs.io/en/latest/index.html -->
+                                <div class="input-group date" data-provide="datepicker" id="datepicker">
+                                    <input type="text" class="form-control"  autocomplete="off">
+                                    <div class="input-group-addon">
+                                        <span class="glyphicon glyphicon-th"></span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
                             <div class="datetime-group">
-                            <!-- Time picker. Reference: http://weareoutman.github.io/clockpicker/ -->
-                            <div class="input-group clockpicker">
-                                <input type="text" class="form-control" value="09:30" id="timePicker" autocomplete="off">
-                                <span class="input-group-addon">
-                                    <span class="glyphicon glyphicon-time"></span>
-                                </span>
+                                <!-- Time picker. Reference: http://weareoutman.github.io/clockpicker/ -->
+                                <div class="input-group clockpicker">
+                                    <input type="text" class="form-control" id="timePicker" autocomplete="off">
+                                    <div class="input-group-addon">
+                                        <span class="glyphicon glyphicon-time"></span> <!--The clock icon-->
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+                        </span>
                     </li>
                     <li>
                         <!-- Search button -->
@@ -149,16 +151,20 @@
 
 
 
+    <!-- jQuery import -->
+    <script src="./js/libraries/jquery.min.js"></script>
+
+    <!-- Latest compiled and minified Bootstrap JavaScript -->
+    <script src="./js/libraries/bootstrap.min.js"></script>
+    <script src="./js/libraries/bootstrap-datepicker.min.js"></script>
+    <script src="./js/libraries/bootstrap-clockpicker.min.js"></script>
 
     <!-- Link to external javascript file -->
     <script async defer src="./js/libraries/geolocate.jquery.min.js"></script>
-
     <script src="./js/libraries/skycons.js"></script>
-
-    <script src="./js/main.js" async defer></script>
-
+    <script src="./js/main.js"></script>
     <script async defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBUgHP1nB5Nsm9k8IELrBRMpSSueJYA0r4&callback=initMap"></script>
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBUgHP1nB5Nsm9k8IELrBRMpSSueJYA0r4&callback=initMap&libraries=places"></script>
 
   </body>
 </html>
