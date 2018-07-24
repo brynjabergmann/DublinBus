@@ -35,8 +35,8 @@ def insertDb(data, db):
         cursor = db.cursor()
             
         add_weather = (" INSERT INTO DarkSky_hourly_weather_prediction "
-                    "(timestamp, time, day_of_week, description, temp, icon, precip_intensity, hour, month, date) "
-                    "VALUES (CURRENT_TIMESTAMP, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
+                    "(timestamp, time, day_of_week, description, temp, icon, precip_intensity, hour, month, date, dow) "
+                    "VALUES (CURRENT_TIMESTAMP, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
         
         cursor.execute(add_weather, data)
         db.commit()
@@ -84,12 +84,13 @@ def main():
             temp = data["hourly"]["data"][i]["temperature"]
             icon = data["hourly"]["data"][i]["icon"]
             precip_intensity = data["hourly"]["data"][i]["precipIntensity"]
-            date = datetime.datetime.utcfromtimestamp(time).strftime('%Y-%m-%d %H:%M:%S')
-            month = datetime.datetime.utcfromtimestamp(time).strftime('%m')
-            hour = datetime.datetime.utcfromtimestamp(time).strftime('%H')
-            day_of_week = calendar.day_name[datetime.datetime.utcfromtimestamp(time).weekday()]
-            
-            data[i] = [time, day_of_week, description, temp, icon, precip_intensity, hour, month, date]
+            date = datetime.datetime.fromtimestamp(time).strftime('%Y-%m-%d %H:%M:%S')
+            month = datetime.datetime.fromtimestamp(time).strftime('%m')
+            hour = datetime.datetime.fromtimestamp(time).strftime('%H')
+            day_of_week = calendar.day_name[datetime.datetime.fromtimestamp(time).weekday()]
+            dow = datetime.datetime.today().weekday()
+
+            data[i] = [time, day_of_week, description, temp, icon, precip_intensity, hour, month, date, dow]
             insertDb(data[i], db)
     
     print("Finished!")
