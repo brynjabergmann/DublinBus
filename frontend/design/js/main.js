@@ -4,7 +4,7 @@ var map;
 
 // Reference from https://developers.google.com/maps/documentation/javascript/adding-a-google-map
 function initMap() {                                // Function that initialize and adds the map to the website
-    var Dublin = {lat: 53.349805, lng: -6.290310}    // The location of Dublin
+    var Dublin = {lat: 53.350140, lng: -6.266155}    // The location of Dublin
     map = new google.maps.Map(                      // The map, centered at Dublin
         document.getElementById('map'), {zoom: 12, center: Dublin});
   }
