@@ -65,6 +65,38 @@ function getStopLocation(stopNumber){
     });
 }
 
+google.charts.load('current', {'packages':['bar']});
+google.charts.setOnLoadCallback(drawChart);
+
+function drawChart() {
+    let data = google.visualization.arrayToDataTable([
+        ['Day of Week', 'An Hour Earlier', 'Current Time', 'An Hour Later'],
+        ['MON', 67, 80, 79],
+        ['TUE', 68, 75, 70],
+        ['WED', 60, 67, 63],
+        ['THU', 68, 74, 73],
+        ['FRI', 71, 89, 80],
+        ['SAT', 50, 55, 52],
+        ['SUN', 47, 50, 45]
+        ]);
+
+        let options = {
+            chart: {
+                title: 'Journey Time Prediction',
+                subtitle: 'Weekly',
+            },
+            bars: 'vertical',
+            vAxis: {format: 'decimal', title: 'Journey Time (mins)'},
+            height: 400,
+            colors: ['#1b9e77', '#d95f02', '#7570b3']
+        };
+
+        let chart = new google.charts.Bar(document.getElementById('chart_div'));
+
+        chart.draw(data, google.charts.Bar.convertOptions(options));
+
+}
+
 
 // Taken directly from Brynja's map code:
 
