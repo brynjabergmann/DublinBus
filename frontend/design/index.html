@@ -46,7 +46,7 @@
         <div id="sidebar" class="nav-side-menu">
             <div id="header">
                 <div class="brand"> Dublin Bus </div>
-                <img class="img-responsive" img src="../img/websitelogo.png" style="width:62px; height:30px;">
+                <img class="img-responsive" img src="./img/websitelogo.png" style="width:62px; height:30px;">
             </div>
             <i class="fa fa-bars fa-2x toggle-btn" data-toggle="collapse" data-target="#menu-content">
                 <span class="glyphicon glyphicon-menu-hamburger"></span>
@@ -90,11 +90,23 @@
                                     <button type="button" class="btn btn-default" aria-haspopup="true" aria-expanded="false"> From </button>
                                     <ul class="dropdown-menu busStations" id="fromStations">
                                     </ul>
-                                </div><!-- /btn-group -->
+                                </div>
                                 <input type="text" class="form-control" aria-label="..." placeholder="Choose a starting point..." id="fromStation">
-                            </div><!-- /input-group -->
+                            </div>
                         </div>
                     </li>
+                    <!-- <li>
+                        <div class="fromto">
+                            <div class="input-group">
+                                <div class="input-group-btn">
+                                    <button type="button" class="btn btn-default" aria-haspopup="true" aria-expanded="false"> From bus stop nr. </button>
+                                    <ul class="dropdown-menu busStations" id="fromBusStop">
+                                    </ul>
+                                </div>
+                                <input type="text" class="form-control" aria-label="..." placeholder="Enter number" id="fromBusStopNr">
+                            </div>
+                        </div>
+                    </li> -->
                     <li>
                         <div class="fromto">
                             <div class="input-group">
@@ -102,11 +114,23 @@
                                     <button type="button" class="btn btn-default" aria-haspopup="true" aria-expanded="false"> To </button>
                                     <ul class="dropdown-menu busStations" id="toStations">
                                     </ul>
-                                </div><!-- /btn-group -->
+                                </div>
                                 <input type="text" class="form-control" aria-label="..." placeholder="Where do you want to go?"id="toStation">
-                            </div><!-- /input-group -->
+                            </div>
                         </div>
                     </li>
+                    <!-- <li>
+                        <div class="fromto">
+                            <div class="input-group">
+                                <div class="input-group-btn">
+                                    <button type="button" class="btn btn-default" aria-haspopup="true" aria-expanded="false"> To bus stop nr. </button>
+                                    <ul class="dropdown-menu busStations" id="toBusStop">
+                                    </ul>
+                                </div>
+                                <input type="text" class="form-control" aria-label="..." placeholder="Enter number" id="toBusStopNr">
+                            </div>
+                        </div>
+                    </li> -->
                     <li>
                         <div class="btn-group btn-group-toggle" data-toggle="buttons">
                             <label class="btn btn-secondary active">
@@ -142,6 +166,12 @@
                     <li>
                         <!-- Search button -->
                         <button id="searchButton" class="btn btn-default rounded" type="button"><span class="glyphicon glyphicon-search"></span> Search </button>
+                    </li>
+                    <!-- <li>
+                      <button id="SEARCH" class="btn btn-default rounded" type="button"><span class="glyphicon glyphicon-search"></span> Search </button>
+                    </li> -->
+                    <li>
+                        <h4 id="prediciton"></h4>
                     </li>
                 </ul>
             </div>
