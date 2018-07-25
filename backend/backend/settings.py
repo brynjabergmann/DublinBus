@@ -87,7 +87,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': credentials["db_name"],
         'USER': credentials["db_user"],
-        'PASSWORD': credentials["db_pass"]
+        'PASSWORD': credentials["db_pass"],
+        'HOST': '127.0.0.1',        # TODO: Remove for Production
+        'PORT': '3306'              # TODO: Remove for Production
     }
 }
 
