@@ -4,3 +4,6 @@ __pycache__/
 .idea/
 
 \.swp
+twitter_auth.json
+.DS_Store
+/frontend/.DS_Store
