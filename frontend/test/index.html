@@ -11,10 +11,13 @@
             <br>
             Last stop number: <input id="lastStop" type="number"> <a href="" onclick="getStopLocation(document.getElementById('lastStop').value); return false;">Show on Map</a>
         </form>
-        <button onclick="makePredictionNow()">Make Prediction</button>
+        <button onclick="makePredictionNow(); drawChart(); makePredictionToday()">Make Prediction</button>
         <div id="prediction">
             <!-- This will be filled in when a prediction is received the server -->
         </div>
+		<br/>
+	    Select Time: <input id="time" type="number" style="width:50px">
+	    <div id="forecast"></div>
         <div id="map" style="height: 600px; width: 600px;"></div>
         <br/>
         <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
