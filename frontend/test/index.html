@@ -11,7 +11,9 @@
             <br>
             Last stop number: <input id="lastStop" type="number"> <a href="" onclick="getStopLocation(document.getElementById('lastStop').value); return false;">Show on Map</a>
         </form>
-        <button onclick="makePredictionNow(); drawChart(); makePredictionToday()">Make Prediction</button>
+        <button onclick="makePredictionNow(); makePredictionToday()">Make Prediction</button>
+		<button onclick="chartValues()">Predictions</button>
+		<button onclick="drawChart()">Chart</button>
         <div id="prediction">
             <!-- This will be filled in when a prediction is received the server -->
         </div>
