@@ -54,7 +54,7 @@ function makePredictionToday() {
             document.getElementById("forecast").innerHTML = `Estimated time: <b>${prediction["result"]}</b> minutes`;
         })
         .catch(function() {
-            document.getElementById("forecast").innerHTML = "Something has gone tits up."
+            document.getElementById("forecast").innerHTML = "Something has gone terribly wrong."
         });
 }
 
