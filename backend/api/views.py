@@ -18,8 +18,7 @@ def forecast(request):
     values = json.loads(request.body.decode('utf-8'))
     hour = values["hour"]
     day = dt.datetime.today().weekday()
-    
-    daily = []
+
     with connection.cursor() as cursor:
         cursor.execute("SELECT dow, hour, temp, precip_intensity from DarkSky_hourly_weather_prediction WHERE dow = %s AND hour = %s;", [day, hour])
         row = cursor.fetchone()
