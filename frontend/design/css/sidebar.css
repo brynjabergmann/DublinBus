@@ -8,7 +8,6 @@
 }
 
 .nav-side-menu {
-    overflow: auto;
     font-family: verdana;
     font-size: 12px;
     font-weight: 200;
@@ -57,7 +56,8 @@
   /* padding-left: 30px;
   text-align: center;
   margin-right: 38px; */
-  margin-top: 10px;
+  margin-top: 7px;
+  margin-bottom: 7px;
   display: inline-block;
   vertical-align: middle;
   width: 75px;
@@ -72,15 +72,30 @@
 #weather > figure {
   vertical-align: middle;
   display: inline-block;
-
-  /* float: none;
-  vertical-align: bottom; */
-  /* margin-top: 0px;
-  margin-bottom: 5px; */
-  /* display: inline; */
 }
 
 
+
+
+
+
+
+
+/* Styling of the markers */
+#menu-content > li:nth-child(4) > div > div > button {
+
+}
+
+/* Styling of the marker buttons */
+#menu-content > li:nth-child(3) > div > span.input-group-btn > button > img,
+#menu-content > li:nth-child(4) > div > span.input-group-btn > button > img {
+  display: inline-block;
+  height: 20px;
+  padding: 0;
+  margin: 0;
+  vertical-align: top;
+  width: 15px;
+}
 
 
 
@@ -183,6 +198,8 @@
   line-height: 1;
 }
 
+#datetimepickers > span > div:nth-child(2) > div
+
 #menu-content > li:nth-child(5) > div:nth-child(2) > div {
   width: 120px !important;
 }
@@ -212,14 +229,14 @@ button {
   padding-left: 2em;
   position: inherit;
 }
-button:before {
+/* button:before {
   content: '';
   position: absolute;
   top: 50%;
   left: 1em;
   width: 2px;
   height: 2px;
-  border: 3px solid white;
+  border: none;
   border-bottom: 0;
   margin-top: -9px;
   background: transparent;
@@ -236,26 +253,8 @@ button:after {
   border-width: 12px 4px 0;
   border-color: white transparent;
   margin-top: -4px;
-}
+} */
 button:hover {
   background-color: rgba(0, 0, 0, 0.15);
 }
 
-
-
-/* Location button */
-#locate{
-  background-color: whitesmoke;
-  border: 1px solid lightgrey;
-  box-shadow: inset 0 3px 5px rgba(0,0,0,.125);
-  position: relative;
-  margin-bottom: 0px;
-  /* display: inline-block; */
-  padding: 6px 12px;
-  font-size: 14px;
-  font-weight: 400;
-  /* line-height: 1.42857143; */
-  /* text-align: center; */
-  border-radius: 4px;
-  text-shadow: 0 1px 0 #fff;
-}

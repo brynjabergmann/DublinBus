@@ -1,21 +1,65 @@
 // Global variable for map
 var map;
+var directionsService;
+var directionsDisplay;
 var fromPlace = {};
 var toPlace = {};
 
-// Reference from https://developers.google.com/maps/documentation/javascript/adding-a-google-map
+// Map reference: https://developers.google.com/maps/documentation/javascript/adding-a-google-map
+// Direction reference: https://developers.google.com/maps/documentation/javascript/examples/directions-simple
 function initMap() {                                // Function that initialize and adds the map to the website
     var Dublin = {lat: 53.350140, lng: -6.266155}    // The location of Dublin
+    directionsService = new google.maps.DirectionsService;
+    directionsDisplay = new google.maps.DirectionsRenderer;
     map = new google.maps.Map(                      // The map, centered at Dublin
         document.getElementById('map'), {zoom: 12, center: Dublin});
+    directionsDisplay.setMap(map);
+    // var onChangeHandler = function() {
+    //     calculateAndDisplayRoute(directionsService, directionsDisplay);
+    //   };
+    //   document.getElementById("fromStation").addEventListener('change', onChangeHandler);
+    //   document.getElementById("toStation").addEventListener('change', onChangeHandler);
   }
 
-  function getLocation(){             // Function to get the users geo location
+  function getInputDateAsDateObject(){
+    var date = $("#datepicker input").val();
+    var time = $("#timePicker").val();
+    var dateArray = date.split("/");
+    console.log(`${dateArray[2]}/${dateArray[1]}/${dateArray[0]} ${time}`);
+    return new Date(`${dateArray[2]}/${dateArray[1]}/${dateArray[0]} ${time}`);
+  }
+
+  // Direction reference: https://developers.google.com/maps/documentation/javascript/examples/directions-simple
+  function calculateAndDisplayRoute(directionsService, directionsDisplay) {
+    // console.log($("#datepicker input").val());
+    var date = getInputDateAsDateObject();
+    console.log(date);
+    // console.log(date);
+    // console.log(`Date: ${date};;; Date: ${date.getDay()}::${date.getTime()}`);
+    directionsService.route({
+      origin: document.getElementById("fromStation").value,
+      destination: document.getElementById("toStation").value,
+      travelMode: "TRANSIT",
+      transitOptions: {
+        modes: ["BUS"],
+        // arrivalTime: Date,
+        departureTime: date,
+        routingPreference: "FEWER_TRANSFERS"
+      }
+    }, function(response, status) {
+      if (status === 'OK') {
+        console.log(response);
+        directionsDisplay.setDirections(response);
+      } else {
+        console.log('Directions request failed due to ' + status);
+      }
+    });
+  }
+
+  function getLocation($button){             // Function to get the users geo location
     //Reference: https://github.com/rodaine/jQuery-Geolocation/blob/master/demo.html
-    var $button = $('#locate');     
-    var $output = $('#output');     
+    // var $button = $(buttonID);//$('#locate');       
     var startCB = function() {      
-        $output.addClass('hide');
         $button
             .addClass('working')
             .attr('disabled', 'disabled'); 
@@ -39,11 +83,12 @@ function initMap() {                                // Function that initialize 
             animation: google.maps.Animation.DROP
         });
         marker.addListener('click', toggleBounce);
-        $output
-            // .html(location)
-            .removeClass('hide');
-            geoAddress(yourLocation);
-
+            if (this.id == "findLocationFrom") {
+                geoAddress(yourLocation, "#fromStation", true);
+            }
+            else {
+                geoAddress(yourLocation, "#toStation", false);
+            }
         // Reference: https://developers.google.com/maps/documentation/javascript/examples/marker-animations
         function toggleBounce() {
             if (marker.getAnimation() !== null) {
@@ -53,7 +98,6 @@ function initMap() {                                // Function that initialize 
             }
           }
     }
-
     $button.geolocate({
         onStart: startCB,
         onFinish: finishCB,
@@ -63,8 +107,13 @@ function initMap() {                                // Function that initialize 
     });
 };
 
-function geoAddress(location){
-    fromPlace = location;
+function geoAddress(location, inputID, isFromPlace){
+    if (isFromPlace) {
+        fromPlace = location;
+    }
+    else {
+        toPlace = location;
+    }
     var geocoder = new google.maps.Geocoder();
     // Reference: https://developers.google.com/maps/documentation/javascript/examples/geocoding-reverse
     geocoder.geocode({'location': location}, function(results, status){
@@ -78,10 +127,9 @@ function geoAddress(location){
                     return element.types.includes("postal_town");})["long_name"];
                 var country = results[0]["address_components"].find(function(element){
                         return element.types.includes("country", "political");})["long_name"];
-                $("#fromStation").val(`${route}, ${postalcode}, ${country}`);
-                }
+                $(inputID).val(`${route}, ${postalcode}, ${country}`);
+            }
         }
-        console.log(results[0]);
     });
 
 }
@@ -93,7 +141,6 @@ function autocomplete(){
     var inputTo = document.getElementById('toStation');
 
     function addAutocomplete(input, fromOrTo) {
-        console.log(input);
         var autocomplete = new google.maps.places.Autocomplete(input);
         // Bind the map's bounds (viewport) property to the autocomplete object,
             // so that the autocomplete requests use the current map bounds for the
@@ -179,6 +226,7 @@ function updateDropDown(element){
 
 function searchForRoute(){         // Function that searches the best routes from choosen points
     console.log("searching");
+    calculateAndDisplayRoute(directionsService, directionsDisplay);
     var object = new Object();
     object.From = { 
         Name: $("#fromStation").val(),
@@ -195,8 +243,8 @@ function searchForRoute(){         // Function that searches the best routes fro
     object.Bus = $("#Bus").val();
     const jsonString= JSON.stringify(object);
     console.log(jsonString);
-    getNearestBusStop({ lat: object.From.Lat, lng: object.From.Lng});
-    getNearestBusStop({ lat: object.To.Lat, lng: object.To.Lng});
+    // getNearestBusStop({ lat: object.From.Lat, lng: object.From.Lng});
+    // getNearestBusStop({ lat: object.To.Lat, lng: object.To.Lng});
     // Reference: https://api.jquery.com/jquery.post/
     $.post("/api/predictRoute", object, function(response) {
         console.log( "success" );
@@ -235,30 +283,32 @@ function setInitialClock(){
 function setEventListeners() {
     $("#searchButton").on("click", searchForRoute);
     $("#busStops").on("click", this.currentTarget, updateDropDown);
+    // $("#findLocationFrom").on("click", "#findLocationFrom",  getLocation);
+    // $("#findLocationTo").on("click", "#findLocationTo", getLocation);
 }
 
 
 // Function for the nearest bus stops
 // Reference: https://stackoverflow.com/questions/9340800/detect-the-nearest-transit-stop-from-the-given-location
-function getNearestBusStop(center){
+// function getNearestBusStop(center){
     
-    var callback = function(results, status) {
-        // console.log(results);
-        if (status == "OK") {
-            // for (var i = 0; i < results.length; i++) {
-            for (var i = 0; i < 3; i++) {
-                createMarker({ lat: results[i].geometry.location.lat(), lng: results[i].geometry.location.lng()});
-            }
-        }
-    }
-    var request = {
-        location: center,
-        radius: 250,
-        types: ["bus_station"]
-    };
-    service = new google.maps.places.PlacesService(map);
-    service.search(request, callback);
-}
+//     var callback = function(results, status) {
+//         // console.log(results);
+//         if (status == "OK") {
+//             // for (var i = 0; i < results.length; i++) {
+//             for (var i = 0; i < 5; i++) {
+//                 createMarker({ lat: results[i].geometry.location.lat(), lng: results[i].geometry.location.lng()});
+//             }
+//         }
+//     }
+//     var request = {
+//         location: center,
+//         radius: 1200,
+//         types: ["bus_station"]
+//     };
+//     service = new google.maps.places.PlacesService(map);
+//     service.search(request, callback);
+// }
 
 function createMarker(location) {
     var marker = new google.maps.Marker({
@@ -290,8 +340,8 @@ function predict(){
         temp: tempNow,
         rain: rainNow,
         route: $("#Bus").val(),
-        startStop: 792,
-        endStop: 769
+        startStop: 769,
+        endStop: 792
         // startStop: $("#fromBusStopNr").val(),
         // endStop: $("#toBusStopNr").val()
     };
@@ -572,7 +622,9 @@ $(window).on("load", function(){
     // insertBusStations();
     setInitialClock()
     fetchWeather();
-    getLocation();
+    getLocation($("#findLocationFrom"));
+    getLocation($("#findLocationTo"));
+    
     autocomplete();
     routesDropdown();
     $("#searchButton").on("click", predict);
