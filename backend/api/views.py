@@ -15,8 +15,8 @@ def current_weather(request):
     return JsonResponse(first_row_of_table_as_dict)
 
 def forecast(request):
-    values = json.loads(request.body.decode('utf-8'))
-    hour = values["hour"]
+
+    hour = dt.datetime.now().hour
     day = dt.datetime.today().weekday()
 
     with connection.cursor() as cursor:

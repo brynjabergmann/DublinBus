@@ -30,7 +30,7 @@ function makePredictionNow() {
 
 function makePredictionToday() {
     let data = {
-        hour: document.getElementById("time").value,
+        hour: hourNow,
         day: dayNow,
         temp: tempToday,
         rain: rainToday,
