@@ -6,4 +6,5 @@ urlpatterns = [
     path("make_prediction", views.make_prediction, name="make_prediction"),
     path("stop_location", views.stop_location, name="stop_location"),
     path("forecast", views.forecast, name="forecast"),
+    path("daily_forecast", views.daily_forecast, name="daily_forecast"),
 ]

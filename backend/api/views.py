@@ -26,8 +26,27 @@ def forecast(request):
         hour = row[1]
         temp = row[2]
         rain = row[3]
-        forecast = { "dow" : dow, "hour" : hour, "temp" : temp, "rain" : rain }   
+        forecast = {"dow": dow, "hour": hour, "temp": temp, "rain": rain}
         return JsonResponse(forecast)
+
+def daily_forecast(request):
+    # The user will be able to select a date, which will translate into day below
+    day = dt.datetime.today().weekday()
+    daily_forecast = []
+    for hour in range(24):
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT dow, hour, temp, precip_intensity from DarkSky_hourly_weather_prediction WHERE dow = %s AND hour = %s;",
+                [day, hour])
+            row = cursor.fetchone()
+            dow = row[0]
+            hour = row[1]
+            temp = row[2]
+            rain = row[3]
+            hourly_forecast = {"dow": dow, "hour": hour, "temp": temp, "rain": rain}
+            daily_forecast.append(hourly_forecast)
+    all_day_weather = {"all_day_weather": daily_forecast}
+    return JsonResponse(all_day_weather)
 
 @csrf_exempt    # Can remove in production, needed for testing
 def make_prediction(request):
