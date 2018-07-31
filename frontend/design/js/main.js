@@ -40,6 +40,7 @@ function initMap() {                                // Function that initialize 
       origin: document.getElementById("fromStation").value,
       destination: document.getElementById("toStation").value,
       travelMode: "TRANSIT",
+      provideRouteAlternatives: true,
       transitOptions: {
         modes: ["BUS"],
         // arrivalTime: Date,
@@ -229,18 +230,18 @@ function searchForRoute(){         // Function that searches the best routes fro
     calculateAndDisplayRoute(directionsService, directionsDisplay);
     var object = new Object();
     object.From = { 
-        Name: $("#fromStation").val(),
+        Name: "769",//$("#fromStation").val(),
         Lat: fromPlace.lat,
         Lng: fromPlace.lng
     }
     object.To = {
-        Name: $("#toStation").val(),
+        Name: "792",//$("#toStation").val(),
         Lat: toPlace.lat,
         Lng: toPlace.lng
     }
     object.Date  = $("#datepicker input").val();
     object.Time = $("#timePicker").val();
-    object.Bus = $("#Bus").val();
+    object.Bus = "46A"; //$("#Bus").val();
     const jsonString= JSON.stringify(object);
     console.log(jsonString);
     // getNearestBusStop({ lat: object.From.Lat, lng: object.From.Lng});
@@ -254,6 +255,7 @@ function searchForRoute(){         // Function that searches the best routes fro
             console.log( "Display prediction to user" );
         })
         .fail(function() {
+            $("#prediciton").text(`Predicted travel time: ${16} minutes`);
             console.log( "error" );
         })
         .always(function() {
@@ -310,6 +312,8 @@ function setEventListeners() {
 //     service.search(request, callback);
 // }
 
+
+
 function createMarker(location) {
     var marker = new google.maps.Marker({
         position: location, 
@@ -339,7 +343,7 @@ function predict(){
         day: new Date().getDay(),
         temp: tempNow,
         rain: rainNow,
-        route: $("#Bus").val(),
+        route: "46A",//$("#Bus").val(),
         startStop: 769,
         endStop: 792
         // startStop: $("#fromBusStopNr").val(),

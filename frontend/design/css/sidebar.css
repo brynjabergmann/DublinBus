@@ -87,8 +87,10 @@
 }
 
 /* Styling of the marker buttons */
-#menu-content > li:nth-child(3) > div > span.input-group-btn > button > img,
-#menu-content > li:nth-child(4) > div > span.input-group-btn > button > img {
+#findLocationFrom > button > img,
+#findLocationTo > button > img {
+/* #menu-content > li:nth-child(3) > div > span.input-group-btn > button > img,
+#menu-content > li:nth-child(4) > div > span.input-group-btn > button > img { */
   display: inline-block;
   height: 20px;
   padding: 0;
@@ -98,6 +100,10 @@
 }
 
 
+#findLocationFrom > button,
+#findLocationTo > button {
+  background: white;
+}
 
 
 

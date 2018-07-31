@@ -65,26 +65,27 @@
                             </span>
                         </div>
                     </li>
-                    <li>
+                    <!-- <li> -->
                     <!-- Reference: https://getbootstrap.com/docs/3.3/components/#input-groups -->
-                        <div class="bus">
+                        <!-- <div class="bus">
                             <div class="input-group">
                                 <div class="input-group-btn">
                                     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Bus <span class="caret"></span></button>
                                     <ul class="dropdown-menu busStations" id="busStops">
                                     </ul>
-                                </div><!-- /btn-group -->
+                                </div>
                                 <input type="text" class="form-control" aria-label="..." placeholder="Choose a bus number" id="Bus">
-                            </div><!-- /input-group -->
+                            </div>
                         </div>
-                    </li>
+                    </li> -->
                     <li>
                         
                         <div class="input-group">
                             <span class="input-group-addon">From</span>
-                            <input type="text" class="form-control" aria-label="Amount (to the nearest dollar)" placeholder="Choose a starting point..." id="fromStation">
+                            <input type="text" class="form-control" aria-label placeholder="Choose a starting point..." id="fromStation">
                             <span class="input-group-btn" id="findLocationFrom">
-                                <button class="btn btn-default" type="button">
+                                <!-- Hover text reference: https://getbootstrap.com/docs/4.1/components/tooltips/ -->
+                                <button class="btn btn-default" type="button" data-toggle="tooltip" data-placement="bottom" title="Find my location">
                                     <img src="./img/markerImage.JPG">
                                 </button>
                             </span>
@@ -93,9 +94,10 @@
                     <li>
                         <div class="input-group">
                             <span class="input-group-addon">To</span>
-                            <input type="text" class="form-control" aria-label="Amount (to the nearest dollar)" placeholder="Where do you want to go?" id="toStation">
+                            <input type="text" class="form-control" aria-label placeholder="Where do you want to go?" id="toStation">
                             <span class="input-group-btn" id="findLocationTo">
-                                <button class="btn btn-default" type="button">
+                                <!-- Hover text reference: https://getbootstrap.com/docs/4.1/components/tooltips/ -->
+                                <button class="btn btn-default" type="button" data-toggle="tooltip" data-placement="bottom" title="Find my location">
                                     <img src="./img/markerImage.JPG">
                                 </button>
                             </span>
