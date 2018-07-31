@@ -82,7 +82,7 @@ def make_prediction(request):
         row = cursor.fetchone()
         last_stop = row[0]
 
-    with open(f"api/models/GBR_March_2017_{values['route']}_{direction}.pkl", "rb") as f:
+    with open(f"api/models/GBR_school_2017_{values['route']}_{direction}.pkl", "rb") as f:
         cucumber = pickle.load(f)
 
     model = cucumber[0]

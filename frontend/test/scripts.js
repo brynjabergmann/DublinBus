@@ -162,9 +162,10 @@ function drawChart() {
             title: "Time of Day"
         },
         legend: {
-            position: 'in'
+            position: 'out'
         },
         vAxis: {
+			viewWindowMode: 'maximized',
             format: 'decimal',
             title: '\nJourney Time (mins)',
             gridlines: {
