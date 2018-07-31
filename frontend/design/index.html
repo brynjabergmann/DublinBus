@@ -46,7 +46,7 @@
         <div id="sidebar" class="nav-side-menu">
             <div id="header">
                 <div class="brand"> Dublin Bus </div>
-                <img class="img-responsive" img src="../img/websitelogo.png" style="width:62px; height:30px;">
+                <img class="img-responsive" img src="./img/websitelogo.png" style="width:62px; height:30px;">
             </div>
             <i class="fa fa-bars fa-2x toggle-btn" data-toggle="collapse" data-target="#menu-content">
                 <span class="glyphicon glyphicon-menu-hamburger"></span>
@@ -65,46 +65,42 @@
                             </span>
                         </div>
                     </li>
-                    <li>
-                            <!-- https://github.com/rodaine/jQuery-Geolocation/blob/master/demo.html -->
-                        <button id="locate">Find my location</button>
-                        <div id="output" class="hide"></div>
-                    </li>
-                    <li>
+                    <!-- <li> -->
                     <!-- Reference: https://getbootstrap.com/docs/3.3/components/#input-groups -->
-                        <div class="bus">
+                        <!-- <div class="bus">
                             <div class="input-group">
                                 <div class="input-group-btn">
                                     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Bus <span class="caret"></span></button>
                                     <ul class="dropdown-menu busStations" id="busStops">
                                     </ul>
-                                </div><!-- /btn-group -->
-                                <input type="text" class="form-control" aria-label="..." placeholder="Choose a bus number"id="Bus">
-                            </div><!-- /input-group -->
+                                </div>
+                                <input type="text" class="form-control" aria-label="..." placeholder="Choose a bus number" id="Bus">
+                            </div>
+                        </div>
+                    </li> -->
+                    <li>
+                        
+                        <div class="input-group">
+                            <span class="input-group-addon">From</span>
+                            <input type="text" class="form-control" aria-label placeholder="Choose a starting point..." id="fromStation">
+                            <span class="input-group-btn" id="findLocationFrom">
+                                <!-- Hover text reference: https://getbootstrap.com/docs/4.1/components/tooltips/ -->
+                                <button class="btn btn-default" type="button" data-toggle="tooltip" data-placement="bottom" title="Find my location">
+                                    <img src="./img/markerImage.JPG">
+                                </button>
+                            </span>
                         </div>
                     </li>
                     <li>
-                        <div class="fromto">
-                            <div class="input-group">
-                                <div class="input-group-btn">
-                                    <button type="button" class="btn btn-default" aria-haspopup="true" aria-expanded="false"> From </button>
-                                    <ul class="dropdown-menu busStations" id="fromStations">
-                                    </ul>
-                                </div><!-- /btn-group -->
-                                <input type="text" class="form-control" aria-label="..." placeholder="Choose a starting point..." id="fromStation">
-                            </div><!-- /input-group -->
-                        </div>
-                    </li>
-                    <li>
-                        <div class="fromto">
-                            <div class="input-group">
-                                <div class="input-group-btn">
-                                    <button type="button" class="btn btn-default" aria-haspopup="true" aria-expanded="false"> To </button>
-                                    <ul class="dropdown-menu busStations" id="toStations">
-                                    </ul>
-                                </div><!-- /btn-group -->
-                                <input type="text" class="form-control" aria-label="..." placeholder="Where do you want to go?"id="toStation">
-                            </div><!-- /input-group -->
+                        <div class="input-group">
+                            <span class="input-group-addon">To</span>
+                            <input type="text" class="form-control" aria-label placeholder="Where do you want to go?" id="toStation">
+                            <span class="input-group-btn" id="findLocationTo">
+                                <!-- Hover text reference: https://getbootstrap.com/docs/4.1/components/tooltips/ -->
+                                <button class="btn btn-default" type="button" data-toggle="tooltip" data-placement="bottom" title="Find my location">
+                                    <img src="./img/markerImage.JPG">
+                                </button>
+                            </span>
                         </div>
                     </li>
                     <li>
@@ -143,6 +139,9 @@
                         <!-- Search button -->
                         <button id="searchButton" class="btn btn-default rounded" type="button"><span class="glyphicon glyphicon-search"></span> Search </button>
                     </li>
+                    <li>
+                        <h4 id="prediciton"></h4>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -169,7 +168,7 @@
     <script src="./js/libraries/skycons.js"></script>
     <script src="./js/main.js"></script>
     <script async defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBUgHP1nB5Nsm9k8IELrBRMpSSueJYA0r4&callback=initMap&libraries=places"></script>
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDEWv4XhuIyEp2ckIF3Bfbuwiu8OzYGjDo&callback=initMap&libraries=places"></script>
 
   </body>
 </html>
