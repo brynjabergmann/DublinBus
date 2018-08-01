@@ -58,9 +58,7 @@ function chartValues() {
 			});
 			
 	}
-	console.log(predictions);
 }
-
 
 function getLatestWeather() {
     fetch("https://dublinbus.icu/api/current_weather")
@@ -85,7 +83,6 @@ function dailyForecast() {
         })
         .then(function(all_day_weather) {
             daily_forecast = all_day_weather["all_day_weather"]
-		    console.log(daily_forecast[5]);
         })
 }
 
@@ -125,28 +122,29 @@ google.charts.load('current', {
 });
 
 function drawChart() {
-    let data = google.visualization.arrayToDataTable([
-        ['Hour of Day', 'Journey Length (mins)'],
-        ['5 AM', predictions[0]],
-        ['6 AM', predictions[1]],
-        ['7 AM', predictions[2]],
-        ['8 AM', predictions[3]],
-        ['9 AM', predictions[4]],
-        ['10 AM', predictions[5]],
-        ['11 AM', predictions[6]],
-        ['12 Noon', predictions[7]],
-        ['1 PM', predictions[8]],
-        ['2 PM', predictions[9]],
-        ['3 PM', predictions[10]],
-        ['4 PM', predictions[11]],
-        ['5 PM', predictions[12]],
-        ['6 PM', predictions[13]],
-        ['7 PM', predictions[14]],
-        ['8 PM', predictions[15]],
-        ['9 PM', predictions[16]],
-        ['10 PM', predictions[17]],
-        ['11 PM', predictions[18]]
-    ]);
+	let data = new google.visualization.DataTable();
+	data.addColumn('string', 'Hour');
+    data.addColumn('number', 'Minutes');
+	data.addColumn({role: 'style', type: 'string'});
+	let i;	
+	let now = hourNow - 5;
+	let zone;
+	let color;
+	for (i = 0; i < 19; i++) {
+		time = (i + 5) % 12;
+		if(time == 0)
+			time = "12"
+		if(i < 7)
+			zone = "AM";
+		else
+			zone = "PM";
+		if(i == now)
+			color = "#6699FF";
+		else
+			color = "silver";
+		data.addRow([time +' '+ zone, predictions[i], 'color: ' + color+ ';']);
+
+		};
 
     let options = {
         animation: {
@@ -162,7 +160,7 @@ function drawChart() {
             title: "Time of Day"
         },
         legend: {
-            position: 'out'
+            position: 'none'
         },
         vAxis: {
 			viewWindowMode: 'maximized',
@@ -171,15 +169,13 @@ function drawChart() {
             gridlines: {
                 color: 'transparent'
             }
-        },
-        lineWidth: 10,
-        colors: ['#6699FF'],
-        is3D: true
+        }
     };
 
-    let chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+    let chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
 
     chart.draw(data, options);
+	predictions = [];
 }
 
 
