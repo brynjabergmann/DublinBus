@@ -14,6 +14,16 @@
         <button onclick="makePredictionNow()">Make Prediction for right now</button>
 		<button onclick="chartValues()">Predictions for chart values</button>
 		<button onclick="drawChart()">Chart display</button>
+        <br><br>
+        <form>
+            To time your route, enter your route and stop numbers above, then enter your name here:<br>
+            <input id="userName" type="text" value=""><br>
+            Then click here once you have boarded your bus:<br>
+            <button onclick="startTimer()">Start Timer</button>
+            <br><br>
+            To stop your timer, enter your name above and click here:<br>
+            <button onclick="stopTimer()">Stop Timer</button>
+        </form>
         <div id="prediction">
             <!-- This will be filled in when a prediction is received the server -->
         </div>
