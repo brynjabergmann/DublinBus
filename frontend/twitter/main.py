@@ -110,7 +110,7 @@ def banner_tweets_regex():
             n_details.append(dublin_tweets_raw[i])
             n_roads.append(n_details)
 
-        elif m_regex.group(1):
+        elif m_regex.group(1): 
             # m_regex.group()
             # 1 = whole matched statement e.g. M50 southbound at J6
             # 2 = road name e.g. M50
