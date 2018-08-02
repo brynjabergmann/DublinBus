@@ -65,59 +65,81 @@ def banner_tweets_regex():
     current_day = str(time.strftime("%a"))
 
     for t in tweets:
+        fixed_traffic_details = []
         m = re.search('(?:)((C|c)leared|((n|N)(o|O) (F|f)urther)|(R|r)eopened)|((M|m)oved)(?:)', t.text)
         if m and t.text.startswith("#DUBLIN") and t.created_at.startswith(current_day):
-            fixed_traffic.append(t.text)
+            reg = re.search(r'(?:\bon the\b\s|\bon\b\s|from\s|in\s)(.*)\. More|\.', t.text)
+            if reg:
+                fixed_traffic_details.append(reg.group(1))
+                fixed_traffic_details.append(t.text)
+                fixed_traffic.append(fixed_traffic_details)
+                print(t.text, 0)
+                print(reg.group(1))
         elif t.text.startswith("#DUBLIN") and t.created_at.startswith(current_day):
             dublin_tweets_lower.append(t.text.lower())
             dublin_tweets_raw.append(t.text)
         else:
             pass
         i += 1
-    #roads_regex = re.findall('?:((on the)|(at the)|(\bon)|(\bat)|(i\bn)))(.*)(?:(\. More)|(\.)', dublin_tweets_raw[1])
     roads = []
     m_roads = []
     n_roads = []
-    m_test = np.empty()
-    tt = np.empty(5, 5, dtype=string, order='C')
-    pprint.pprint(tt)
+    m_test = []
     for i in range(len(dublin_tweets_raw)):
+        m_details = []
+        n_details = []
+        roads_details = []
         n_regex = re.search(r'\bon the\b|\bon\b ((N\d+|N\d+\/M\d+)(?:.*)(J\d+)*)', dublin_tweets_raw[i])
         m_regex = re.search(
-            r'\bon the\b|\bon\b ((N\d+|M50)\s+(northbound|southbound|at)(?:\.|\s+|\s+at\s+|.*)(J\d+)*)\.\s+More|\.',
+            r'\bon the\b\s|\bon\b\s((N\d+|M50)\s+(northbound|southbound|at|.*)(?:\.|\s+|\s+at\s+|.*)(J\d+)*)\.\s+More|\.',
             dublin_tweets_raw[i])
         roads_regex = re.search(r'(?:\bon the\b\s|\bon\b\s)(.*)\. More|\.', dublin_tweets_raw[i])
         test = "#DUBLIN Incident on M50 at J6. More here: https://t.co/PSzIBsvOzE"
 
 
-        print(dublin_tweets_raw[i])
         if n_regex and n_regex.group(1):
             n_roads.append(n_regex.group(0))
             # n_regex.group()
             # 1 = whole matched statement
             # 2 = road name
             # 4 = junction
+
+            n_details.append(m_regex.group(2))
+            n_details.append(m_regex.group(4))
+            n_details.append(m_regex.group(1))
+            n_details.append(dublin_tweets_raw[i])
+            n_roads.append(n_details)
+
         elif m_regex.group(1):
             # m_regex.group()
             # 1 = whole matched statement e.g. M50 southbound at J6
             # 2 = road name e.g. M50
             # 3 = direction e.g southbound
             # 4 = junction
-            m_roads.append(m_regex.group(2))
-            m_test[i].append(m_regex.group(2))
-            m_test[i].append(m_regex.group(3))
-            m_test[i].append(m_regex.group(4))
-            m_test[i].append(m_regex.group(1))
+
+            m_details.append(m_regex.group(2))
+            m_details.append(m_regex.group(3))
+            m_details.append(m_regex.group(4))
+            m_details.append(m_regex.group(1))
+            m_details.append(dublin_tweets_raw[i])
+            m_roads.append(m_details)
+
         elif roads_regex.group(1):
-            roads.append(roads_regex.group(1))
+            roads_details.append(roads_regex.group(1))
+            roads_details.append(dublin_tweets_raw[i])
+            roads.append(roads_details)
         else:
             pass
-    pprint.pprint(dublin_tweets_raw)
+
+    #for i in range(len(fixed_traffic)):
+        #print(i)
+
+    #pprint.pprint(dublin_tweets_raw)
     pprint.pprint(fixed_traffic)
     pprint.pprint(roads)
-    pprint.pprint(m50)
-    pprint.pprint(n_roads)
-
+    #pprint.pprint(m_roads)
+    #pprint.pprint(n_roads)
+    pprint.pprint(m_roads)
     return roads
 # fixed tweets and roads > contained in then delete both
 
