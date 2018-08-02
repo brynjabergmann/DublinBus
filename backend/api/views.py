@@ -138,3 +138,24 @@ def stop_timer(request):
     percentage = round(((actual-prediction)/prediction) * 100, 2)
 
     return JsonResponse({"prediction": prediction, "actual": actual, "percentage": percentage})
+
+@csrf_exempt
+def fare_finder(trip, stages):
+    # Do not use this function for any Xpress service and route 90
+    # Xpress services charge leap at 2.90 and cash at 3.65
+    # Route 90 charges leap at 1.50 and cash at 2.10
+    leap = "€2.15"
+    cash = "€2.85"
+    stages = len(list(set(trip).intersection(stages)))
+    if stages < 4:
+        leap = "€1.50"
+        cash = "€2.10"
+    if stages > 12:
+        leap = "€2.60"
+        cash = "€3.30"
+    return([leap, cash])
+
+
+
+
+
