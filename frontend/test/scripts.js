@@ -6,7 +6,8 @@ function makePredictionNow() {
         rain: rainNow,
         route: document.getElementById("routesDropdown").value,
         startStop: document.getElementById("firstStop").value,
-        endStop: document.getElementById("lastStop").value
+        endStop: document.getElementById("lastStop").value,
+        username: document.getElementById("userName").value
     };
 
     fetch("https://dublinbus.icu/api/make_prediction", {
@@ -178,6 +179,23 @@ function drawChart() {
 	predictions = [];
 }
 
+function stopTimer(){
+    fetch("https://dublinbus.icu/api/stop_timer", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json; charset=utf-8"
+        },
+        referrer: "no-referrer",
+        body: JSON.stringify({username: document.getElementById("userName").value})
+    }).then(function(response){
+        return response.json();
+    }).then(function(timerResult){
+        document.getElementById("prediction").innerHTML = `Predicted Time was <b>${timerResult["prediction"]}</b> minutes.<br>Actual time was <b>${timerResult["actual"]}</b> minutes.<br> This is an error of ${timerResult["percentage"]}%`
+    }).catch(function() {
+        document.getElementById("prediction").innerHTML = "Prediction server not available."
+    });
+}
+
 
 // Taken directly from Brynja's map code:
 
@@ -190,7 +208,7 @@ function initMap() { // Function that initialize and adds the map to the website
     var Dublin = {
         lat: 53.349805,
         lng: -6.290310
-    } // The location of Dublin
+    }; // The location of Dublin
     map = new google.maps.Map( // The map, centered at Dublin
         document.getElementById('map'), {
             zoom: 12,
