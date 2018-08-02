@@ -91,8 +91,18 @@ def make_prediction(request):
     end_to_end = int(round(model.predict(prediction_inputs)[0]))    # Predict time from start to finish
 
     segment = int(end_to_end * ((last_stop - first_stop) / max_stops))
-    prediction = {"result": segment}
 
+    # # # # # # # # # # # # # # # # # # # # # # # #
+    # TODO: THIS IS FOR EVALUATION PURPOSES ONLY  #
+    # TODO: AND SHOULD BE REMOVED BEFORE RELEASE  #
+    # # # # # # # # # # # # # # # # # # # # # # # #
+
+    if values["username"]:
+        with open(f"{values['username'].lower()}_timer.txt", "w") as f:
+            f.write(f"{segment}\n")
+            f.write(f"{round(dt.datetime.timestamp(dt.datetime.now()))}\n")
+
+    prediction = {"result": segment, "message": f"Thank you {values['username']}; enjoy your trip!"}
     return JsonResponse(prediction)
 
 
@@ -114,3 +124,17 @@ def stop_location(request):
         lng = row[1]
 
     return JsonResponse({"lat": lat, "lng": lng})
+
+
+@csrf_exempt
+def stop_timer(request):
+    username = json.loads(request.body.decode("utf-8"))["username"]
+
+    with open(f"{username.lower()}_timer.txt") as f:
+        x = f.readlines()
+
+    prediction = int(x[0])
+    actual = round((dt.datetime.timestamp(dt.datetime.now()) - int(x[1])) / 60)
+    percentage = round(((actual-prediction)/prediction) * 100, 2)
+
+    return JsonResponse({"prediction": prediction, "actual": actual, "percentage": percentage})
