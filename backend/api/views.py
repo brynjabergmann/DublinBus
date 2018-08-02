@@ -98,11 +98,11 @@ def make_prediction(request):
     # # # # # # # # # # # # # # # # # # # # # # # #
 
     if values["username"]:
-        with open(f"{values['username']}_timer.txt", "w") as f:
+        with open(f"{values['username'].lower()}_timer.txt", "w") as f:
             f.write(f"{segment}\n")
             f.write(f"{round(dt.datetime.timestamp(dt.datetime.now()))}\n")
 
-    prediction = {"result": segment, "": f"Thank you {values['username']}; enjoy your trip!"}
+    prediction = {"result": segment, "message": f"Thank you {values['username']}; enjoy your trip!"}
     return JsonResponse(prediction)
 
 
@@ -130,10 +130,11 @@ def stop_location(request):
 def stop_timer(request):
     username = json.loads(request.body.decode("utf-8"))["username"]
 
-    with open(f"{username}_timer.txt") as f:
+    with open(f"{username.lower()}_timer.txt") as f:
         x = f.readlines()
 
-    prediction = x[0]
-    actual = (dt.datetime.timestamp(dt.datetime.now()) - int(x[1])) / 60
+    prediction = int(x[0])
+    actual = round((dt.datetime.timestamp(dt.datetime.now()) - int(x[1])) / 60)
+    percentage = round(((actual-prediction)/prediction) * 100, 2)
 
-    return JsonResponse({"prediction": prediction, "actual": actual})
+    return JsonResponse({"prediction": prediction, "actual": actual, "percentage": percentage})
