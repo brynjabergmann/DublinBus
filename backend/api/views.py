@@ -19,8 +19,8 @@ def current_weather(request):
     try:
         first_row_of_table_as_dict = weather.objects.all().order_by("-timestamp")[:1].values()[0]
         return JsonResponse(first_row_of_table_as_dict)
-    except CurrentWeatherError:
-        client.captureException()
+    except:
+        client.captureMessage("There is an error with the current_weather request method")
 
 
 def forecast(request):
@@ -37,8 +37,8 @@ def forecast(request):
             rain = row[3]
             forecast = {"dow": dow, "hour": hour, "temp": temp, "rain": rain}
             return JsonResponse(forecast)
-    except ForecastWeatherError:
-        client.captureException()
+    except:
+        client.captureMessage("There has been an error with the forecast request method")
 
 def daily_forecast(request):
     # The user will be able to select a date, which will translate into day below
@@ -59,16 +59,18 @@ def daily_forecast(request):
                 daily_forecast.append(hourly_forecast)
         all_day_weather = {"all_day_weather": daily_forecast}
         return JsonResponse(all_day_weather)
-    except DailyForecastError:
-        client.captureException()
+    except:
+        client.captureMessage("There has been an error with the daily_forecast request method"
 
 
 @csrf_exempt    # Can remove in production, needed for testing
 def make_prediction(request):
     try:
         # Convert JSON string passed by browser to Python dictionary:
-        values = json.loads(request.body.decode('utf-8'))
-
+        try:
+            values = json.loads(request.body.decode('utf-8'))
+        except:
+            client.captureMessage("Error with loading json string")
         # Quick way to convert JS's day of week into a categorical feature:
         days_list = [0, 0, 0, 0, 0, 0, 0]
         days_list[values["day"]] = 1
@@ -88,18 +90,27 @@ def make_prediction(request):
         })
 
         with connection.cursor() as cursor:
-            cursor.execute("SELECT direction, stop_on_route FROM combined_2017 WHERE line_id = %s AND stop_number = %s LIMIT 1;", [values["route"], values["startStop"]])
-            row = cursor.fetchone()
-            direction = row[0]
-            first_stop = row[1]
+            try:
+                cursor.execute("SELECT direction, stop_on_route FROM combined_2017 WHERE line_id = %s AND stop_number = %s LIMIT 1;", [values["route"], values["startStop"]])
+                row = cursor.fetchone()
+                direction = row[0]
+                first_stop = row[1]
+            except:
+                client.captureMessage("Error with making selection from database. Potentially a key error")
 
             # Get last stop progression number
-            cursor.execute("SELECT stop_on_route FROM combined_2017 WHERE line_id = %s AND stop_number = %s LIMIT 1;", [values["route"], values["endStop"]])
-            row = cursor.fetchone()
-            last_stop = row[0]
+            try:
+                cursor.execute("SELECT stop_on_route FROM combined_2017 WHERE line_id = %s AND stop_number = %s LIMIT 1;", [values["route"], values["endStop"]])
+                row = cursor.fetchone()
+                last_stop = row[0]
+            except:
+                client.captureMessage("Error retrieving last stop progression number")
 
-        with open(f"api/models/GBR_school_2017_{values['route']}_{direction}.pkl", "rb") as f:
-            cucumber = pickle.load(f)
+        try:
+            with open(f"api/models/GBR_school_2017_{values['route']}_{direction}.pkl", "rb") as f:
+                cucumber = pickle.load(f)
+        except:
+            client.captureMessage("Error loading picke file")
 
         model = cucumber[0]
         max_stops = cucumber[1]
@@ -120,9 +131,10 @@ def make_prediction(request):
 
         prediction = {"result": segment, "message": f"Thank you {values['username']}; enjoy your trip!"}
         return JsonResponse(prediction)
-    except TestMakePredictionError:
-        client.captureException()
-
+    except KeyError:
+        pass
+    except:
+        client.clientMessage("An error has occurred in make_prediction")
 
 
 @csrf_exempt
@@ -130,6 +142,9 @@ def stop_location(request):
 
     try:
         values = json.loads(request.body.decode('utf-8'))
+    except:
+        client.captureMessage("Error loading json string")
+
         with connection.cursor() as cursor:
             cursor.execute("SELECT lat, `long` FROM static_bus_data WHERE stoppointid = %s LIMIT 1", [int(values["stop"])])
             row = cursor.fetchone()
@@ -137,8 +152,8 @@ def stop_location(request):
             lng = row[1]
 
         return JsonResponse({"lat": lat, "lng": lng})
-    except StopLocationRequestError:
-        client.captureException()
+    except:
+        client.captureMessage("Error in stop_location request method")
 
 
 @csrf_exempt
@@ -146,7 +161,8 @@ def stop_timer(request):
 
     try:
         username = json.loads(request.body.decode("utf-8"))["username"]
-
+    except:
+        client.captureMessage("Error loading json string for username")
         with open(f"{username.lower()}_timer.txt") as f:
             x = f.readlines()
 
@@ -155,8 +171,8 @@ def stop_timer(request):
         percentage = round(((actual-prediction)/prediction) * 100, 2)
 
         return JsonResponse({"prediction": prediction, "actual": actual, "percentage": percentage})
-    except StopTimerRequestError:
-        client.captureException()
+    except:
+        client.captureMessage("Error with stop_timer request method")
 
 
 @csrf_exempt
@@ -175,8 +191,8 @@ def fare_finder(trip, stages):
             leap = "€2.60"
             cash = "€3.30"
         return([leap, cash])
-    except FareFinderError:
-        client.captureException()
+    except:
+        client.captureMessage("Error in fare_finder method")
 
 
 
