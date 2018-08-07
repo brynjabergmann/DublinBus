@@ -72,8 +72,15 @@ def get_proportion(bus_route: str, first_stop: int, last_stop: int, max_stops: i
 
 def get_direction(bus_route: str, bus_stop: int):
     with connection.cursor() as cursor:
-        cursor.execute("SELECT direction FROM combined_2017 WHERE line_id = %s AND stop_number = %s LIMIT 1;", [bus_route, bus_stop])
-        return cursor.fetchone()[0]
+        cursor.execute("SELECT stop_on_route, direction FROM combined_2017 WHERE line_id = %s AND stop_number = %s LIMIT 1;", [bus_route, bus_stop])
+        possible_directions = cursor.fetchall()
+        stop_on_route = 1000000
+        direction = 0
+        for result in possible_directions:
+            if result[0] < stop_on_route:
+                stop_on_route = result[0]
+                direction = result[1]
+        return direction
 
 
 def get_weather(timestamp: int):
