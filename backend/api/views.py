@@ -22,30 +22,32 @@ def main(values: dict):  # TODO: Modify to use Request
     temperature = weather[0]
     precipitation = weather[2]
 
-    options = []
+    paths = []
     for first_stop in first_stop_list:
         for last_stop in last_stop_list:
-            for option in find_route(first_stop, last_stop):
-                options.append(option)
+            for path in find_route(first_stop, last_stop):
+                paths.append(path)
 
     timings = []
-    for option in options:
+    for path in paths:
         total_time = 0
-        routes = [*option]
-        for i in range(len(routes)):
-            bus_route = routes[i]
+        bus_routes_on_path = [*path]
+        for i in range(len(bus_routes_on_path)):
+            bus_route = bus_routes_on_path[i]
 
             if "walk" in bus_route:
-                total_time += option[i]
+                total_time += path[i]
             else:
+                direction = get_direction(bus_route, path[bus_route][0])
                 prediction = end_to_end_prediction(dt.datetime.fromtimestamp(user_time).weekday(),
                                                     dt.datetime.fromtimestamp(user_time - (user_time % 3600) + 3600).hour,  # TODO: This + 3600 is some DST fuckery that will ideally need to be dealt with.
                                                     temperature,
                                                     precipitation,
                                                     bus_route,
-                                                    get_direction(bus_route, option[bus_route][0]),
+                                                    direction,
                                                     True)
-                total_time += int(prediction[0] * get_proportion(bus_route, option[bus_route][0], option[bus_route][1], prediction[1]))
+                proportion = get_proportion(prediction[0], bus_route, direction, path[bus_route][0], path[bus_route][1], prediction[1])
+                total_time += proportion
         timings.append(total_time)
 
     best_route_index = 0
@@ -55,19 +57,19 @@ def main(values: dict):  # TODO: Modify to use Request
             best_route_index = index
             fastest_time = value
 
-    return [fastest_time, options[best_route_index]]
+    return [fastest_time, paths[best_route_index]]
 
 
-def get_proportion(bus_route: str, first_stop: int, last_stop: int, max_stops: int):
+def get_proportion(end_to_end: int, bus_route: str, direction: int, first_stop: int, last_stop: int, max_stops: int):
     # TODO: Use calculated proportions - Further experiments needed.
     with connection.cursor() as cursor:
-        cursor.execute("SELECT stop_on_route FROM combined_2017 WHERE line_id = %s AND stop_number = %s LIMIT 1;", [bus_route, first_stop])
+        cursor.execute("SELECT stop_on_route FROM combined_2017 WHERE line_id = %s AND stop_number = %s AND direction = %s LIMIT 1;", [bus_route, first_stop, direction])
         stop_one = cursor.fetchone()[0]
 
-        cursor.execute("SELECT stop_on_route FROM combined_2017 WHERE line_id = %s AND stop_number = %s LIMIT 1;", [bus_route, last_stop])
+        cursor.execute("SELECT stop_on_route FROM combined_2017 WHERE line_id = %s AND stop_number = %s AND direction = %s LIMIT 1;", [bus_route, last_stop, direction])
         stop_two = cursor.fetchone()[0]
 
-    return (stop_two - stop_one) / max_stops
+    return int(end_to_end * ((stop_two - stop_one) / max_stops))
 
 
 def get_direction(bus_route: str, bus_stop: int):
@@ -97,23 +99,38 @@ def get_weather(timestamp: int):
             return cursor.fetchone()
 
 
-def end_to_end_prediction(day_of_week: int, hour_of_day: int, temperature: int, precipitation: float, bus_route: str, direction: int, school: bool):
+def end_to_end_prediction(day_of_week: int, hour_of_day: int, temperature: float, precipitation: float, bus_route: str, direction: int, school: bool):
     # Quick way to convert JS's day of week into a categorical feature:
     days_list = [0, 0, 0, 0, 0, 0, 0]
     days_list[day_of_week] = 1
 
     # Create a pandas dataframe to be fed into the prediction model
+    # prediction_inputs = pd.DataFrame({
+    #     "avg_H": [hour_of_day],
+    #     "DOW_Monday": [days_list[0]],
+    #     "DOW_Tuesday": [days_list[1]],
+    #     "DOW_Wednesday": [days_list[2]],
+    #     "DOW_Thursday": [days_list[3]],
+    #     "DOW_Friday": [days_list[4]],
+    #     "DOW_Saturday": [days_list[5]],
+    #     "DOW_Sunday": [days_list[6]],
+    #     "temp": [temperature],
+    #     "precip_intensity": [precipitation]
+    # })
+
+    bus_route = "46A"
+    direction = 1
     prediction_inputs = pd.DataFrame({
-        "avg_H": [hour_of_day],
-        "DOW_Monday": [days_list[0]],
-        "DOW_Tuesday": [days_list[1]],
-        "DOW_Wednesday": [days_list[2]],
-        "DOW_Thursday": [days_list[3]],
-        "DOW_Friday": [days_list[4]],
-        "DOW_Saturday": [days_list[5]],
-        "DOW_Sunday": [days_list[6]],
-        "temp": [temperature],
-        "precip_intensity": [precipitation]
+        "avg_H": [9],
+        "DOW_Monday": [0],
+        "DOW_Tuesday": [1],
+        "DOW_Wednesday": [0],
+        "DOW_Thursday": [0],
+        "DOW_Friday": [0],
+        "DOW_Saturday": [0],
+        "DOW_Sunday": [0],
+        "temp": [12],
+        "precip_intensity": [0.0]
     })
 
     with open(f"api/models/GBR_school_2017_{bus_route}_{direction}.pkl", "rb") as f:
@@ -121,8 +138,8 @@ def end_to_end_prediction(day_of_week: int, hour_of_day: int, temperature: int, 
 
     model = cucumber[0]
     max_stops = cucumber[1]
-
-    return [int(round(model.predict(prediction_inputs)[0])), max_stops]    # Predict time from start to finish
+    prediction_minutes = int(round(model.predict(prediction_inputs)[0]))
+    return [prediction_minutes, max_stops]    # Predict time from start to finish
 
 
 def find_route(first_stop: int, last_stop: int):
@@ -143,11 +160,8 @@ def find_route(first_stop: int, last_stop: int):
                 cursor.execute()
 
 
-try:
-    answer = main({"firstStops": [768], "lastStops": [792], "timestamp": 1533593639})
-    print(answer)
-except:
-    print()
+answer = main({"firstStops": [747], "lastStops": [760], "timestamp": 1533644832})
+print(answer)
 
 
 
