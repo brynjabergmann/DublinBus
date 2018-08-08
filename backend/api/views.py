@@ -8,9 +8,9 @@ import pandas as pd
 import os
 import sklearn
 import datetime as dt
-# from raven import Client
+from raven import Client
 
-# client = Client('https://1e979ddecb1641ce81a0468314902d26:e894e38ec1f64c43af6876f76a3d2959@sentry.io/1249736')
+client = Client('https://1e979ddecb1641ce81a0468314902d26:e894e38ec1f64c43af6876f76a3d2959@sentry.io/1249736')
 
 
 def predict(values: dict):
