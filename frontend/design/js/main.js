@@ -1,81 +1,146 @@
-// Global variable for map
+// Global variables
 var map;
-var directionsService;
-var directionsDisplay;
-var fromPlace = {};
+var directionsService; // Find directions from a to b
+var directionsDisplay; // Displays route on map
+var fromPlace = {}; 
 var toPlace = {};
+
+
 
 // Map reference: https://developers.google.com/maps/documentation/javascript/adding-a-google-map
 // Direction reference: https://developers.google.com/maps/documentation/javascript/examples/directions-simple
-function initMap() {                                // Function that initialize and adds the map to the website
-    var Dublin = {lat: 53.350140, lng: -6.266155}    // The location of Dublin
+
+// Function that initialize and adds the map to the website
+function initMap() {                                
+    var Dublin = {lat: 53.350140, lng: -6.266155}
     directionsService = new google.maps.DirectionsService;
     directionsDisplay = new google.maps.DirectionsRenderer;
-    map = new google.maps.Map(                      // The map, centered at Dublin
+    map = new google.maps.Map(                      
         document.getElementById('map'), {zoom: 12, center: Dublin});
-    directionsDisplay.setMap(map);
-    // var onChangeHandler = function() {
-    //     calculateAndDisplayRoute(directionsService, directionsDisplay);
-    //   };
-    //   document.getElementById("fromStation").addEventListener('change', onChangeHandler);
-    //   document.getElementById("toStation").addEventListener('change', onChangeHandler);
+    directionsDisplay.setMap(map);                  // Connect route display to map
+    console.log(directionsDisplay);
+    console.log(directionsDisplay.routes)
   }
 
-  function getInputDateAsDateObject(){
-    var date = $("#datepicker input").val();
+ 
+
+// Function that gets the date and time and turns it around 
+function getInputDateAsDateObject(){
+    var date = $("#datepicker input").val();  
     var time = $("#timePicker").val();
     var dateArray = date.split("/");
-    console.log(`${dateArray[2]}/${dateArray[1]}/${dateArray[0]} ${time}`);
+    // JavaScript needs date objects to have format yyyy/mm/dd hh:mm
     return new Date(`${dateArray[2]}/${dateArray[1]}/${dateArray[0]} ${time}`);
   }
 
+
+
   // Direction reference: https://developers.google.com/maps/documentation/javascript/examples/directions-simple
+
+  // Function that calculates and displays routes
   function calculateAndDisplayRoute(directionsService, directionsDisplay) {
-    // console.log($("#datepicker input").val());
     var date = getInputDateAsDateObject();
-    console.log(date);
-    // console.log(date);
-    // console.log(`Date: ${date};;; Date: ${date.getDay()}::${date.getTime()}`);
     directionsService.route({
       origin: document.getElementById("fromStation").value,
       destination: document.getElementById("toStation").value,
-      travelMode: "TRANSIT",
+      travelMode: "TRANSIT", 
       provideRouteAlternatives: true,
       transitOptions: {
         modes: ["BUS"],
-        // arrivalTime: Date,
         departureTime: date,
         routingPreference: "FEWER_TRANSFERS"
       }
-    }, function(response, status) {
+    }, 
+
+    // Callback function for route
+    function(response, status) {     
       if (status === 'OK') {
         console.log(response);
+
+        var object = new Object();
+        object.day = date.getDay();
+        object.hour = date.getHours();
+        object.temp = tempNow;
+        object.rain = rainNow;
+        object.route = response.routes["0"].legs["0"].steps[1].transit.line.short_name;
+
+        object.From = { 
+            Lat: response.routes["0"].legs["0"].steps[1].start_location.lat(),
+            Lng: response.routes["0"].legs["0"].steps[1].start_location.lng()
+        }
+        object.To = {
+            Lat: response.routes["0"].legs["0"].steps[1].end_location.lat(),
+            Lng: response.routes["0"].legs["0"].steps[1].end_location.lng()
+        }
+        object.Date  = $("#datepicker input").val();
+        object.Time = $("#timePicker").val();
+        const jsonString= JSON.stringify(object);
+        console.log(jsonString);
+
+         // Send data to api
+        $.post("http://127.0.0.1:8000/api/make_prediction_using_coordinates", jsonString, function(response) {
+            console.log( "success" );
+            console.log("response: " + response);
+            console.log(response);
+            
+            $("#prediciton").text(`Predicted travel time: ${response["result"]} minutes`);
+        })
+        // When response is ready
+        .done(function() {
+            console.log( "Display prediction to user" );
+        })
+        // Api failure
+        .fail(function() {
+            $("#prediciton").text(`Predicted travel time: ${16} minutes`);
+            console.log( "error" );
+        })
+        // Always run
+        .always(function() {
+            console.log( "finished" );
+        });
+
+        // The first 4 bus routes
+        console.log(response.routes["0"].legs["0"].steps[1].transit.line.short_name);
+        console.log(response.routes["1"].legs["0"].steps[1].transit.line.short_name);
+        console.log(response.routes["2"].legs["0"].steps[1].transit.line.short_name);
+        console.log(response.routes["3"].legs["0"].steps[1].transit.line.short_name);
+        // The lat and long for the origin bus stop
+        console.log(response.routes["0"].legs["0"].steps[1].start_location.lat());
+        console.log(response.routes["0"].legs["0"].steps[1].start_location.lng());
+        // The lat and long for the destination bus stop (if only one bus)
+        console.log(response.routes["0"].legs["0"].steps[1].end_location.lat());
+        console.log(response.routes["0"].legs["0"].steps[1].end_location.lng());
+        // The lat and long for the destination bus stop (if two buses)
+        console.log(response.routes["0"].legs["0"].steps[2].end_location.lat());
+        console.log(response.routes["0"].legs["0"].steps[2].end_location.lng());
+        
         directionsDisplay.setDirections(response);
-      } else {
-        console.log('Directions request failed due to ' + status);
+      } 
+      else {
+        console.log("Directions request failed due to " + status);
       }
     });
   }
 
-  function getLocation($button){             // Function to get the users geo location
-    //Reference: https://github.com/rodaine/jQuery-Geolocation/blob/master/demo.html
-    // var $button = $(buttonID);//$('#locate');       
-    var startCB = function() {      
+
+
+  //Reference: https://github.com/rodaine/jQuery-Geolocation/blob/master/demo.html
+
+  // Function to get the users geo location
+  function getLocation($button){           
+    var startCB = function() {   // CB = callback   
         $button
-            .addClass('working')
             .attr('disabled', 'disabled'); 
     }
-    var finishCB = function() { 
+    var finishCB = function() {     
         $button
-            .removeClass('working')
             .removeAttr('disabled'); 
     }
     var errorCB = function(error) { 
-        alert( 'Error ' + error.code + ':' + error.message ); 
+        console.log( 'Error ' + error.code + ':' + error.message ); 
     }
     var successCB = function(p) {
-        var location = 'Latitude: ' + p.coords.latitude + '<br/>' 
-            + 'Longitude: ' + p.coords.longitude;
+        var location = 'Latitude: ' + p.coords.latitude + '<br/>' + 'Longitude: ' + p.coords.longitude;
         var yourLocation = {lat: p.coords.latitude, lng: p.coords.longitude}
         var marker = new google.maps.Marker({
             position: yourLocation, 
@@ -83,57 +148,64 @@ function initMap() {                                // Function that initialize 
             draggable: true,
             animation: google.maps.Animation.DROP
         });
-        marker.addListener('click', toggleBounce);
+        marker.addListener("click", toggleBounce);
             if (this.id == "findLocationFrom") {
                 geoAddress(yourLocation, "#fromStation", true);
             }
             else {
                 geoAddress(yourLocation, "#toStation", false);
             }
+            
         // Reference: https://developers.google.com/maps/documentation/javascript/examples/marker-animations
+        // Function that makes the marker bounce on the map
         function toggleBounce() {
             if (marker.getAnimation() !== null) {
               marker.setAnimation(null);
-            } else {
+            } 
+            else {
               marker.setAnimation(google.maps.Animation.BOUNCE);
             }
           }
     }
+    // Configuring callbacks
     $button.geolocate({
         onStart: startCB,
         onFinish: finishCB,
         onError: errorCB,
         onSuccess: successCB,
-        timeout: 5000
+        timeout: 5000           // If function takes more than 5 sec it will time out
     });
 };
 
+
+
+// Goecoding reference: https://developers.google.com/maps/documentation/javascript/examples/geocoding-reverse
+
+// Function to get the address for the users location
 function geoAddress(location, inputID, isFromPlace){
-    if (isFromPlace) {
-        fromPlace = location;
+    if (isFromPlace) {          // isFromPlace is a boolean variable
+        fromPlace = location;   // Location set to From input
     }
     else {
-        toPlace = location;
+        toPlace = location;     // Location set to To input
     }
     var geocoder = new google.maps.Geocoder();
-    // Reference: https://developers.google.com/maps/documentation/javascript/examples/geocoding-reverse
     geocoder.geocode({'location': location}, function(results, status){
         if (status == 'OK') {
             if (results[0]) {
-                // var streetNumber = results[0]["address_components"].find(function(element){
-                //     return element.types.includes("street_number");})["long_name"];
-                var route = results[0]["address_components"].find(function(element){
+                var route = results[0]["address_components"].find(function(element){            // Gets street name
                     return element.types.includes("route");})["long_name"];
-                var postalcode = results[0]["address_components"].find(function(element){
+                var postalcode = results[0]["address_components"].find(function(element){       // Gets postal code
                     return element.types.includes("postal_town");})["long_name"];
-                var country = results[0]["address_components"].find(function(element){
-                        return element.types.includes("country", "political");})["long_name"];
+                var country = results[0]["address_components"].find(function(element){          // Gets country 
+                    return element.types.includes("country", "political");})["long_name"];
                 $(inputID).val(`${route}, ${postalcode}, ${country}`);
             }
         }
     });
-
 }
+
+
 
 // Reference: https://developers.google.com/maps/documentation/javascript/places-autocomplete
 function autocomplete(){
@@ -176,14 +248,14 @@ function autocomplete(){
 }
 
 function fetchWeather(){
-    fetch("https://dublinbus.icu/api/current_weather")   // First make a GET request to our endpoint
+    fetch("http://127.0.0.1:8000/api/current_weather")   // First make a GET request to our endpoint
         .then(function(rawResponse){                    // Once that raw response is received, do something with it,
             return rawResponse.json();                  // in this case, take the string response and convert to a JSON object
         })
         .then(function(weatherJSON){
             // Round the temp to the nearest integer
-            document.getElementById("weatherTemp").innerHTML = Math.round(weatherJSON["temp"]).toString();
-            
+            document.getElementById("weatherTemp").innerHTML = `${Math.round(weatherJSON["temp"]).toString()}°C`;
+
             //remove later
             tempNow = weatherJSON["temp"];
             rainNow = weatherJSON["precip_intensity"];
@@ -196,6 +268,7 @@ function fetchWeather(){
             weatherIcons();
         });
 }
+
 
 //Function for the weather icons. Reference: https://github.com/darkskyapp/skycons
 function weatherIcons(){
@@ -211,56 +284,62 @@ function weatherIcons(){
 }
 
 // Function that puts bus stations into dropdown menu
-function fetchBusStations() {
-    $.get("https://dublinbus.icu/api/bus_stations", function(data, status) {
-        data["results"].forEach(function(busStation){
-            $(".busStations").append(`<li><p class="busStation">${busStation["fullname"]}</p></li>`);
-        });
-        $("#busStops").on("click", this.currentTarget, updateDropDown);
-    });
-}
+// function fetchBusStations() {
+//     $.get("https://dublinbus.icu/api/bus_stations", function(data, status) {
+//         data["results"].forEach(function(busStation){
+//             $(".busStations").append(`<li><p class="busStation">${busStation["fullname"]}</p></li>`);
+//         });
+//         $("#busStops").on("click", this.currentTarget, updateDropDown);
+//     });
+// }
 
 function updateDropDown(element){
     // Reference: https://stackoverflow.com/questions/8482241/selecting-next-input
         $("#Bus").val(element.target.innerText);  
 }
 
-function searchForRoute(){         // Function that searches the best routes from choosen points
+function searchForRoute(){         // Function for the search button (what happens after the user clicks on "Search")
     console.log("searching");
     calculateAndDisplayRoute(directionsService, directionsDisplay);
     var object = new Object();
     object.From = { 
-        Name: "769",//$("#fromStation").val(),
+        Name: $("#fromStation").val(), 
         Lat: fromPlace.lat,
         Lng: fromPlace.lng
     }
     object.To = {
-        Name: "792",//$("#toStation").val(),
+        Name: $("#toStation").val(),
         Lat: toPlace.lat,
         Lng: toPlace.lng
     }
     object.Date  = $("#datepicker input").val();
     object.Time = $("#timePicker").val();
-    object.Bus = "46A"; //$("#Bus").val();
+    object.Bus = $("#Bus").val(); 
     const jsonString= JSON.stringify(object);
     console.log(jsonString);
+    // console.log(obj1 [, obj2, ..., objN]);
     // getNearestBusStop({ lat: object.From.Lat, lng: object.From.Lng});
     // getNearestBusStop({ lat: object.To.Lat, lng: object.To.Lng});
     // Reference: https://api.jquery.com/jquery.post/
-    $.post("/api/predictRoute", object, function(response) {
-        console.log( "success" );
-        console.log("response: " + response);
-      })
-        .done(function() {
-            console.log( "Display prediction to user" );
-        })
-        .fail(function() {
-            $("#prediciton").text(`Predicted travel time: ${16} minutes`);
-            console.log( "error" );
-        })
-        .always(function() {
-            console.log( "finished" );
-        });
+
+    // Send data to api
+    // $.post("http://127.0.0.1:8000/api/make_prediction_using_coordinates", jsonString, function(response) {
+    //     console.log( "success" );
+    //     console.log("response: " + response);
+    // })
+    // // When response is ready
+    // .done(function() {
+    //     console.log( "Display prediction to user" );
+    // })
+    // // api failure
+    // .fail(function() {
+    //     $("#prediciton").text(`Predicted travel time: ${16} minutes`);
+    //     console.log( "error" );
+    // })
+    // // Always run
+    // .always(function() {
+    //     console.log( "finished" );
+    // });
 }
 
 // Function for the date picker
@@ -281,13 +360,6 @@ function setInitialClock(){
     }
 }
 
-// Function for configuring event listeners
-function setEventListeners() {
-    $("#searchButton").on("click", searchForRoute);
-    $("#busStops").on("click", this.currentTarget, updateDropDown);
-    // $("#findLocationFrom").on("click", "#findLocationFrom",  getLocation);
-    // $("#findLocationTo").on("click", "#findLocationTo", getLocation);
-}
 
 
 // Function for the nearest bus stops
@@ -335,29 +407,59 @@ function createMarker(location) {
 
 
 
-function predict(){
-    let data = {
-        // hour:  $("#timePicker").val(),
-        // day: $("#timePicker").val(),
-        hour:  new Date().getHours(),
-        day: new Date().getDay(),
-        temp: tempNow,
-        rain: rainNow,
-        route: "46A",//$("#Bus").val(),
-        startStop: 769,
-        endStop: 792
-        // startStop: $("#fromBusStopNr").val(),
-        // endStop: $("#toBusStopNr").val()
-    };
-    const jsonString= JSON.stringify(data);
-    $.post("https://dublinbus.icu/api/make_prediction", jsonString)
-        .done(function(data) {
-            $("#prediciton").text(`Predicted travel time: ${data["result"]} minutes`);
-        })
-        .fail(function(data) {
-            $("#prediciton").text("Unable to predict travel time");
-        });
-}
+// function predict(){
+//     let data = {
+//         // hour:  $("#timePicker").val(),
+//         // day: $("#timePicker").val(),
+//         hour:  new Date().getHours(),
+//         day: new Date().getDay(),
+//         temp: tempNow,
+//         rain: rainNow,
+//         route: $("#Bus").val(),
+//         startStop: $("#fromStation").val(),
+//         endStop: $("#toStation").val(),
+//     };
+//     const jsonString= JSON.stringify(data);
+//     $.post("https://dublinbus.icu/api/make_prediction", jsonString)
+//         .done(function(data) {
+//             $("#prediciton").text(`Predicted travel time: ${data["result"]} minutes`);
+//         })
+//         .fail(function(data) {
+//             $("#prediciton").text("Unable to predict travel time");
+//         });
+
+//     $.get("https://dublinbus.icu/api/make_prediction", function(predict) {
+//         // keyrir þegar búið er að ná í gogn 
+//     });
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -370,222 +472,73 @@ function predict(){
 
 
 // Copyed from Peter
-function makePredictionNow(){
-    let data = {
-        hour: hourNow,
-        day: dayNow,
-        temp: tempNow,
-        rain: rainNow,
-        route: document.getElementById("Bus").value,
-        startStop: document.getElementById("fromStation").value,
-        endStop: document.getElementById("toStation").value
-    };
+// function makePredictionNow(){
+//     let data = {
+//         hour: hourNow,
+//         day: dayNow,
+//         temp: tempNow,
+//         rain: rainNow,
+//         route: document.getElementById("Bus").value,
+//         startStop: document.getElementById("fromStation").value,
+//         endStop: document.getElementById("toStation").value
+//     };
 
-    fetch("https://dublinbus.icu/api/make_prediction", {
-        method: "POST",
-        headers: {"Content-Type": "application/json; charset=utf-8"},
-        referrer: "no-referrer",
-        body: JSON.stringify(data)
-      })
-          .then(function(response){
-              return response.json(); // Currently only returning a single value. Using JSON to allow easier extension later
-          })
-          .then(function(prediction){
-              document.getElementById("prediction").innerHTML = `Estimated time: <b>${prediction["result"]}</b> minutes`;
-          })
-          .catch(function(){
-              document.getElementById("prediction").innerHTML = "Prediction server not available."
-          });
-  }
+//     fetch("https://dublinbus.icu/api/make_prediction", {
+//         method: "POST",
+//         headers: {"Content-Type": "application/json; charset=utf-8"},
+//         referrer: "no-referrer",
+//         body: JSON.stringify(data)
+//       })
+//           .then(function(response){
+//               return response.json(); // Currently only returning a single value. Using JSON to allow easier extension later
+//           })
+//           .then(function(prediction){
+//               document.getElementById("prediction").innerHTML = `Estimated time: <b>${prediction["result"]}</b> minutes`;
+//           })
+//           .catch(function(){
+//               document.getElementById("prediction").innerHTML = "Prediction server not available."
+//           });
+//   }
   
 //   I ignored the getLatestWeather function from Peters test js
-function getLatestWeather(){
-    fetch("https://dublinbus.icu/api/current_weather")
-        .then(function(response){
-            return response.json();
-        })
-        .then(function(weather){
-            tempNow = weather["temp"];
-            rainNow = weather["precip_intensity"];
-        })
-        .then(function(){console.log(tempNow); console.log(rainNow)});
-}
+// function getLatestWeather(){
+//     fetch("https://dublinbus.icu/api/current_weather")
+//         .then(function(response){
+//             return response.json();
+//         })
+//         .then(function(weather){
+//             tempNow = weather["temp"];
+//             rainNow = weather["precip_intensity"];
+//         })
+//         .then(function(){console.log(tempNow); console.log(rainNow)});
+// }
 
-function routesDropdown(){
-    allBuses.forEach(function(routeNum){
-        let item = document.createElement("option");
-        item.textContent = routeNum;
-        item.value = routeNum;
-        document.getElementById("busStops").appendChild(item);
-    });
-}
+// function routesDropdown(){
+//     allBuses.forEach(function(routeNum){
+//         let item = document.createElement("option");
+//         item.textContent = routeNum;
+//         item.value = routeNum;
+//         document.getElementById("busStops").appendChild(item);
+//     });
+// }
 
-function getStopLocation(stopNumber){
-    fetch("https://dublinbus.icu/api/stop_location", {
-        method: "POST",
-        headers: {"Content-Type": "application/json; charset=utf-8"},
-        referrer: "no-referrer",
-        body: JSON.stringify({stop: stopNumber})
-    })
-    .then(function(response){
-        return response.json();
-    })
-    .then(function(myLatLng){
-        new google.maps.Marker({
-            position: myLatLng,
-            map: map,
-        });
-    });
-}
-
-
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-*                                                                        *
-* GLOBAL VARIABLES. THERE ARE BETTER WAYS TO DO THIS. THIS IS TEMPORARY  *
-*                                                                        *
-* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-const today = new Date();
-const hourNow = today.getHours();
-const dayNow = today.getDay();
-let tempNow;
-let rainNow;
-
-const allBuses = [
-    "1",
-    "102",
-    "104",
-    "11",
-    "111",
-    "114",
-    "116",
-    "118",
-    "120",
-    "122",
-    "123",
-    "13",
-    "130",
-    "14",
-    "140",
-    "142",
-    "145",
-    "14C",
-    "15",
-    "150",
-    "151",
-    "15A",
-    "15B",
-    "16",
-    "161",
-    "16C",
-    "17",
-    "17A",
-    "18",
-    "184",
-    "185",
-    "220",
-    "236",
-    "238",
-    "239",
-    "25",
-    "25A",
-    "25B",
-    "25D",
-    "25X",
-    "26",
-    "27",
-    "270",
-    "27A",
-    "27B",
-    "27X",
-    "29A",
-    "31",
-    "31A",
-    "31B",
-    "31D",
-    "32",
-    "32X",
-    "33",
-    "33A",
-    "33B",
-    "33X",
-    "37",
-    "38",
-    "38A",
-    "38B",
-    "38D",
-    "39",
-    "39A",
-    "4",
-    "40",
-    "40B",
-    "40D",
-    "41",
-    "41A",
-    "41B",
-    "41C",
-    "41X",
-    "42",
-    "42D",
-    "43",
-    "44",
-    "44B",
-    "45A",
-    "46A",
-    "46E",
-    "47",
-    "49",
-    "51D",
-    "51X",
-    "53",
-    "54A",
-    "56A",
-    "59",
-    "61",
-    "63",
-    "65",
-    "65B",
-    "66",
-    "66A",
-    "66B",
-    "66X",
-    "67",
-    "67X",
-    "68",
-    "68A",
-    "68X",
-    "69",
-    "69X",
-    "7",
-    "70",
-    "70D",
-    "75",
-    "757",
-    "76",
-    "76A",
-    "77A",
-    "77X",
-    "79",
-    "79A",
-    "7A",
-    "7B",
-    "7D",
-    "83",
-    "83A",
-    "84",
-    "84A",
-    "84X",
-    "9"
-];
-
-
-
-
-
-
-
-
+// function getStopLocation(stopNumber){
+//     fetch("https://dublinbus.icu/api/stop_location", {
+//         method: "POST",
+//         headers: {"Content-Type": "application/json; charset=utf-8"},
+//         referrer: "no-referrer",
+//         body: JSON.stringify({stop: stopNumber})
+//     })
+//     .then(function(response){
+//         return response.json();
+//     })
+//     .then(function(myLatLng){
+//         new google.maps.Marker({
+//             position: myLatLng,
+//             map: map,
+//         });
+//     });
+// }
 
 
 
@@ -611,9 +564,8 @@ const allBuses = [
 // });
 
 $(window).on("load", function(){
-    setEventListeners();
 
-    $('.clockpicker').clockpicker({
+    $(".clockpicker").clockpicker({
         donetext: "",
         autoclose: true
     });
@@ -623,13 +575,13 @@ $(window).on("load", function(){
         startDate: '1d'
     });
     setInitialDateTime();
-    // insertBusStations();
-    setInitialClock()
+    setInitialClock();
     fetchWeather();
     getLocation($("#findLocationFrom"));
     getLocation($("#findLocationTo"));
-    
+    // calculateAndDisplayRoute(directionsService, directionsDisplay);
     autocomplete();
-    routesDropdown();
-    $("#searchButton").on("click", predict);
+    
+    $("#searchButton").on("click", searchForRoute);
+
 });

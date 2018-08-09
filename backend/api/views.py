@@ -48,10 +48,15 @@ def daily_forecast(request):
     all_day_weather = {"all_day_weather": daily_forecast}
     return JsonResponse(all_day_weather)
 
+
 @csrf_exempt    # Can remove in production, needed for testing
 def make_prediction(request):
+
     # Convert JSON string passed by browser to Python dictionary:
-    values = json.loads(request.body.decode('utf-8'))
+    if type(request) is dict:
+        values = request
+    else:
+        values = json.loads(request.body.decode('utf-8'))
 
     # Quick way to convert JS's day of week into a categorical feature:
     days_list = [0, 0, 0, 0, 0, 0, 0]
@@ -72,13 +77,15 @@ def make_prediction(request):
     })
 
     with connection.cursor() as cursor:
-        cursor.execute("SELECT direction, stop_on_route FROM combined_2017 WHERE line_id = %s AND stop_number = %s LIMIT 1;", [values["route"], values["startStop"]])
+        cursor.execute("SELECT direction, stop_on_route FROM combined_2017 WHERE line_id = %s AND stop_number = %s LIMIT 1;"
+        , [values["route"], values["startStop"]])
         row = cursor.fetchone()
         direction = row[0]
         first_stop = row[1]
 
         # Get last stop progression number
-        cursor.execute("SELECT stop_on_route FROM combined_2017 WHERE line_id = %s AND stop_number = %s LIMIT 1;", [values["route"], values["endStop"]])
+        cursor.execute("SELECT stop_on_route FROM combined_2017 WHERE line_id = %s AND stop_number = %s LIMIT 1;"
+        , [values["route"], values["endStop"]])
         row = cursor.fetchone()
         last_stop = row[0]
 
@@ -114,3 +121,46 @@ def stop_location(request):
         lng = row[1]
 
     return JsonResponse({"lat": lat, "lng": lng})
+
+
+
+@csrf_exempt    # Can remove in production, needed for testing
+def make_prediction_using_coordinates(request):
+    values = json.loads(request.body.decode('utf-8'))
+    with connection.cursor() as cursor:
+
+        cursor.execute("SELECT stops_served_by.stop_number FROM stops_served_by INNER JOIN static_bus_data ON stops_served_by.stop_number = static_bus_data.stoppointid WHERE stops_served_by.line_id = %s AND lat >= (%s * 0.999) AND lat <= (%s * 1.001) AND `long` <= (%s * 0.999) AND `long` >= (%s * 1.001) ORDER BY abs(lat - %s) AND abs(`long` - (%s)) LIMIT 1;"
+        , [str(values["route"]), 
+        float(values["From"]["Lat"]), 
+        float(values["From"]["Lat"]), 
+        float(values["From"]["Lng"]), 
+        float(values["From"]["Lng"]), 
+        float(values["From"]["Lat"]), 
+        float(values["From"]["Lng"])])
+
+        row = cursor.fetchone()
+        from_stoppointid = row[0]
+
+        cursor.execute("SELECT stops_served_by.stop_number FROM stops_served_by INNER JOIN static_bus_data ON stops_served_by.stop_number = static_bus_data.stoppointid WHERE stops_served_by.line_id = %s AND lat >= (%s * 0.999) AND lat <= (%s * 1.001) AND `long` <= (%s * 0.999) AND `long` >= (%s * 1.001) ORDER BY abs(lat - %s) AND abs(`long` - (%s)) LIMIT 1;"
+        , [str(values["route"]), 
+        float(values["To"]["Lat"]), 
+        float(values["To"]["Lat"]), 
+        float(values["To"]["Lng"]), 
+        float(values["To"]["Lng"]), 
+        float(values["To"]["Lat"]), 
+        float(values["To"]["Lng"])])
+
+        row = cursor.fetchone()
+        to_stoppointid = row[0]
+
+        values["startStop"] = from_stoppointid
+        values["endStop"] = to_stoppointid
+        
+     
+
+
+
+    # return make_prediction(values)
+    return make_prediction(values)
+    # return JsonResponse(values)
+

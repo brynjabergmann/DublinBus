@@ -1,11 +1,6 @@
 /* css for the sidebar. Reference https://medium.com/wdstack/bootstrap-sidebar-examples-e363021395ff */
 
 
-/* The sidebar container */
-.container2 {
-  float: left;
-  width: 200px;
-}
 
 .nav-side-menu {
     font-family: verdana;
@@ -63,6 +58,12 @@
   width: 75px;
 }
 
+
+/* Margin left for the weather temperature */
+#weatherTemp {
+  margin-left: 4px;
+}
+
 #weather > span > figure {
   margin-top: 0px;
   margin-bottom: 0px;
@@ -70,8 +71,13 @@
 
 /* Styling for the weather icons */
 #weather > figure {
+  margin-left: 0px;
   vertical-align: middle;
   display: inline-block;
+}
+
+#weather {
+  margin-bottom: 5px;
 }
 
 
