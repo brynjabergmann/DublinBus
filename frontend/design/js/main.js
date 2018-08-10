@@ -51,7 +51,6 @@ function getInputDateAsDateObject(){
         routingPreference: "FEWER_TRANSFERS"
       }
     }, 
-
     // Callback function for route
     function(response, status) {     
       if (status === 'OK') {
@@ -84,6 +83,9 @@ function getInputDateAsDateObject(){
             console.log(response);
             
             $("#prediciton").text(`Predicted travel time: ${response["result"]} minutes`);
+            $("#predictionMin").text(`${response["result"]} minutes`);
+            $(".sidebarPageOne").hide();
+            $(".sidebarPageTwo").show();
         })
         // When response is ready
         .done(function() {
@@ -301,45 +303,6 @@ function updateDropDown(element){
 function searchForRoute(){         // Function for the search button (what happens after the user clicks on "Search")
     console.log("searching");
     calculateAndDisplayRoute(directionsService, directionsDisplay);
-    var object = new Object();
-    object.From = { 
-        Name: $("#fromStation").val(), 
-        Lat: fromPlace.lat,
-        Lng: fromPlace.lng
-    }
-    object.To = {
-        Name: $("#toStation").val(),
-        Lat: toPlace.lat,
-        Lng: toPlace.lng
-    }
-    object.Date  = $("#datepicker input").val();
-    object.Time = $("#timePicker").val();
-    object.Bus = $("#Bus").val(); 
-    const jsonString= JSON.stringify(object);
-    console.log(jsonString);
-    // console.log(obj1 [, obj2, ..., objN]);
-    // getNearestBusStop({ lat: object.From.Lat, lng: object.From.Lng});
-    // getNearestBusStop({ lat: object.To.Lat, lng: object.To.Lng});
-    // Reference: https://api.jquery.com/jquery.post/
-
-    // Send data to api
-    // $.post("http://127.0.0.1:8000/api/make_prediction_using_coordinates", jsonString, function(response) {
-    //     console.log( "success" );
-    //     console.log("response: " + response);
-    // })
-    // // When response is ready
-    // .done(function() {
-    //     console.log( "Display prediction to user" );
-    // })
-    // // api failure
-    // .fail(function() {
-    //     $("#prediciton").text(`Predicted travel time: ${16} minutes`);
-    //     console.log( "error" );
-    // })
-    // // Always run
-    // .always(function() {
-    //     console.log( "finished" );
-    // });
 }
 
 // Function for the date picker
@@ -397,6 +360,10 @@ function createMarker(location) {
 
 
 
+// Sidebar´s second page
+// $(function() {
+//     $('nav#menu').mmenu();
+// });
 
 
 
@@ -581,7 +548,12 @@ $(window).on("load", function(){
     getLocation($("#findLocationTo"));
     // calculateAndDisplayRoute(directionsService, directionsDisplay);
     autocomplete();
-    
     $("#searchButton").on("click", searchForRoute);
+    
+    $("#backToPageOne").on("click", function(){
+       $(".sidebarPageOne").show();
+       $(".sidebarPageTwo").hide();
+    });
+
 
 });

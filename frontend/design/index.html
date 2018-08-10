@@ -49,7 +49,7 @@
         </i>
         <div class="menu-list">
             <ul id="menu-content" class="menu-content collapse out">
-                <li>
+                <li class="sidebarPageOne">
                     <div id="weather">
                         <span>
                             <!-- Reference: https://github.com/darkskyapp/skycons -->
@@ -61,20 +61,7 @@
                         </span>
                     </div>
                 </li>
-                <!-- <li> -->
-                <!-- Reference: https://getbootstrap.com/docs/3.3/components/#input-groups -->
-                    <!-- <div class="bus">
-                        <div class="input-group">
-                            <div class="input-group-btn">
-                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Bus <span class="caret"></span></button>
-                                <ul class="dropdown-menu busStations" id="busStops">
-                                </ul>
-                            </div>
-                            <input type="text" class="form-control" aria-label="..." placeholder="Choose a bus number" id="Bus">
-                        </div>
-                    </div>
-                </li> -->
-                <li>
+                <li class="sidebarPageOne">
                     <!-- Reference: https://getbootstrap.com/docs/3.3/components/#input-groups -->
                     <div class="input-group">
                         <span class="input-group-addon">From</span>
@@ -87,7 +74,7 @@
                         </span>
                     </div>
                 </li>
-                <li>
+                <li class="sidebarPageOne">
                     <div class="input-group">
                         <span class="input-group-addon">To</span>
                         <input type="text" class="form-control" aria-label placeholder="Where do you want to go?" id="toStation">
@@ -99,7 +86,7 @@
                         </span>
                     </div>
                 </li>
-                <li>
+                <li class="sidebarPageOne">
                     <div class="btn-group btn-group-toggle" data-toggle="buttons">
                         <label class="btn btn-secondary active">
                             <input type="radio" name="options" id="option1" autocomplete="off" checked> Depart at
@@ -109,7 +96,7 @@
                         </label>
                     </div>
                 </li>
-                <li id="datetimepickers">
+                <li class="sidebarPageOne" id="datetimepickers">
                     <span>
                         <div class="datetime-group">
                             <!-- Date picker. Reference: http://bootstrap-datepicker.readthedocs.io/en/latest/index.html -->
@@ -131,16 +118,115 @@
                         </div>
                     </span>
                 </li>
-                <li>
+                <li class="sidebarPageOne">
                     <!-- Search button -->
-                    <button id="searchButton" class="btn btn-default rounded" type="button"><span class="glyphicon glyphicon-search"></span> Search </button>
+                    <button id="searchButton" class="btn btn-default rounded" type="button"><span class="glyphicon glyphicon-search"></span> Search </button> 
                 </li>
-                <li>
+                <!-- Page two of the sidebar -->
+                <li class="sidebarPageTwo">
+                    <span id="backToPageOne" class="glyphicon glyphicon-chevron-left"></span>
+                </li>
+                <!-- <li class="sidebarPageTwo">
                     <h4 id="prediciton"></h4>
+                </li> -->
+
+
+
+
+
+
+                <li class="sidebarPageTwo">
+                    <div id="accordion">
+                        <div class="card">
+                            <div class="card-header" id="headingTwo">
+                            <h5 class="mb-0">
+                                <button id="routeOne" class="btn collapsed suggestedRoute" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                    <h5 id="prediciton"></h5> <br>
+                                    <img class="img-responsive resultImages" img src="./img/walking.png">
+                                    <span id="next" class="glyphicon glyphicon-chevron-right"></span>
+                                    <img class="img-responsive resultImages" img src="./img/bus.png">
+                                    <span id="next" class="glyphicon glyphicon-chevron-right"></span>
+                                    <img class="img-responsive resultImages" img src="./img/walking.png">
+                                    Heildarfjoldi min <br>
+                                    Leap kostnaður og cash kostnaður
+                                </button>
+                            </h5>
+                            </div>
+                            <div id="collapseTwo" class="collapse travelResults" aria-labelledby="headingTwo" data-parent="#accordion">
+                            <div class="card-body">
+                                <img class="detailedResultsImages" img src="./img/walking.png"> add walking minutes from Google <br>
+                                <img class="detailedResultsImages" img src="./img/bus.png"><h5 id="predictionMin"></h5><br>
+                                <img class="detailedResultsImages" img src="./img/walking.png"> add walking minutes from Google <br>
+                                <br>
+                                {{ GRAPH GOES HERE }}
+                            </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header" id="headingThree">
+                            <h5 class="mb-0">
+                                <button id="routeTwo" class="btn collapsed suggestedRoute" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                    <!-- Put here in prediction for route 2
+                                    <h5 id="prediciton"></h5> <br> -->
+                                    <p style="margin-top: 7px; margin-bottom: 0px;">SUGGESTED ROUTE NR. 2</p><br>
+                                    <img class="img-responsive resultImages" img src="./img/walking.png">
+                                    <span id="next" class="glyphicon glyphicon-chevron-right"></span>
+                                    <img class="img-responsive resultImages" img src="./img/bus.png">
+                                    <span id="next" class="glyphicon glyphicon-chevron-right"></span>
+                                    <img class="img-responsive resultImages" img src="./img/walking.png">
+                                    Heildarfjoldi min <br>
+                                    Leap kostnaður og cash kostnaður
+                                </button>
+                            </h5>
+                            </div>
+                            <div id="collapseThree" class="collapse travelResults" aria-labelledby="headingThree" data-parent="#accordion">
+                            <div class="card-body">
+                                <img class="detailedResultsImages" img src="./img/walking.png"> add walking minutes from Google <br>
+                                <img class="detailedResultsImages" img src="./img/bus.png"> add predicted bus minutes <br>
+                                <img class="detailedResultsImages" img src="./img/walking.png"> add walking minutes from Google <br>
+                                <br>
+                                {{ GRAPH GOES HERE }}
+                            </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header" id="headingFour">
+                            <h5 class="mb-0">
+                                <button id="routeThree" class="btn collapsed suggestedRoute" data-toggle="collapse" data-target="#collapseFour" aria-expanded="false" aria-controls="collapseThree">
+                                    <!-- Put here in prediction for route 2
+                                    <h5 id="prediciton"></h5> <br> -->
+                                    <p style="margin-top: 7px; margin-bottom: 0px;">SUGGESTED ROUTE NR. 3</p><br>
+                                    <img class="img-responsive resultImages" img src="./img/walking.png">
+                                    <span id="next" class="glyphicon glyphicon-chevron-right"></span>
+                                    <img class="img-responsive resultImages" img src="./img/bus.png">
+                                    <span id="next" class="glyphicon glyphicon-chevron-right"></span>
+                                    <img class="img-responsive resultImages" img src="./img/walking.png">
+                                    Heildarfjoldi min <br>
+                                    Leap kostnaður og cash kostnaður
+                                </button>
+                            </h5>
+                            </div>
+                            <div id="collapseFour" class="collapse travelResults" aria-labelledby="headingFour" data-parent="#accordion">
+                            <div class="card-body">
+                                <img class="detailedResultsImages" img src="./img/walking.png"> add walking minutes from Google <br>
+                                <img class="detailedResultsImages" img src="./img/bus.png"> add predicted bus minutes <br>
+                                <img class="detailedResultsImages" img src="./img/walking.png"> add walking minutes from Google <br>
+                                <br>
+                                {{ GRAPH GOES HERE }}
+                            </div>
+                            </div>
+                        </div>
+                    </div>
                 </li>
+
+
+
+
+
             </ul>
         </div>
     </div>
+
 
 
 
