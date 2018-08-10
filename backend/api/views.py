@@ -1,16 +1,16 @@
-from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.db import connection
 import json
 import pickle
 import pandas as pd
-import os
-import sklearn
 import datetime as dt
-from raven import Client
+# from raven import Client
 
-client = Client('https://1e979ddecb1641ce81a0468314902d26:e894e38ec1f64c43af6876f76a3d2959@sentry.io/1249736')
+# IDEs might say this one is "unused", but once our models are unpickled they need sklearn:
+import sklearn
+
+# client = Client('https://1e979ddecb1641ce81a0468314902d26:e894e38ec1f64c43af6876f76a3d2959@sentry.io/1249736')
 
 
 def predict(values: dict):
@@ -21,14 +21,44 @@ def predict(values: dict):
     weather = get_weather(user_time)
 
     all_routes = get_all_routes(first_stop_list, last_stop_list)
+    all_journey_times = get_all_times(all_routes, weather, user_time)
 
-    all_times = get_all_times(all_routes, weather, user_time)
+    for i in range(len(all_routes)):    # Add the total time to the results sent to the user
+        all_routes[i]["total_time"] = all_journey_times[i]
 
-    result = {"routes": [], "fare": "", "delays": {"locations": [], "messages": []}}
+    result = {
+        "routes": [
+            # {
+            #   "46A": {
+            #       "stops": [768, 792],
+            #       "fare": {
+            #           "leap": 1.5,
+            #           "cash": 2.1
+            #       }
+            #   ],
+            #   "total_time": 20
+            # }
+        ],
+        "delays": {
+            "locations": [],
+            "messages": []
+        }
+    }
+
     for i in range(3):
-        fastest_route_index = get_fastest_route_index(all_times)
+        fastest_route_index = get_fastest_route_index(all_journey_times)
         result["routes"].append(all_routes[fastest_route_index])
         del all_routes[fastest_route_index]
+        del all_journey_times[fastest_route_index]
+
+    midnight = user_time + 3600 - (user_time % 86400)   # TODO: This +3600 is DST
+    five_am = midnight + (3600 * 5)
+    eleven_pm = midnight + (3600 * 23)
+
+    for route in result["routes"]:
+        for hour in range(five_am, eleven_pm + 1, 3600):
+            weather = get_weather(hour)
+            route["hourly"].append(get_all_times([route], weather, hour))
 
     return result
 
@@ -42,30 +72,29 @@ def get_all_routes(first_stop_list: list, last_stop_list: list):
     return paths
 
 
-def get_all_times(all_routes: list, weather: dict, user_time: int):
+def get_all_times(all_possible_routes: list, weather: dict, user_time: int):
     timings = []
     temperature = weather["temp"]
     precipitation = weather["precip_intensity"]
 
-    for path in all_routes:
+    for route in all_possible_routes:
         total_time = 0
-        routes_on_path = [*path]
-        for i in range(len(routes_on_path)):
-            bus_route = routes_on_path[i]
+        parts_of_route = [*route]
+        for i in range(len(parts_of_route)):
+            bus_route = parts_of_route[i]
 
             if "walk" in bus_route:
-                total_time += path[i]
+                total_time += route[i]
             else:
-                direction = get_direction(bus_route, path[bus_route][0])
+                direction = get_direction(bus_route, route[bus_route]["stops"][0])
                 prediction = end_to_end_prediction(dt.datetime.fromtimestamp(user_time).weekday(),
-                                                    dt.datetime.fromtimestamp(user_time - (user_time % 3600) + 3600).hour,  # TODO: This + 3600 is some DST fuckery that will ideally need to be dealt with.
-                                                    temperature,
-                                                    precipitation,
-                                                    bus_route,
-                                                    direction,
-                                                    True)
-                proportion = get_segment(prediction[0], bus_route, direction, path[bus_route][0], path[bus_route][1], prediction[1])
-                total_time += proportion
+                                                   dt.datetime.fromtimestamp(user_time - (user_time % 3600) + 3600).hour,  # TODO: This + 3600 is some DST fuckery that will ideally need to be dealt with.
+                                                   temperature,
+                                                   precipitation,
+                                                   bus_route,
+                                                   direction,
+                                                   True)
+                total_time += get_segment(prediction[0], bus_route, direction, route[bus_route]["stops"][0], route[bus_route]["stops"][1], prediction[1])
         timings.append(total_time)
     return timings
 
@@ -147,7 +176,7 @@ def end_to_end_prediction(day_of_week: int, hour_of_day: int, temperature: float
     model = cucumber[0]
     max_stops = cucumber[1]
     prediction_minutes = int(round(model.predict(prediction_inputs)[0]))
-    return [prediction_minutes, max_stops]    # Predict time from start to finish
+    return [prediction_minutes, max_stops]  # Predict time from start to finish
 
 
 def find_route(first_stop: int, last_stop: int):
@@ -156,11 +185,24 @@ def find_route(first_stop: int, last_stop: int):
         cursor.execute("SELECT one.line_id FROM (SELECT line_id FROM stops_served_by WHERE stop_number = %s) as one, (SELECT line_id FROM stops_served_by WHERE stop_number = %s) as two WHERE one.line_id = two.line_id;", [first_stop, last_stop])
         serves_both = list(cursor.fetchall())
         if serves_both:
-            # TODO: Get list of stop numbers between A and B to pass to fare_finder
-            stops_on_journey = []
-            # TODO: Get list of stage-denoting bus stop numbers to pass to fare_finder
-            stage_markers = []
-            return [{x[0]: (first_stop, last_stop), "fare": fare_finder(x[0], stops_on_journey, stage_markers)} for x in serves_both]
+            for line in serves_both[:]:
+                cursor.execute("SELECT stop_on_route FROM combined_2017 WHERE line_id = %s AND stop_number = %s LIMIT 1;", [line, first_stop])
+                progression_one = cursor.fetchone()[0]
+
+                cursor.execute("SELECT stop_on_route FROM combined_2017 WHERE line_id = %s AND stop_number = %s LIMIT 1;", [line, last_stop])
+                progression_two = cursor.fetchone()[0]
+
+                if progression_one > progression_two:
+                    serves_both.remove(line)
+
+            return [
+                {
+                    x[0]: {
+                        "stops": [first_stop, last_stop],
+                        "fare": fare_finder(x[0], first_stop, last_stop)
+                    }
+                } for x in serves_both
+            ]
         else:
             cursor.execute("SELECT line_id FROM stops_served_by WHERE stop_number = %s;", [first_stop])
             all_routes_first_stop = [x[0] for x in list(cursor.fetchall())]
@@ -171,19 +213,24 @@ def find_route(first_stop: int, last_stop: int):
                 cursor.execute()
 
 
-def fare_finder(route: str, stops_on_route: list, stage_markers: list):
-    if "x" in route.lower():
-        return {"leap": 2.90, "cash": 3.65}
-    elif route == "90":
-        return {"leap": 1.50, "cash": 2.10}
-    else:
-        num_stages = len(list(set(stops_on_route).intersection(stage_markers)))
-        if num_stages < 4:
-            return {"leap": 1.50, "cash": 2.10}
-        elif num_stages > 12:
-            return {"leap": 2.60, "cash": 3.30}
-        else:
-            return {"leap": 2.15, "cash": 2.85}
+def fare_finder(x, y, z):
+    return {"leap": 2.15, "cash": 2.85}
+# def fare_finder(route: str, direction: int, first_stop: int, last_stop: int):
+#     if "x" in route.lower():
+#         return {"leap": 2.90, "cash": 3.65}
+#     elif route == "90":
+#         return {"leap": 1.50, "cash": 2.10}
+#     else:
+#         # TODO: DB call to find number of stages
+#         num_stages = 0
+#         if num_stages < 4:
+#             return {"leap": 1.50, "cash": 2.10}
+#         elif num_stages > 12:
+#             return {"leap": 2.60, "cash": 3.30}
+#         else:
+#             return {"leap": 2.15, "cash": 2.85}
+
+
 def chart_values(route, timestamp):
     times = []
     midnight = timestamp - (timestamp % 86400)
@@ -203,13 +250,14 @@ def start_timer(username: str, predicted_time: int):
         f.write(f"{predicted_time}\n{dt.datetime.now().timestamp()}")
 
 
+# TODO: This too
 def stop_timer(username: str):
     with open(f"{username.lower()}_timer.txt") as f:
         x = f.readlines()
 
     prediction = int(x[0])
     actual = round((dt.datetime.timestamp(dt.datetime.now()) - int(x[1])) / 60)
-    percentage = round(((actual-prediction)/prediction) * 100, 2)
+    percentage = round(((actual - prediction) / prediction) * 100, 2)
 
     with open("accuracy_scores", "a") as g:
         g.write(f"Predicted: {prediction}, Actual: {actual} = {percentage}% error\n")
@@ -217,9 +265,9 @@ def stop_timer(username: str):
     return {"prediction": prediction, "actual": actual, "percentage": percentage}
 
 
-# # # # # # #
-# ENDPOINTS #
-# # # # # # #
+# # # # # # # # # #
+#  WEB ENDPOINTS  #
+# # # # # # # # # #
 
 @csrf_exempt
 def prediction_endpoint(request):
@@ -228,7 +276,6 @@ def prediction_endpoint(request):
 
 @csrf_exempt
 def current_weather_endpoint(request):
-    return JsonResponse(get_weather(int(dt.datetime.now().timestamp())))    return JsonResponse(get_weather(int(dt.datetime.now().timestamp())))
     return JsonResponse(get_weather(int(dt.datetime.now().timestamp())))
 
 
