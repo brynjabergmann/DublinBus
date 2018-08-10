@@ -184,6 +184,17 @@ def fare_finder(route: str, stops_on_route: list, stage_markers: list):
             return {"leap": 2.60, "cash": 3.30}
         else:
             return {"leap": 2.15, "cash": 2.85}
+def chart_values(route, timestamp):
+    times = []
+    midnight = timestamp - (timestamp % 86400)
+    five_am = midnight + (3600 * 5)
+    eleven_pm = midnight + (3600 * 23)
+    for hour in range(five_am, eleven_pm + 1, 3600):
+        # TODO: Have front-end communicate the above required values BACK to Django
+        weather = get_weather(hour)
+        times.append(get_all_times([route], weather, hour)[0])
+
+    return times
 
 
 # TODO: Re-implement this functionality for benchmarking
@@ -217,4 +228,11 @@ def prediction_endpoint(request):
 
 @csrf_exempt
 def current_weather_endpoint(request):
+    return JsonResponse(get_weather(int(dt.datetime.now().timestamp())))    return JsonResponse(get_weather(int(dt.datetime.now().timestamp())))
     return JsonResponse(get_weather(int(dt.datetime.now().timestamp())))
+
+
+@csrf_exempt
+def chart_endpoint(request):
+    req = json.loads(request.body.decode("utf-8"))
+    return JsonResponse(chart_values(req["route"], req["timestamp"]))
