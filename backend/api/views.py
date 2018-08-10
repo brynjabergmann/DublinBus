@@ -5,6 +5,7 @@ import json
 import pickle
 import pandas as pd
 import datetime as dt
+import requests
 # from raven import Client
 
 # IDEs might say this one is "unused", but once our models are unpickled they need sklearn:
@@ -244,6 +245,21 @@ def chart_values(route, timestamp):
     return times
 
 
+def next_bus(stop_number: int, route: str, direction: int):
+    # with connection.cursor() as cursor:
+    #     cursor.execute("SELECT stop_number FROM stops_served_by WHERE line_id = %s AND direction = %s AND stop_on_route = 1", [route, direction])
+    #     first_stop = cursor.fetchone()
+
+    timetable_json = requests.get(f"https://data.smartdublin.ie/cgi-bin/rtpi/timetableinformation?type=week&stopid=807&routeid=46A&format=json").json()["results"]
+    weekday_schedule = sorted([x["departures"] for x in timetable_json if x["enddayofweek"] == "Friday"], key=len, reverse=True)
+    while len(weekday_schedule) > 2:
+        del weekday_schedule[len(weekday_schedule) - 1]
+    # TODO: This doesn't actually work if there is only one direction... Epsilon?
+    first_stop_timetable = weekday_schedule[0]
+    print()
+
+
+
 # TODO: Re-implement this functionality for benchmarking
 def start_timer(username: str, predicted_time: int):
     with open(f"{username.lower()}_timer.txt", "w") as f:
@@ -283,3 +299,7 @@ def current_weather_endpoint(request):
 def chart_endpoint(request):
     req = json.loads(request.body.decode("utf-8"))
     return JsonResponse(chart_values(req["route"], req["timestamp"]))
+
+
+next_bus(768, "46A", 2)
+
