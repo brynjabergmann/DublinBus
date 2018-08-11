@@ -134,13 +134,19 @@ for index, row in routes.iterrows():
     predictions['estimated_time'] = predictions['estimated_time'].astype(int)
     predictions.head()
 
-    # Peter, if this is more than 9, maybe get the script to flag this pickle, possible with the file name?
-    if metrics.mean_absolute_error(y, predictions) > 9:
-        pkl_filename = f"GBR_March_2017_{row[0]}_{row[1]}_HIGH-ERROR.pkl"
-    else:
-        pkl_filename = f"GBR_March_2017_{row[0]}_{row[1]}.pkl"
+    # Testing for error rate > 13%
+    join = pd.concat([y, predictions], axis=1)
+    join['abs_error'] = abs(join['trip_duration'] - join['estimated_time'])
+    mean_error = join.abs_error.mean()
+    mean_trip_duration = join.trip_duration.mean()
+    error_rate_percentage = (mean_error / mean_trip_duration) * 100
+
+    pkl_filename = f"GBR_school_2017_{row[0]}_{row[1]}.pkl"
+    if error_rate_percentage > 13:
+        with open("/home/student/dublin_bus_project/backend/api/models/high_error_rate.txt", 'a') as w:
+            w.write(f"{pkl_filename}, {error_rate_percentage},\n")
 
     # Storing the model trained on the full data set to a pickle file
-    with open(f"models/{pkl_filename}", 'wb') as file:
+    with open(f"/home/student/dublin_bus_project/backend/api/models/{pkl_filename}", 'wb') as file:
         pickle.dump([gbr, last_stop], file)
 

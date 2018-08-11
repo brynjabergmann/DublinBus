@@ -8,4 +8,5 @@ urlpatterns = [
     path("forecast", views.forecast, name="forecast"),
     path("daily_forecast", views.daily_forecast, name="daily_forecast"),
     path("make_prediction_using_coordinates", views.make_prediction_using_coordinates, name="make_prediction_using_coordinates"),
+    path("stop_timer", views.stop_timer, name="stop_timer"),
 ]

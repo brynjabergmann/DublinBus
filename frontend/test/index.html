@@ -10,19 +10,28 @@
             <select id="routesDropdown" name="route"></select>
             <br>
             Last stop number: <input id="lastStop" type="number"> <a href="" onclick="getStopLocation(document.getElementById('lastStop').value); return false;">Show on Map</a>
+            <br><br>
+            To time your route, enter your route and stop numbers above, then enter your name here:<br>
+            <input id="userName" type="text" value=""><br>
+            (If you do not supply a name, no timer will be started, but a prediction will still be made)<br>
         </form>
+        <br>
+        Then click "Make Prediction" to start your timer.<br>
         <button onclick="makePredictionNow()">Make Prediction for right now</button>
-		<button onclick="chartValues()">Predictions for chart values</button>
-		<button onclick="drawChart()">Chart display</button>
+        <button onclick="chartValues()">Predictions for chart values</button>
+        <button onclick="drawChart()">Chart display</button>
+        <br><br>
+        To stop your timer, enter your name above and click here:<br>
+        <button onclick="stopTimer()">Stop Timer</button>
         <div id="prediction">
             <!-- This will be filled in when a prediction is received the server -->
         </div>
 		<br/>
 	    <div id="forecast"></div>
-        <div id="map" style="height: 600px; width: 600px;"></div>
+       <div id="map" style="height: 600px; width: 600px;"></div>
         <br/>
         <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-        <div id="chart_div"style="height: 600px; width: 600px;">If all went well, you should see a chart here</div>
+        <div id="chart_div"style="height: 450px; width: 600px;">If all went well, you should see a chart here</div>
     </body>
     <script src="scripts.js"></script>
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBUgHP1nB5Nsm9k8IELrBRMpSSueJYA0r4&callback=initMap"></script>
