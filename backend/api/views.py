@@ -201,40 +201,29 @@ def find_route(first_stop: int, last_stop: int):
                 if progression_one > progression_two:
                     serves_both.remove(line)
 
-            return [
-                {
-                    x[0]: {
-                        "stops": [first_stop, last_stop],
-                        "fare": fare_finder(x[0], first_stop, last_stop)
-                    }
-                } for x in serves_both
-            ]
+            return [{x[0]: {"stops": [first_stop, last_stop], "fare": fare_finder(x[0], get_direction(x[0], first_stop), first_stop, last_stop)}} for x in serves_both]
         else:
-            cursor.execute("SELECT line_id FROM stops_served_by WHERE stop_number = %s;", [first_stop])
-            all_routes_first_stop = [x[0] for x in list(cursor.fetchall())]
-            cursor.execute("SELECT line_id FROM stops_served_by WHERE stop_number = %s;", [last_stop])
-            all_routes_last_stop = [x[0] for x in list(cursor.fetchall())]
-
-            for route in all_routes_first_stop:
-                cursor.execute()
+            # TODO: Algorithm to find adjoining routes.
+            pass
 
 
-def fare_finder(x, y, z):
-    return {"leap": 2.15, "cash": 2.85}
-# def fare_finder(route: str, direction: int, first_stop: int, last_stop: int):
-#     if "x" in route.lower():
-#         return {"leap": 2.90, "cash": 3.65}
-#     elif route == "90":
-#         return {"leap": 1.50, "cash": 2.10}
-#     else:
-#         # TODO: DB call to find number of stages
-#         num_stages = 0
-#         if num_stages < 4:
-#             return {"leap": 1.50, "cash": 2.10}
-#         elif num_stages > 12:
-#             return {"leap": 2.60, "cash": 3.30}
-#         else:
-#             return {"leap": 2.15, "cash": 2.85}
+def fare_finder(route: str, direction: int, first_stop: int, last_stop: int):
+    if "x" in route.lower():
+        return {"leap": 2.90, "cash": 3.65}
+    elif route == "90":
+        return {"leap": 1.50, "cash": 2.10}
+    else:
+        with connection.cursor() as cursor:
+            # TODO: DB call to get number of stage markers passed.
+            # cursor.execute("SELECT COUNT(*) FROM new_stops_served_by WHERE line_id = %s AND direction = %s etc...", [route, direction, first_stop, last_stop])
+            pass
+        num_stages = 0
+        if num_stages < 4:
+            return {"leap": 1.50, "cash": 2.10}
+        elif num_stages > 12:
+            return {"leap": 2.60, "cash": 3.30}
+        else:
+             return {"leap": 2.15, "cash": 2.85}
 
 
 def chart_values(route, timestamp):
@@ -250,17 +239,39 @@ def chart_values(route, timestamp):
     return times
 
 
-def next_bus(stop_number: int, route: str, direction: int):
+def next_bus(stop_number: int, route: str, direction: int, timestamp: int):
     # with connection.cursor() as cursor:
     #     cursor.execute("SELECT stop_number FROM stops_served_by WHERE line_id = %s AND direction = %s AND stop_on_route = 1", [route, direction])
     #     first_stop = cursor.fetchone()
+    user_dt = dt.datetime.fromtimestamp(timestamp)
+    year = user_dt.year
+    month = user_dt.month
+    date = user_dt.day
+    day = "Friday"
+    timetable_json = requests.get(f"https://data.smartdublin.ie/cgi-bin/rtpi/timetableinformation?type=week&stopid=806&routeid=46A&format=json").json()["results"]
 
-    timetable_json = requests.get(f"https://data.smartdublin.ie/cgi-bin/rtpi/timetableinformation?type=week&stopid=807&routeid=46A&format=json").json()["results"]
-    weekday_schedule = sorted([x["departures"] for x in timetable_json if x["enddayofweek"] == "Friday"], key=len, reverse=True)
-    while len(weekday_schedule) > 2:
-        del weekday_schedule[len(weekday_schedule) - 1]
-    # TODO: This doesn't actually work if there is only one direction... Epsilon?
-    first_stop_timetable = weekday_schedule[0]
+    if day == "Sunday":
+        schedule = sorted([list(dict.fromkeys(x["departures"])) for x in timetable_json if x["enddayofweek"] == "Sunday"], key=len, reverse=True)[:2]
+    elif day == "Saturday":
+        schedule = sorted([list(dict.fromkeys(x["departures"])) for x in timetable_json if x["enddayofweek"] == "Saturday"], key=len, reverse=True)[:2]
+    else:
+        schedule = sorted([list(dict.fromkeys(x["departures"])) for x in timetable_json if x["enddayofweek"] == "Friday"], key=len, reverse=True)[:2]
+
+    if len(schedule) > 1 and dt.datetime.strptime(f"2018-01-01 {schedule[0][0]}", "%Y-%m-%d %H:%M:%S") > dt.datetime.strptime(f"2018-01-01 {schedule[1][0]}", "%Y-%m-%d %H:%M:%S"):
+        schedule = [int(dt.datetime.timestamp(dt.datetime.strptime(f"{year}-{month}-{date} {x}", "%Y-%m-%d %H:%M:%S"))) for x in schedule[1]]
+    else:
+        schedule = [int(dt.datetime.timestamp(dt.datetime.strptime(f"{year}-{month}-{date} {x}", "%Y-%m-%d %H:%M:%S"))) for x in schedule[0]]
+
+    # TODO: Take every time from schedule, run a prediction from start to user's stop to generate all_arrival_times list
+    all_arrival_times = []
+
+    next_buses = []
+    for index, arrival_time in enumerate(all_arrival_times):
+        if arrival_time > 3:
+            for i in range(3):
+                next_buses.append(all_arrival_times[index + i])
+            break
+
     print()
 
 
@@ -316,6 +327,5 @@ def chart_endpoint(request):
     req = json.loads(request.body.decode("utf-8"))
     return JsonResponse(chart_values(req["route"], req["timestamp"]))
 
+next_bus(1,"2", 3, 1534026863)
 
-# next_bus(768, "46A", 2)
-is_school_holiday(1534011969)
