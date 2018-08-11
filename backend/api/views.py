@@ -94,7 +94,7 @@ def get_all_times(all_possible_routes: list, weather: dict, user_time: int):
                                                    precipitation,
                                                    bus_route,
                                                    direction,
-                                                   True)
+                                                   is_school_holiday(user_time))
                 total_time += get_segment(prediction[0], bus_route, direction, route[bus_route]["stops"][0], route[bus_route]["stops"][1], prediction[1])
         timings.append(total_time)
     return timings
@@ -152,7 +152,7 @@ def get_weather(timestamp: int):
     return {"temp": row[0], "icon": row[1], "precip_intensity": row[2]}
 
 
-def end_to_end_prediction(day_of_week: int, hour_of_day: int, temperature: float, precipitation: float, bus_route: str, direction: int, school: bool):
+def end_to_end_prediction(day_of_week: int, hour_of_day: int, temperature: float, precipitation: float, bus_route: str, direction: int, school_holiday: bool):
     # Quick way to convert JS's day of week into a categorical feature:
     days_list = [0, 0, 0, 0, 0, 0, 0]
     days_list[day_of_week] = 1
@@ -171,7 +171,12 @@ def end_to_end_prediction(day_of_week: int, hour_of_day: int, temperature: float
         "precip_intensity": [precipitation]
     })
 
-    with open(f"api/models/GBR_school_2017_{bus_route}_{direction}.pkl", "rb") as f:
+    if school_holiday:
+        pickle_file = f"api/models/GBR_off_school_2017_{bus_route}_{direction}.pkl"
+    else:
+        pickle_file = f"api/models/GBR_school_2017_{bus_route}_{direction}.pkl"
+
+    with open(pickle_file, "rb") as f:
         cucumber = pickle.load(f)
 
     model = cucumber[0]
@@ -259,6 +264,17 @@ def next_bus(stop_number: int, route: str, direction: int):
     print()
 
 
+def is_school_holiday(timestamp: int):
+    year = dt.datetime.fromtimestamp(timestamp).year
+    with open(f"api/school_holidays/{year}.json") as j:
+        school_holidays = json.load(j)
+
+    for holiday in school_holidays:
+        if holiday[0] < timestamp < holiday[1]:
+            return True
+
+    return False
+
 
 # TODO: Re-implement this functionality for benchmarking
 def start_timer(username: str, predicted_time: int):
@@ -269,7 +285,7 @@ def start_timer(username: str, predicted_time: int):
 # TODO: This too
 def stop_timer(username: str):
     with open(f"{username.lower()}_timer.txt") as f:
-        x = f.readlines()
+        x = f.read().splitlines()
 
     prediction = int(x[0])
     actual = round((dt.datetime.timestamp(dt.datetime.now()) - int(x[1])) / 60)
@@ -301,5 +317,5 @@ def chart_endpoint(request):
     return JsonResponse(chart_values(req["route"], req["timestamp"]))
 
 
-next_bus(768, "46A", 2)
-
+# next_bus(768, "46A", 2)
+is_school_holiday(1534011969)
