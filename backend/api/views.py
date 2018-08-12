@@ -214,10 +214,16 @@ def fare_finder(route: str, direction: int, first_stop: int, last_stop: int):
         return {"leap": 1.50, "cash": 2.10}
     else:
         with connection.cursor() as cursor:
-            # TODO: DB call to get number of stage markers passed.
-            # cursor.execute("SELECT COUNT(*) FROM new_stops_served_by WHERE line_id = %s AND direction = %s etc...", [route, direction, first_stop, last_stop])
-            pass
-        num_stages = 0
+            cursor.execute("""SELECT SUM(is_stage_marker)
+                           FROM
+                           (SELECT stop_on_route FROM stops_served_by_two WHERE line_id = %s AND direction = %s AND stop_number = %s) as first_stop,
+                           (SELECT stop_on_route FROM stops_served_by_two WHERE line_id = %s AND direction = %s AND stop_number = %s) as second_stop,
+                           (SELECT * FROM stops_served_by_two WHERE line_id = %s AND direction = %s) as all_stops
+                           WHERE all_stops.stop_on_route >= first_stop.stop_on_route
+                           AND all_stops.stop_on_route <= second_stop.stop_on_route;""",
+                           [route, direction, first_stop, route, direction, last_stop, route, direction])
+            num_stages = cursor.fetchone()[0]
+
         if num_stages < 4:
             return {"leap": 1.50, "cash": 2.10}
         elif num_stages > 12:
@@ -263,6 +269,7 @@ def next_bus(stop_number: int, route: str, direction: int, timestamp: int):
         schedule = [int(dt.datetime.timestamp(dt.datetime.strptime(f"{year}-{month}-{date} {x}", "%Y-%m-%d %H:%M:%S"))) for x in schedule[0]]
 
     # TODO: Take every time from schedule, run a prediction from start to user's stop to generate all_arrival_times list
+    predict()
     all_arrival_times = []
 
     next_buses = []
@@ -326,6 +333,3 @@ def current_weather_endpoint(request):
 def chart_endpoint(request):
     req = json.loads(request.body.decode("utf-8"))
     return JsonResponse(chart_values(req["route"], req["timestamp"]))
-
-next_bus(1,"2", 3, 1534026863)
-
