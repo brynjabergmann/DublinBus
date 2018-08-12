@@ -11,6 +11,7 @@ import requests
 # IDEs might say this one is "unused", but once our models are unpickled they need sklearn:
 import sklearn
 
+
 # client = Client('https://1e979ddecb1641ce81a0468314902d26:e894e38ec1f64c43af6876f76a3d2959@sentry.io/1249736')
 
 
@@ -24,7 +25,7 @@ def predict(values: dict):
     all_routes = get_all_routes(first_stop_list, last_stop_list)
     all_journey_times = get_all_times(all_routes, weather, user_time)
 
-    for i in range(len(all_routes)):    # Add the total time to the results sent to the user
+    for i in range(len(all_routes)):  # Add the total time to the results sent to the user
         all_routes[i]["total_time"] = all_journey_times[i]
 
     result = {
@@ -51,15 +52,6 @@ def predict(values: dict):
         result["routes"].append(all_routes[fastest_route_index])
         del all_routes[fastest_route_index]
         del all_journey_times[fastest_route_index]
-
-    midnight = user_time + 3600 - (user_time % 86400)   # TODO: This +3600 is DST
-    five_am = midnight + (3600 * 5)
-    eleven_pm = midnight + (3600 * 23)
-
-    for route in result["routes"]:
-        for hour in range(five_am, eleven_pm + 1, 3600):
-            weather = get_weather(hour)
-            route["hourly"].append(get_all_times([route], weather, hour))
 
     return result
 
@@ -89,13 +81,16 @@ def get_all_times(all_possible_routes: list, weather: dict, user_time: int):
             else:
                 direction = get_direction(bus_route, route[bus_route]["stops"][0])
                 prediction = end_to_end_prediction(dt.datetime.fromtimestamp(user_time).weekday(),
-                                                   dt.datetime.fromtimestamp(user_time - (user_time % 3600) + 3600).hour,  # TODO: This + 3600 is some DST fuckery that will ideally need to be dealt with.
+                                                   dt.datetime.fromtimestamp(
+                                                       user_time - (user_time % 3600) + 3600).hour,
+                                                   # TODO: This + 3600 is some DST fuckery that will ideally need to be dealt with.
                                                    temperature,
                                                    precipitation,
                                                    bus_route,
                                                    direction,
                                                    is_school_holiday(user_time))
-                total_time += get_segment(prediction[0], bus_route, direction, route[bus_route]["stops"][0], route[bus_route]["stops"][1], prediction[1])
+                total_time += get_segment(prediction[0], bus_route, direction, route[bus_route]["stops"][0],
+                                          route[bus_route]["stops"][1], prediction[1])
         timings.append(total_time)
     return timings
 
@@ -114,10 +109,14 @@ def get_fastest_route_index(all_times: list):
 def get_segment(end_to_end: int, bus_route: str, direction: int, first_stop: int, last_stop: int, max_stops: int):
     # TODO: Use calculated proportions - Further experiments needed.
     with connection.cursor() as cursor:
-        cursor.execute("SELECT stop_on_route FROM combined_2017 WHERE line_id = %s AND stop_number = %s AND direction = %s LIMIT 1;", [bus_route, first_stop, direction])
+        cursor.execute(
+            "SELECT stop_on_route FROM stops_served_by_two WHERE line_id = %s AND stop_number = %s AND direction = %s LIMIT 1;",
+            [bus_route, first_stop, direction])
         stop_one = cursor.fetchone()[0]
 
-        cursor.execute("SELECT stop_on_route FROM combined_2017 WHERE line_id = %s AND stop_number = %s AND direction = %s LIMIT 1;", [bus_route, last_stop, direction])
+        cursor.execute(
+            "SELECT stop_on_route FROM stops_served_by_two WHERE line_id = %s AND stop_number = %s AND direction = %s LIMIT 1;",
+            [bus_route, last_stop, direction])
         stop_two = cursor.fetchone()[0]
 
     return int(end_to_end * ((stop_two - stop_one) / max_stops))
@@ -125,15 +124,9 @@ def get_segment(end_to_end: int, bus_route: str, direction: int, first_stop: int
 
 def get_direction(bus_route: str, bus_stop: int):
     with connection.cursor() as cursor:
-        cursor.execute("SELECT stop_on_route, direction FROM combined_2017 WHERE line_id = %s AND stop_number = %s LIMIT 1;", [bus_route, bus_stop])
-        possible_directions = cursor.fetchall()
-        stop_on_route = 1000000
-        direction = 0
-        for result in possible_directions:
-            if result[0] < stop_on_route:
-                stop_on_route = result[0]
-                direction = result[1]
-        return direction
+        cursor.execute("SELECT direction FROM stops_served_by_two WHERE line_id = %s AND stop_number = %s;",
+                       [bus_route, bus_stop])
+        return cursor.fetchone()[0]
 
 
 def get_weather(timestamp: int):
@@ -143,16 +136,20 @@ def get_weather(timestamp: int):
 
     with connection.cursor() as cursor:
         if now_hour == utc_user_hour:
-            cursor.execute("SELECT temp, icon, precip_intensity FROM DarkSky_current_weather ORDER BY timestamp DESC LIMIT 1;")
+            cursor.execute(
+                "SELECT temp, icon, precip_intensity FROM DarkSky_current_weather ORDER BY timestamp DESC LIMIT 1;")
             row = cursor.fetchone()
         else:
-            cursor.execute("SELECT temp, icon, precip_intensity FROM DarkSky_hourly_weather_prediction WHERE time = %s;", [utc_user_hour])
+            cursor.execute(
+                "SELECT temp, icon, precip_intensity FROM DarkSky_hourly_weather_prediction WHERE time = %s;",
+                [utc_user_hour])
             row = cursor.fetchone()
 
     return {"temp": row[0], "icon": row[1], "precip_intensity": row[2]}
 
 
-def end_to_end_prediction(day_of_week: int, hour_of_day: int, temperature: float, precipitation: float, bus_route: str, direction: int, school_holiday: bool):
+def end_to_end_prediction(day_of_week: int, hour_of_day: int, temperature: float, precipitation: float, bus_route: str,
+                          direction: int, school_holiday: bool):
     # Quick way to convert JS's day of week into a categorical feature:
     days_list = [0, 0, 0, 0, 0, 0, 0]
     days_list[day_of_week] = 1
@@ -188,23 +185,63 @@ def end_to_end_prediction(day_of_week: int, hour_of_day: int, temperature: float
 def find_route(first_stop: int, last_stop: int):
     # TODO: This is unfinished. Right now it only works if the two stops provided share a route.
     with connection.cursor() as cursor:
-        cursor.execute("SELECT one.line_id FROM (SELECT line_id FROM stops_served_by WHERE stop_number = %s) as one, (SELECT line_id FROM stops_served_by WHERE stop_number = %s) as two WHERE one.line_id = two.line_id;", [first_stop, last_stop])
+        cursor.execute("""SELECT one.line_id
+                          FROM
+                          (SELECT line_id FROM stops_served_by_two WHERE stop_number = %s) as one,
+                          (SELECT line_id FROM stops_served_by WHERE stop_number = %s) as two
+                          WHERE one.line_id = two.line_id;""",
+                       [first_stop, last_stop])
         serves_both = list(cursor.fetchall())
+
         if serves_both:
             for line in serves_both[:]:
-                cursor.execute("SELECT stop_on_route FROM combined_2017 WHERE line_id = %s AND stop_number = %s LIMIT 1;", [line, first_stop])
+                cursor.execute(
+                    "SELECT stop_on_route FROM stops_served_by_two WHERE line_id = %s AND stop_number = %s LIMIT 1;",
+                    [line, first_stop])
                 progression_one = cursor.fetchone()[0]
 
-                cursor.execute("SELECT stop_on_route FROM combined_2017 WHERE line_id = %s AND stop_number = %s LIMIT 1;", [line, last_stop])
+                cursor.execute(
+                    "SELECT stop_on_route FROM stops_served_by_two WHERE line_id = %s AND stop_number = %s LIMIT 1;",
+                    [line, last_stop])
                 progression_two = cursor.fetchone()[0]
 
                 if progression_one > progression_two:
                     serves_both.remove(line)
+            return [{x[0]: {
+                "stops": [first_stop, last_stop],
+                "fare": fare_finder(x[0], get_direction(x[0], first_stop), first_stop, last_stop)
+            }
+            } for x in serves_both]
 
-            return [{x[0]: {"stops": [first_stop, last_stop], "fare": fare_finder(x[0], get_direction(x[0], first_stop), first_stop, last_stop)}} for x in serves_both]
-        else:
-            # TODO: Algorithm to find adjoining routes.
-            pass
+        cursor.execute("SELECT line_id FROM stops_served_by_two WHERE stop_number = %s;", [first_stop])
+        serves_first = [x[0] for x in cursor.fetchall()]
+
+        cursor.execute("SELECT line_id FROM stops_served_by_two WHERE stop_number = %s;", [last_stop])
+        serves_last = [x[0] for x in cursor.fetchall()]
+
+        two_part_journeys = []
+        for line in serves_first:
+            same_direction = get_direction(line, first_stop)
+            cursor.execute("SELECT stop_number FROM stops_served_by_two WHERE line_id = %s AND direction = %s",
+                           [line, same_direction])
+            for stop in [x[0] for x in cursor.fetchall()]:
+                cursor.execute("SELECT line_id FROM stops_served_by_two WHERE stop_number = %s;", [stop])
+                for connecting_line in [x[0] for x in cursor.fetchall()]:
+                    if connecting_line in serves_last:
+                        two_part_journeys.append(
+                            {
+                                line: {
+                                    "stops": [first_stop, stop],
+                                    "fare": fare_finder(line, same_direction, first_stop, stop)
+                                },
+                                connecting_line: {
+                                    "stops": [stop, last_stop],
+                                    "fare": fare_finder(connecting_line, get_direction(connecting_line, stop), stop,
+                                                        last_stop)
+                                }
+                            }
+                        )
+        return two_part_journeys
 
 
 def fare_finder(route: str, direction: int, first_stop: int, last_stop: int):
@@ -229,7 +266,7 @@ def fare_finder(route: str, direction: int, first_stop: int, last_stop: int):
         elif num_stages > 12:
             return {"leap": 2.60, "cash": 3.30}
         else:
-             return {"leap": 2.15, "cash": 2.85}
+            return {"leap": 2.15, "cash": 2.85}
 
 
 def chart_values(route, timestamp):
@@ -246,35 +283,62 @@ def chart_values(route, timestamp):
 
 
 def next_bus(stop_number: int, route: str, direction: int, timestamp: int):
+    # Note - This code works, but Dublin Bus's timetable endpoint is not consistently correct
+    # Open https://data.smartdublin.ie/cgi-bin/rtpi/timetableinformation?type=week&stopid=2039&routeid=46A&format=json
+    # and you will be able to see that as far as this system is concerned, the 46A stops running from Dun Laoghaire just
+    # after midday Mon-Fri, which is not true no matter what timetable you're looking at.
+
     # with connection.cursor() as cursor:
     #     cursor.execute("SELECT stop_number FROM stops_served_by WHERE line_id = %s AND direction = %s AND stop_on_route = 1", [route, direction])
     #     first_stop = cursor.fetchone()
     user_dt = dt.datetime.fromtimestamp(timestamp)
+    is_holiday = is_school_holiday(timestamp)
     year = user_dt.year
     month = user_dt.month
     date = user_dt.day
-    day = "Friday"
-    timetable_json = requests.get(f"https://data.smartdublin.ie/cgi-bin/rtpi/timetableinformation?type=week&stopid=806&routeid=46A&format=json").json()["results"]
+    day = "Friday"  # TODO: Take this from timestamp
+
+    # first_stop_number =
+
+    timetable_json = requests.get(
+        f"https://data.smartdublin.ie/cgi-bin/rtpi/timetableinformation?type=week&stopid={stop_number}&routeid={route}&format=json").json()[
+        "results"]
 
     if day == "Sunday":
-        schedule = sorted([list(dict.fromkeys(x["departures"])) for x in timetable_json if x["enddayofweek"] == "Sunday"], key=len, reverse=True)[:2]
+        schedule = sorted(
+            [list(dict.fromkeys(x["departures"])) for x in timetable_json if x["enddayofweek"] == "Sunday"], key=len,
+            reverse=True)[:2]
     elif day == "Saturday":
-        schedule = sorted([list(dict.fromkeys(x["departures"])) for x in timetable_json if x["enddayofweek"] == "Saturday"], key=len, reverse=True)[:2]
+        schedule = sorted(
+            [list(dict.fromkeys(x["departures"])) for x in timetable_json if x["enddayofweek"] == "Saturday"], key=len,
+            reverse=True)[:2]
     else:
-        schedule = sorted([list(dict.fromkeys(x["departures"])) for x in timetable_json if x["enddayofweek"] == "Friday"], key=len, reverse=True)[:2]
+        schedule = sorted(
+            [list(dict.fromkeys(x["departures"])) for x in timetable_json if x["enddayofweek"] == "Friday"], key=len,
+            reverse=True)[:2]
 
-    if len(schedule) > 1 and dt.datetime.strptime(f"2018-01-01 {schedule[0][0]}", "%Y-%m-%d %H:%M:%S") > dt.datetime.strptime(f"2018-01-01 {schedule[1][0]}", "%Y-%m-%d %H:%M:%S"):
-        schedule = [int(dt.datetime.timestamp(dt.datetime.strptime(f"{year}-{month}-{date} {x}", "%Y-%m-%d %H:%M:%S"))) for x in schedule[1]]
+    if len(schedule) > 1 and dt.datetime.strptime(f"2018-01-01 {schedule[0][0]}",
+                                                  "%Y-%m-%d %H:%M:%S") > dt.datetime.strptime(
+            f"2018-01-01 {schedule[1][0]}", "%Y-%m-%d %H:%M:%S"):
+        schedule = [int(dt.datetime.timestamp(dt.datetime.strptime(f"{year}-{month}-{date} {x}", "%Y-%m-%d %H:%M:%S")))
+                    for x in schedule[1]]
     else:
-        schedule = [int(dt.datetime.timestamp(dt.datetime.strptime(f"{year}-{month}-{date} {x}", "%Y-%m-%d %H:%M:%S"))) for x in schedule[0]]
+        schedule = [int(dt.datetime.timestamp(dt.datetime.strptime(f"{year}-{month}-{date} {x}", "%Y-%m-%d %H:%M:%S")))
+                    for x in schedule[0]]
 
     # TODO: Take every time from schedule, run a prediction from start to user's stop to generate all_arrival_times list
-    predict()
     all_arrival_times = []
+    for time in schedule:
+        schedule_dt = dt.datetime.fromtimestamp(time)
+        weather = get_weather(time)
+        e2e = end_to_end_prediction(schedule_dt.weekday(), schedule_dt.hour, weather["temp"],
+                                    weather["precip_intensity"], route, direction, is_holiday)
+        all_arrival_times.append(
+            schedule_dt + dt.timedelta(minutes=get_segment(e2e[0], route, direction, 2039, stop_number, e2e[1])))
 
     next_buses = []
     for index, arrival_time in enumerate(all_arrival_times):
-        if arrival_time > 3:
+        if arrival_time > user_dt:
             for i in range(3):
                 next_buses.append(all_arrival_times[index + i])
             break
@@ -333,3 +397,7 @@ def current_weather_endpoint(request):
 def chart_endpoint(request):
     req = json.loads(request.body.decode("utf-8"))
     return JsonResponse(chart_values(req["route"], req["timestamp"]))
+
+
+x = predict({"firstStops": [7581], "lastStops": [4871], "timestamp": 1534086901})
+print()
