@@ -47,7 +47,7 @@ def predict(values: dict):
         }
     }
 
-    for i in range(3):
+    for i in range(min(len(all_journey_times), 3)):
         fastest_route_index = get_fastest_route_index(all_journey_times)
         result["routes"].append(all_routes[fastest_route_index])
         del all_routes[fastest_route_index]
