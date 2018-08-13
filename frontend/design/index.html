@@ -26,7 +26,6 @@
     <link type="text/css" rel="stylesheet" href="./css/libraries/bootstrap-datepicker3.min.css"> <!-- Bootstrap datepicker  -->
     <link type="text/css" rel="stylesheet" href="./css/libraries/bootstrap-clockpicker.min.css"> <!-- Bootstrap clockpicker  -->
 
-
     <!-- Tab logo for the website. Reference: https://stackoverflow.com/questions/9943771/adding-a-favicon-to-a-static-html-page -->
     <link rel="shortcut icon" type="image/ico" href="./favicon.ico" />
 
@@ -35,117 +34,199 @@
 </head>
 
   <body>
-  <!-- <page-content-wrapper></page-content-wrapper> -->
+    <!-- <page-content-wrapper></page-content-wrapper> -->
     <!--Id for the map. Reference from https://developers.google.com/maps/documentation/javascript/adding-a-google-map-->
-    <div class="container1">
-        <div id="map"></div>
+    <div id="map"></div>
+
+    <!-- Sidebar. Reference from https://bootsnipp.com/snippets/BDKbE -->
+    <div id="sidebar" class="nav-side-menu">
+        <div id="header">
+            <div class="brand"> Dublin Bus </div>
+            <img class="img-responsive" img src="./img/websitelogo.png" style="width:62px; height:30px;">
+        </div>
+        <i class="fa fa-bars fa-2x toggle-btn" data-toggle="collapse" data-target="#menu-content">
+            <span class="glyphicon glyphicon-menu-hamburger"></span>
+        </i>
+        <div class="menu-list">
+            <ul id="menu-content" class="menu-content collapse out">
+                <li class="sidebarPageOne">
+                    <div id="weather">
+                        <span>
+                            <!-- Reference: https://github.com/darkskyapp/skycons -->
+                            <figure>
+                                <canvas class="icon" id="fog" width="30" height="30"></canvas>
+                            </figure>
+                            <!-- The weather temperature -->
+                            <strong id = "weatherTemp"></strong>
+                        </span>
+                    </div>
+                </li>
+                <li class="sidebarPageOne">
+                    <!-- Reference: https://getbootstrap.com/docs/3.3/components/#input-groups -->
+                    <div class="input-group">
+                        <span class="input-group-addon">From</span>
+                        <input type="text" class="form-control" aria-label placeholder="Choose a starting point..." id="fromStation">
+                        <span class="input-group-btn" id="findLocationFrom">
+                            <!-- Hover text reference: https://getbootstrap.com/docs/4.1/components/tooltips/ -->
+                            <button class="btn btn-default" type="button" data-toggle="tooltip" data-placement="bottom" title="Find my location">
+                                <img src="./img/markerImage.JPG">
+                            </button>
+                        </span>
+                    </div>
+                </li>
+                <li class="sidebarPageOne">
+                    <div class="input-group">
+                        <span class="input-group-addon">To</span>
+                        <input type="text" class="form-control" aria-label placeholder="Where do you want to go?" id="toStation">
+                        <span class="input-group-btn" id="findLocationTo">
+                            <!-- Hover text reference: https://getbootstrap.com/docs/4.1/components/tooltips/ -->
+                            <button class="btn btn-default" type="button" data-toggle="tooltip" data-placement="bottom" title="Find my location">
+                                <img src="./img/markerImage.JPG">
+                            </button>
+                        </span>
+                    </div>
+                </li>
+                <li class="sidebarPageOne">
+                    <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                        <label class="btn btn-secondary active">
+                            <input type="radio" name="options" id="option1" autocomplete="off" checked> Depart at
+                        </label>
+                        <label class="btn btn-secondary">
+                            <input type="radio" name="options" id="option2" autocomplete="off"> Arrive by
+                        </label>
+                    </div>
+                </li>
+                <li class="sidebarPageOne" id="datetimepickers">
+                    <span>
+                        <div class="datetime-group">
+                            <!-- Date picker. Reference: http://bootstrap-datepicker.readthedocs.io/en/latest/index.html -->
+                            <div class="input-group date" data-provide="datepicker" id="datepicker">
+                                <input type="text" class="form-control"  autocomplete="off">
+                                <div class="input-group-addon">
+                                    <span class="glyphicon glyphicon-th"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="datetime-group">
+                            <!-- Time picker. Reference: http://weareoutman.github.io/clockpicker/ -->
+                            <div class="input-group clockpicker">
+                                <input type="text" class="form-control" id="timePicker" autocomplete="off">
+                                <div class="input-group-addon">
+                                    <span class="glyphicon glyphicon-time"></span> <!--The clock icon-->
+                                </div>
+                            </div>
+                        </div>
+                    </span>
+                </li>
+                <li class="sidebarPageOne">
+                    <!-- Search button -->
+                    <button id="searchButton" class="btn btn-default rounded" type="button"><span class="glyphicon glyphicon-search"></span> Search </button> 
+                </li>
+                <!-- Page two of the sidebar -->
+                <li class="sidebarPageTwo">
+                    <span id="backToPageOne" class="glyphicon glyphicon-chevron-left"></span>
+                </li>
+                <!-- <li class="sidebarPageTwo">
+                    <h4 id="prediciton"></h4>
+                </li> -->
+
+
+
+
+
+
+                <li class="sidebarPageTwo">
+                    <div id="accordion">
+                        <div class="card">
+                            <div class="card-header" id="headingTwo">
+                            <h5 class="mb-0">
+                                <button id="routeOne" class="btn collapsed suggestedRoute" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                    <h5 id="prediciton"></h5> <br>
+                                    <img class="img-responsive resultImages" img src="./img/walking.png">
+                                    <span id="next" class="glyphicon glyphicon-chevron-right"></span>
+                                    <img class="img-responsive resultImages" img src="./img/bus.png">
+                                    <span id="next" class="glyphicon glyphicon-chevron-right"></span>
+                                    <img class="img-responsive resultImages" img src="./img/walking.png">
+                                    Heildarfjoldi min <br>
+                                    Leap kostnaður og cash kostnaður
+                                </button>
+                            </h5>
+                            </div>
+                            <div id="collapseTwo" class="collapse travelResults" aria-labelledby="headingTwo" data-parent="#accordion">
+                            <div class="card-body">
+                                <img class="detailedResultsImages" img src="./img/walking.png"> add walking minutes from Google <br>
+                                <img class="detailedResultsImages" img src="./img/bus.png"><h5 id="predictionMin"></h5><br>
+                                <img class="detailedResultsImages" img src="./img/walking.png"> add walking minutes from Google <br>
+                                <br>
+                                {{ GRAPH GOES HERE }}
+                            </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header" id="headingThree">
+                            <h5 class="mb-0">
+                                <button id="routeTwo" class="btn collapsed suggestedRoute" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                    <!-- Put here in prediction for route 2
+                                    <h5 id="prediciton"></h5> <br> -->
+                                    <p style="margin-top: 7px; margin-bottom: 0px;">SUGGESTED ROUTE NR. 2</p><br>
+                                    <img class="img-responsive resultImages" img src="./img/walking.png">
+                                    <span id="next" class="glyphicon glyphicon-chevron-right"></span>
+                                    <img class="img-responsive resultImages" img src="./img/bus.png">
+                                    <span id="next" class="glyphicon glyphicon-chevron-right"></span>
+                                    <img class="img-responsive resultImages" img src="./img/walking.png">
+                                    Heildarfjoldi min <br>
+                                    Leap kostnaður og cash kostnaður
+                                </button>
+                            </h5>
+                            </div>
+                            <div id="collapseThree" class="collapse travelResults" aria-labelledby="headingThree" data-parent="#accordion">
+                            <div class="card-body">
+                                <img class="detailedResultsImages" img src="./img/walking.png"> add walking minutes from Google <br>
+                                <img class="detailedResultsImages" img src="./img/bus.png"> add predicted bus minutes <br>
+                                <img class="detailedResultsImages" img src="./img/walking.png"> add walking minutes from Google <br>
+                                <br>
+                                {{ GRAPH GOES HERE }}
+                            </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header" id="headingFour">
+                            <h5 class="mb-0">
+                                <button id="routeThree" class="btn collapsed suggestedRoute" data-toggle="collapse" data-target="#collapseFour" aria-expanded="false" aria-controls="collapseThree">
+                                    <!-- Put here in prediction for route 2
+                                    <h5 id="prediciton"></h5> <br> -->
+                                    <p style="margin-top: 7px; margin-bottom: 0px;">SUGGESTED ROUTE NR. 3</p><br>
+                                    <img class="img-responsive resultImages" img src="./img/walking.png">
+                                    <span id="next" class="glyphicon glyphicon-chevron-right"></span>
+                                    <img class="img-responsive resultImages" img src="./img/bus.png">
+                                    <span id="next" class="glyphicon glyphicon-chevron-right"></span>
+                                    <img class="img-responsive resultImages" img src="./img/walking.png">
+                                    Heildarfjoldi min <br>
+                                    Leap kostnaður og cash kostnaður
+                                </button>
+                            </h5>
+                            </div>
+                            <div id="collapseFour" class="collapse travelResults" aria-labelledby="headingFour" data-parent="#accordion">
+                            <div class="card-body">
+                                <img class="detailedResultsImages" img src="./img/walking.png"> add walking minutes from Google <br>
+                                <img class="detailedResultsImages" img src="./img/bus.png"> add predicted bus minutes <br>
+                                <img class="detailedResultsImages" img src="./img/walking.png"> add walking minutes from Google <br>
+                                <br>
+                                {{ GRAPH GOES HERE }}
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+
+
+
+
+
+            </ul>
+        </div>
     </div>
 
-<!-- Sidebar. Reference from https://bootsnipp.com/snippets/BDKbE -->
-    <div class="container2">
-        <div id="sidebar" class="nav-side-menu">
-            <div id="header">
-                <div class="brand"> Dublin Bus </div>
-                <img class="img-responsive" img src="./img/websitelogo.png" style="width:62px; height:30px;">
-            </div>
-            <i class="fa fa-bars fa-2x toggle-btn" data-toggle="collapse" data-target="#menu-content">
-                <span class="glyphicon glyphicon-menu-hamburger"></span>
-            </i>
-            <div class="menu-list">
-                <ul id="menu-content" class="menu-content collapse out">
-                    <li>
-                        <div id="weather">
-                            <span>
-                                    <!-- Reference: https://github.com/darkskyapp/skycons -->
-                                    <figure>
-                                        <canvas class="icon" id="fog" width="30" height="30"></canvas>
-                                    </figure>
-                                    <!-- The weather temperature -->
-                                    <strong id = "weatherTemp">18</strong>
-                            </span>
-                        </div>
-                    </li>
-                    <!-- <li> -->
-                    <!-- Reference: https://getbootstrap.com/docs/3.3/components/#input-groups -->
-                        <!-- <div class="bus">
-                            <div class="input-group">
-                                <div class="input-group-btn">
-                                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Bus <span class="caret"></span></button>
-                                    <ul class="dropdown-menu busStations" id="busStops">
-                                    </ul>
-                                </div>
-                                <input type="text" class="form-control" aria-label="..." placeholder="Choose a bus number" id="Bus">
-                            </div>
-                        </div>
-                    </li> -->
-                    <li>
-                        
-                        <div class="input-group">
-                            <span class="input-group-addon">From</span>
-                            <input type="text" class="form-control" aria-label placeholder="Choose a starting point..." id="fromStation">
-                            <span class="input-group-btn" id="findLocationFrom">
-                                <!-- Hover text reference: https://getbootstrap.com/docs/4.1/components/tooltips/ -->
-                                <button class="btn btn-default" type="button" data-toggle="tooltip" data-placement="bottom" title="Find my location">
-                                    <img src="./img/markerImage.JPG">
-                                </button>
-                            </span>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="input-group">
-                            <span class="input-group-addon">To</span>
-                            <input type="text" class="form-control" aria-label placeholder="Where do you want to go?" id="toStation">
-                            <span class="input-group-btn" id="findLocationTo">
-                                <!-- Hover text reference: https://getbootstrap.com/docs/4.1/components/tooltips/ -->
-                                <button class="btn btn-default" type="button" data-toggle="tooltip" data-placement="bottom" title="Find my location">
-                                    <img src="./img/markerImage.JPG">
-                                </button>
-                            </span>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                            <label class="btn btn-secondary active">
-                                <input type="radio" name="options" id="option1" autocomplete="off" checked> Depart at
-                            </label>
-                            <label class="btn btn-secondary">
-                                <input type="radio" name="options" id="option2" autocomplete="off"> Arrive by
-                            </label>
-                        </div>
-                    </li>
-                    <li id="datetimepickers">
-                        <span>
-                            <div class="datetime-group">
-                                <!-- Date picker. Reference: http://bootstrap-datepicker.readthedocs.io/en/latest/index.html -->
-                                <div class="input-group date" data-provide="datepicker" id="datepicker">
-                                    <input type="text" class="form-control"  autocomplete="off">
-                                    <div class="input-group-addon">
-                                        <span class="glyphicon glyphicon-th"></span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="datetime-group">
-                                <!-- Time picker. Reference: http://weareoutman.github.io/clockpicker/ -->
-                                <div class="input-group clockpicker">
-                                    <input type="text" class="form-control" id="timePicker" autocomplete="off">
-                                    <div class="input-group-addon">
-                                        <span class="glyphicon glyphicon-time"></span> <!--The clock icon-->
-                                    </div>
-                                </div>
-                            </div>
-                        </span>
-                    </li>
-                    <li>
-                        <!-- Search button -->
-                        <button id="searchButton" class="btn btn-default rounded" type="button"><span class="glyphicon glyphicon-search"></span> Search </button>
-                    </li>
-                    <li>
-                        <h4 id="prediciton"></h4>
-                    </li>
-                </ul>
-            </div>
-        </div>
-</div>
 
 
 
