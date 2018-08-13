@@ -445,3 +445,46 @@ def make_prediction_using_coordinates(request):
     return make_prediction(values)
     # return JsonResponse(values)
 
+
+
+
+@csrf_exempt    # Can remove in production, needed for testing
+def make_prediction_using_coordinates(request):
+    values = json.loads(request.body.decode('utf-8'))
+    with connection.cursor() as cursor:
+
+        cursor.execute("SELECT stops_served_by.stop_number FROM stops_served_by INNER JOIN static_bus_data ON stops_served_by.stop_number = static_bus_data.stoppointid WHERE stops_served_by.line_id = %s AND lat >= (%s * 0.999) AND lat <= (%s * 1.001) AND `long` <= (%s * 0.999) AND `long` >= (%s * 1.001) ORDER BY abs(lat - %s) AND abs(`long` - (%s)) LIMIT 1;"
+        , [str(values["route"]), 
+        float(values["From"]["Lat"]), 
+        float(values["From"]["Lat"]), 
+        float(values["From"]["Lng"]), 
+        float(values["From"]["Lng"]), 
+        float(values["From"]["Lat"]), 
+        float(values["From"]["Lng"])])
+
+        row = cursor.fetchone()
+        from_stoppointid = row[0]
+
+        cursor.execute("SELECT stops_served_by.stop_number FROM stops_served_by INNER JOIN static_bus_data ON stops_served_by.stop_number = static_bus_data.stoppointid WHERE stops_served_by.line_id = %s AND lat >= (%s * 0.999) AND lat <= (%s * 1.001) AND `long` <= (%s * 0.999) AND `long` >= (%s * 1.001) ORDER BY abs(lat - %s) AND abs(`long` - (%s)) LIMIT 1;"
+        , [str(values["route"]), 
+        float(values["To"]["Lat"]), 
+        float(values["To"]["Lat"]), 
+        float(values["To"]["Lng"]), 
+        float(values["To"]["Lng"]), 
+        float(values["To"]["Lat"]), 
+        float(values["To"]["Lng"])])
+
+        row = cursor.fetchone()
+        to_stoppointid = row[0]
+
+        values["startStop"] = from_stoppointid
+        values["endStop"] = to_stoppointid
+        
+     
+
+
+
+    # return make_prediction(values)
+    return make_prediction(values)
+    # return JsonResponse(values)
+
