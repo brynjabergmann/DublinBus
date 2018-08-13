@@ -7,3 +7,6 @@ __pycache__/
 *twitter_auth.json
 .DS_Store
 /frontend/.DS_Store
+backend/api/add_stages\.py
+
+backend/api/highlander\.py
