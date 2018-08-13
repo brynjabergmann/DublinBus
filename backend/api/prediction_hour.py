@@ -15,7 +15,7 @@ user = credentials["db_user"]
 password = credentials["db_pass"]
 db = credentials["db_name"]
 
-hour = dt.datetime.now().hour
+hour = 17
 day = dt.datetime.today().weekday()
 
 engine = create_engine(f"mysql+pymysql://{user}:{password}@{host}:3306/{db}")
@@ -38,7 +38,7 @@ prediction_inputs = pd.DataFrame({
     "precip_intensity": [weather_forecast.iloc[0]['precip_intensity']]
 })
 
-with open("models/GBR_March_2017_46A_1.pkl", "rb") as f:
+with open("models/GBR_school_2017_46A_1.pkl", "rb") as f:
     cucumber = pickle.load(f)
 
 model = cucumber[0]
@@ -47,6 +47,6 @@ max_stops = cucumber[1]
 end_to_end = int(round(model.predict(prediction_inputs)[0]))  # Predict time from start to finish
 
 #print(day, hour, end_to_end)
-with open("output_hour.csv", 'a', newline='') as w:
+with open("/home/student/non_deploy/output_hour.csv", 'a', newline='') as w:
     writer = csv.writer(w)
     writer.writerow([day, hour, end_to_end])
