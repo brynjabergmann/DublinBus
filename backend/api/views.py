@@ -134,6 +134,10 @@ def get_weather(timestamp: int):
     now_hour = now - (now % 3600)
     utc_user_hour = timestamp - (timestamp % 3600)
 
+    if timestamp > dt.datetime.timestamp(dt.datetime.now() + dt.timedelta(days=7)):
+        return {"temp": 10, "precip_intensity": 0}
+
+    # No need for an Else, because this won't be reached if we return a value
     with connection.cursor() as cursor:
         if now_hour == utc_user_hour:
             cursor.execute(
@@ -183,7 +187,6 @@ def end_to_end_prediction(day_of_week: int, hour_of_day: int, temperature: float
 
 
 def find_route(first_stop: int, last_stop: int):
-    # TODO: This is unfinished. Right now it only works if the two stops provided share a route.
     with connection.cursor() as cursor:
         cursor.execute("""SELECT one.line_id
                           FROM
@@ -242,6 +245,8 @@ def find_route(first_stop: int, last_stop: int):
                             }
                         )
         return two_part_journeys
+
+    # TODO: Walk between stops algorithm.
 
 
 def fare_finder(route: str, direction: int, first_stop: int, last_stop: int):
@@ -397,7 +402,3 @@ def current_weather_endpoint(request):
 def chart_endpoint(request):
     req = json.loads(request.body.decode("utf-8"))
     return JsonResponse(chart_values(req["route"], req["timestamp"]))
-
-
-x = predict({"firstStops": [7581], "lastStops": [4871], "timestamp": 1534086901})
-print()
