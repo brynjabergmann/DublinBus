@@ -362,22 +362,91 @@ document.addEventListener('DOMContentLoaded', function() {
 	dailyForecast();
 });
 
+function makeChart(){
+    let postBody = {
+        "itinerary": {
+            "46A": {
+                "stops": [[53.309418194, -6.21877482979], [53.3406003809, -6.25848953123]]  // SAMPLE VALUES
+            },
+            "39A": {
+                "stops": [[53.309418194, -6.21877482979], [53.3406003809, -6.25848953123]]  // SAMPLE VALUES
+            },
+            "walk": 10      // Put the TOTAL of all walking times here
+        },
+        "timestamp": 1534331512     // SAMPLE VALUE
+    };
+    fetch("http://127.0.0.1:8000/api/chart", {
+        method: "POST",
+        body: JSON.stringify(postBody),
+        headers:{'Content-Type': 'application/json'}
+    })
+        .then(response => response.json())
+        .then(function(responseDict){
+            let predictionsArray = responseDict["chart"];
+
+            let data = new google.visualization.DataTable();
+            data.addColumn('string', 'Hour');
+            data.addColumn('number', 'Minutes');
+            data.addColumn({role: 'style', type: 'string'});
+
+            let i;
+            let now = hourNow - 5;
+            let zone;
+            let color;
+
+            for (i = 0; i < 19; i++) {
+                let time = (i + 5) % 12;
+                if(time === 0)
+                    time = "12"
+                if(i < 7)
+                    zone = "AM";
+                else
+                    zone = "PM";
+                if(i === now)
+                    color = "#6699FF";
+                else
+                    color = "silver";
+                data.addRow([time +' '+ zone, predictionsArray[i], 'color: ' + color+ ';']);
+            }
+
+            let options = {
+                animation: {
+                    duration: 2000,
+                    easing: 'out',
+                    startup: true
+                },
+                title: 'Hourly Journey Travel Times',
+                axisTitlesPosition: 'out',
+                backgroundColor: 'transparent',
+                hAxis: {
+                    title: "Time of Day"
+                },
+                legend: {
+                    position: 'none'
+                },
+                vAxis: {
+                    format: 'decimal',
+                    title: '\nJourney Time (mins)',
+                    gridlines: {
+                        color: 'transparent'
+                    }
+                }
+            };
+
+            let chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
+            chart.draw(data, options);
+        })
+}
+
 function newMakePrediction(){
-    let dateString = document.getElementById("datepicker").value;
-    let timeString = document.getElementById("timePicker").value;
-
-    let datetimeString = `${dateString} ${timeString}`;
-
-    let timestamp = Math.floor(Date.parse(datetimeString) / 1000);
-
-    // @Brynja: These should be replaced with the lat & long coordinates you get from Google
-    let firstStopLocation = [53.309418194, -6.21877482979];
-    let lastStopLocation = [53.3406003809, -6.25848953123];
+    let timestamp = datetimeToTimestamp();
+    let firstStopLocation = [53.309418194, -6.21877482979]; // SAMPLE VALUES
+    let lastStopLocation = [53.3406003809, -6.25848953123]; // SAMPLE VALUES
 
     let postBody = {
         "firstStop": firstStopLocation,
         "lastStop": lastStopLocation,
-        "busRoute": "46A",  // @Brynja: This needs to be the route Google Maps has chosen for the prediction.
+        "busRoute": "46A",  // SAMPLE VALUE
         "timestamp": timestamp
     };
 
@@ -388,6 +457,16 @@ function newMakePrediction(){
     })
         .then(response => response.json())
         .then(function(responseDict){
-            console.log(responseDict["prediction"])     // @Brynja: responseDict["prediction"] is predicted minutes for that segment of the journey.
+            console.log(responseDict["prediction"])     // responseDict["prediction"] is predicted minutes for that segment of the journey.
         });
+}
+
+// Not 100% sure how well this will work as a function, but if you have to, you can just copy this code where you need it.
+function datetimeToTimestamp(){
+    let dateString = document.getElementById("datepicker");
+    let timeString = document.getElementById("timePicker");
+
+    let datetimeString = `${dateString} ${timeString}`;
+
+    return Math.floor(Date.parse(datetimeString) / 1000);
 }

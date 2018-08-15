@@ -77,7 +77,7 @@ def get_all_times(all_possible_routes: list, weather: dict, user_time: int):
             bus_route = parts_of_route[i]
 
             if "walk" in bus_route:
-                total_time += route[i]
+                total_time += route["walk"]
             else:
                 direction = get_direction(bus_route, route[bus_route]["stops"][0])
                 prediction = end_to_end_prediction(dt.datetime.fromtimestamp(user_time).weekday(),
@@ -274,14 +274,21 @@ def fare_finder(route: str, direction: int, first_stop: int, last_stop: int):
             return {"leap": 2.15, "cash": 2.85}
 
 
-def chart_values(route, timestamp):
-    times = []
+def chart_values(itinerary: dict, timestamp: int):
+
+    for bus_route in [*itinerary]:
+        if bus_route != "walk":
+            itinerary[bus_route]["stops"][0] = get_stopnum_from_location(itinerary[bus_route]["stops"][0][0], itinerary[bus_route]["stops"][0][1])
+            itinerary[bus_route]["stops"][1] = get_stopnum_from_location(itinerary[bus_route]["stops"][1][0], itinerary[bus_route]["stops"][1][1])
+
     midnight = timestamp - (timestamp % 86400)
     five_am = midnight + (3600 * 5)
     eleven_pm = midnight + (3600 * 23)
+
+    times = []
     for hour in range(five_am, eleven_pm + 1, 3600):
         weather = get_weather(hour)
-        times.append(get_all_times([route], weather, hour)[0])
+        times.append(get_all_times([itinerary], weather, hour)[0])
 
     return times
 
@@ -301,8 +308,6 @@ def next_bus(stop_number: int, route: str, direction: int, timestamp: int):
     month = user_dt.month
     date = user_dt.day
     day = "Friday"  # TODO: Take this from timestamp
-
-    # first_stop_number =
 
     timetable_json = requests.get(
         f"https://data.smartdublin.ie/cgi-bin/rtpi/timetableinformation?type=week&stopid={stop_number}&routeid={route}&format=json").json()[
@@ -364,7 +369,11 @@ def is_school_holiday(timestamp: int):
 
 def get_stopnum_from_location(lat: float, lng: float):
     with connection.cursor() as cursor:
-        cursor.execute("SELECT stop_number FROM static_bus_data WHERE lat = %s AND lng = %s", [lat, lng])
+        cursor.execute("""SELECT stop_number
+                          FROM static_bus_data
+                          WHERE lat < %s + 0.0001 AND lat > %s - 0.0001
+                          AND lng < %s + 0.0001 AND lng > %s - 0.0001""",
+                       [lat, lat, lng, lng])
         row = cursor.fetchone()
         if row:
             return row[0]
@@ -424,21 +433,24 @@ def current_weather_endpoint(request):
 @csrf_exempt
 def chart_endpoint(request):
     req = json.loads(request.body.decode("utf-8"))
-    return JsonResponse({"chart": chart_values(req["route"], req["timestamp"])})
+    return JsonResponse({"chart": chart_values(req["itinerary"], req["timestamp"])})
 
 
 @csrf_exempt
 def location_prediction_endpoint(request):
     req = json.loads(request.body.decode("utf-8"))
+    predictions = []
+    for request_dict in req:
+        predictions.append(predict_from_locations(
+            request_dict["firstStop"][0],
+            request_dict["firstStop"][1],
+            request_dict["lastStop"][0],
+            request_dict["lastStop"][1],
+            request_dict["busRoute"],
+            request_dict["timestamp"]
+        ))
     return JsonResponse(
         {
-            "prediction": predict_from_locations(
-                req["firstStop"][0],
-                req["firstStop"][1],
-                req["lastStop"][0],
-                req["lastStop"][1],
-                req["busRoute"],
-                req["timestamp"]
-            )
+            "predictions": predictions
         }
     )
