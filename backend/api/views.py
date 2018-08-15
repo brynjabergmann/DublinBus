@@ -41,7 +41,7 @@ def forecast(request):
         client.captureMessage("There has been an error with the forecast request method")
 
 
-def daily_forecast(request):
+def daily_forecast(request, returnAsList = False):
     # The user will be able to select a date, which will translate into day below
     try:
         day = dt.datetime.today().weekday()
@@ -59,6 +59,8 @@ def daily_forecast(request):
                 hourly_forecast = {"dow": dow, "hour": hour, "temp": temp, "rain": rain}
                 daily_forecast.append(hourly_forecast)
         all_day_weather = {"all_day_weather": daily_forecast}
+        if(returnAsList):
+            return all_day_weather
         return JsonResponse(all_day_weather)
     except:
         client.captureMessage("There has been an error with the daily_forecast request method")
@@ -151,7 +153,7 @@ def stop_location(request):
             client.captureMessage("Error loading json string")
 
             with connection.cursor() as cursor:
-                cursor.execute("SELECT lat, `long` FROM static_bus_data WHERE stoppointid = %s LIMIT 1", [int(values["stop"])])
+                cursor.execute("SELECT lat, lng FROM static_bus_data WHERE stop_number = %s LIMIT 1", [int(values["stop"])])
                 row = cursor.fetchone()
                 lat = row[0]
                 lng = row[1]
@@ -213,7 +215,16 @@ def make_prediction_using_coordinates(request):
     values = json.loads(request.body.decode('utf-8'))
     with connection.cursor() as cursor:
 
-        cursor.execute("SELECT stops_served_by.stop_number FROM stops_served_by INNER JOIN static_bus_data ON stops_served_by.stop_number = static_bus_data.stoppointid WHERE stops_served_by.line_id = %s AND lat >= (%s * 0.999) AND lat <= (%s * 1.001) AND `long` <= (%s * 0.999) AND `long` >= (%s * 1.001) ORDER BY abs(lat - %s) AND abs(`long` - (%s)) LIMIT 1;"
+        cursor.execute("""
+        SELECT stops_served_by.stop_number 
+        FROM stops_served_by INNER 
+        JOIN static_bus_data ON stops_served_by.stop_number = static_bus_data.stop_number 
+        WHERE stops_served_by.line_id = %s 
+        AND lat >= (%s * 0.999) AND lat <= (%s * 1.001) 
+        AND lng <= (%s * 0.999) AND lng >= (%s * 1.001) 
+        ORDER BY abs(lat - %s) AND abs(lng - (%s)) 
+        LIMIT 1;
+        """
         , [str(values["route"]), 
         float(values["From"]["Lat"]), 
         float(values["From"]["Lat"]), 
@@ -223,9 +234,18 @@ def make_prediction_using_coordinates(request):
         float(values["From"]["Lng"])])
 
         row = cursor.fetchone()
-        from_stoppointid = row[0]
+        from_stop_number = row[0]
 
-        cursor.execute("SELECT stops_served_by.stop_number FROM stops_served_by INNER JOIN static_bus_data ON stops_served_by.stop_number = static_bus_data.stoppointid WHERE stops_served_by.line_id = %s AND lat >= (%s * 0.999) AND lat <= (%s * 1.001) AND `long` <= (%s * 0.999) AND `long` >= (%s * 1.001) ORDER BY abs(lat - %s) AND abs(`long` - (%s)) LIMIT 1;"
+        cursor.execute("""
+        SELECT stops_served_by.stop_number 
+        FROM stops_served_by 
+        INNER JOIN static_bus_data ON stops_served_by.stop_number = static_bus_data.stop_number 
+        WHERE stops_served_by.line_id = %s 
+        AND lat >= (%s * 0.999) AND lat <= (%s * 1.001) 
+        AND lng <= (%s * 0.999) AND lng >= (%s * 1.001) 
+        ORDER BY abs(lat - %s) AND abs(lng - (%s)) 
+        LIMIT 1;
+        """
         , [str(values["route"]), 
         float(values["To"]["Lat"]), 
         float(values["To"]["Lat"]), 
@@ -235,15 +255,15 @@ def make_prediction_using_coordinates(request):
         float(values["To"]["Lng"])])
 
         row = cursor.fetchone()
-        to_stoppointid = row[0]
+        to_stop_number = row[0]
 
-        values["startStop"] = from_stoppointid
-        values["endStop"] = to_stoppointid
+        values["startStop"] = from_stop_number
+        values["endStop"] = to_stop_number
         
     return make_prediction_old(values)
 
 @csrf_exempt    # Can remove in production, needed for testing
-def make_prediction_old(request):
+def make_prediction_old(request, get_result_only = False):
 
     # Convert JSON string passed by browser to Python dictionary:
     if type(request) is dict:
@@ -254,7 +274,6 @@ def make_prediction_old(request):
     # Quick way to convert JS's day of week into a categorical feature:
     days_list = [0, 0, 0, 0, 0, 0, 0]
     days_list[values["day"]] = 1
-
     # Create a pandas dataframe to be fed into the prediction model
     prediction_inputs = pd.DataFrame({
         "avg_H": [values["hour"]],
@@ -268,7 +287,6 @@ def make_prediction_old(request):
         "temp": [values["temp"]],
         "precip_intensity": [values["rain"]]
     })
-
     with connection.cursor() as cursor:
         cursor.execute("SELECT direction, stop_on_route FROM combined_2017 WHERE line_id = %s AND stop_number = %s LIMIT 1;"
         , [values["route"], values["startStop"]])
@@ -281,16 +299,34 @@ def make_prediction_old(request):
         , [values["route"], values["endStop"]])
         row = cursor.fetchone()
         last_stop = row[0]
-
     with open(f"api/models/GBR_school_2017_{values['route']}_{direction}.pkl", "rb") as f:
         cucumber = pickle.load(f)
 
     model = cucumber[0]
     max_stops = cucumber[1]
-
     end_to_end = int(round(model.predict(prediction_inputs)[0]))    # Predict time from start to finish
 
     segment = int(end_to_end * ((last_stop - first_stop) / max_stops))
-    prediction = {"result": segment}
-
+    prediction = {"result": segment, "startStop": first_stop, "endStop": last_stop}
+    if(get_result_only):
+        return segment
     return JsonResponse(prediction)
+
+
+
+@csrf_exempt    # Can remove in production, needed for testing
+def get_graph_values(request):
+    
+    values = json.loads(request.body.decode('utf-8'))
+    daily = daily_forecast("", True)
+    
+    predictions = []
+    # for i in range (5, 24):
+    #     print(i)
+    #     data = {"temp": daily["all_day_weather"][i]["temp"], "rain": daily["all_day_weather"][i]["rain"], "startStop": values["startStop"], "endStop": values["endStop"], "route": values["route"], "day": values["day"], "hour": i}
+    #     result = make_prediction_old(data, True)
+    #     predictions.append(result) 
+    return JsonResponse({"hourlyPredictions": list(range(1, 20))})
+    # return JsonResponse({"hourlyPredictions": predictions})
+
+

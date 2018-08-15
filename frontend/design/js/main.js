@@ -4,7 +4,9 @@ var directionsService; // Find directions from a to b
 var directionsDisplay; // Displays route on map
 var fromPlace = {}; 
 var toPlace = {};
-
+var routeOneTotalTravelTime;
+var routeTwoTotalTravelTime;
+var routeThreeTotalTravelTime;
 
 
 // Map reference: https://developers.google.com/maps/documentation/javascript/adding-a-google-map
@@ -20,7 +22,7 @@ function initMap() {
     directionsDisplay.setMap(map);                  // Connect route display to map
     console.log(directionsDisplay);
     console.log(directionsDisplay.routes)
-  }
+}
 
  
 
@@ -31,7 +33,7 @@ function getInputDateAsDateObject(){
     var dateArray = date.split("/");
     // JavaScript needs date objects to have format yyyy/mm/dd hh:mm
     return new Date(`${dateArray[2]}/${dateArray[1]}/${dateArray[0]} ${time}`);
-  }
+}
 
 
 
@@ -48,7 +50,7 @@ function getInputDateAsDateObject(){
       transitOptions: {
         modes: ["BUS"],
         departureTime: date,
-        routingPreference: "FEWER_TRANSFERS"
+        routingPreference: "FEWER_TRANSFERS"    // Minimizes the number of buses for one journey
       }
     }, 
     // Callback function for route
@@ -56,50 +58,71 @@ function getInputDateAsDateObject(){
       if (status === 'OK') {
         console.log(response);
 
-        var object = new Object();
-        object.day = date.getDay();
-        object.hour = date.getHours();
-        object.temp = tempNow;
-        object.rain = rainNow;
-        object.route = response.routes["0"].legs["0"].steps[1].transit.line.short_name;
-
-        object.From = { 
-            Lat: response.routes["0"].legs["0"].steps[1].start_location.lat(),
-            Lng: response.routes["0"].legs["0"].steps[1].start_location.lng()
+        // Shows max three suggested routes/result boxes
+        var number_of_bus_routes = 3;
+        if (response.routes.length < 3) {
+            number_of_bus_routes = response.routes.length;
         }
-        object.To = {
-            Lat: response.routes["0"].legs["0"].steps[1].end_location.lat(),
-            Lng: response.routes["0"].legs["0"].steps[1].end_location.lng()
-        }
-        object.Date  = $("#datepicker input").val();
-        object.Time = $("#timePicker").val();
-        const jsonString= JSON.stringify(object);
-        console.log(jsonString);
 
-         // Send data to api
-        $.post("http://127.0.0.1:8000/api/make_prediction_using_coordinates", jsonString, function(response) {
-            console.log( "success" );
-            console.log("response: " + response);
-            console.log(response);
+        // Hide unused result boxes
+        for (var i = 3; i > number_of_bus_routes; i--) {
+            $(`route-${i - 1}`).show();            
+        }
+
+        // Create and display prediction for every route
+        for (var i = 0; i < number_of_bus_routes; i++) {
+
+            var object = new Object();
+            object.day = date.getDay();
+            object.hour = date.getHours();
+            object.temp = tempNow;
+            object.rain = rainNow;
             
-            $("#prediciton").text(`Predicted travel time: ${response["result"]} minutes`);
-            $("#predictionMin").text(`${response["result"]} minutes`);
-            $(".sidebarPageOne").hide();
-            $(".sidebarPageTwo").show();
-        })
-        // When response is ready
-        .done(function() {
-            console.log( "Display prediction to user" );
-        })
-        // Api failure
-        .fail(function() {
-            $("#prediciton").text(`Predicted travel time: ${16} minutes`);
-            console.log( "error" );
-        })
-        // Always run
-        .always(function() {
-            console.log( "finished" );
-        });
+            object.route = response.routes[i].legs["0"].steps[1].transit.line.short_name;
+
+            object.From = { 
+                Lat: response.routes[i].legs["0"].steps[1].start_location.lat(),
+                Lng: response.routes[i].legs["0"].steps[1].start_location.lng()
+            }
+            object.To = {
+                Lat: response.routes[i].legs["0"].steps[1].end_location.lat(),
+                Lng: response.routes[i].legs["0"].steps[1].end_location.lng()
+            }
+            object.Date  = $("#datepicker input").val();
+            object.Time = $("#timePicker").val();
+            const jsonString= JSON.stringify(object);
+            console.log(jsonString);
+            
+            $(`#route-${i}`).empty();       // Remove old suggested data
+            $(`#routeDetails_${i}`).empty();       // Remove old suggested data
+
+            // Display images for steps (walking or bus)
+            for(let j = 0; j < response.routes[i].legs[0].steps.length; j++)
+            {
+                
+                const buttonWalking = `<img class="img-responsive resultImages" img src="./img/walking.png">`;
+                const nextImage = `<span id="next" class="glyphicon glyphicon-chevron-right"></span>`;
+                if(response.routes[i].legs[0].steps[j].travel_mode == "TRANSIT")
+                {
+                    const buttonBus = `<img class="img-responsive resultImages busImage" img src="./img/bus.png">
+                        <h5 class="busName">[${response.routes[i].legs["0"].steps[j].transit.line.short_name}]</h5>`
+                    $(`#route-${i}`).append(buttonBus);
+                }
+                else{
+                    $(`#route-${i}`).append(buttonWalking);
+                }
+                if(+j + 1 !== response.routes[i].legs[0].steps.length)      // +j to ensure j is treated as number
+                {
+                    $(`#route-${i}`).append(nextImage);
+                }
+            }
+            // Get prediction and display detailed data for suggested routes
+            for(let j = 0; j < response.routes[i].legs[0].steps.length; j++)
+            {
+                getPredictionFromBackend (response, i, jsonString, j, response.routes[i].legs[0].steps[j].travel_mode); 
+            }
+            // getPredictionFromBackend (response, i, jsonString);
+        }
 
         // The first 4 bus routes
         console.log(response.routes["0"].legs["0"].steps[1].transit.line.short_name);
@@ -123,6 +146,132 @@ function getInputDateAsDateObject(){
       }
     });
   }
+
+
+function getPredictionFromBackend(response, i, jsonString, stepsIndex, stepType) {
+    
+    if(stepType == "TRANSIT")
+    {
+        const detailBus = `<img class="img-responsive resultImages busImage" img src="./img/bus.png"> <h5 class="displayResultsMin" id="predictionMin_${i}_${stepsIndex}"></h5>`;
+        
+        // Add element to html
+        $(`#routeDetails_${i}`).append(detailBus);
+        $.post("http://127.0.0.1:8000/api/make_prediction_using_coordinates", jsonString, function(backendResponse) {
+                    console.log("success");
+                    console.log("response: " + backendResponse);
+                    console.log(backendResponse);
+                    
+                    // $(`#prediciton_${i}`).text(`Travel time: ${backendResponse["result"]} mins`);
+                    $(`#predictionMin_${i}_${stepsIndex}`).text(`${backendResponse["result"]} mins`);
+                    
+                    // $(`#walkingMinStep1_${i}`).text(`${[response.routes[i].legs["0"].steps["0"].duration.text.replace("mins", "mins")]}`);
+                    // $(`#walkingMinStep2_${i}`).text(`${[response.routes[i].legs["0"].steps["2"].duration.text.replace("mins", "mins")]}`);
+
+                    // $(`#totalTravelMins_${i}`).text;
+
+                    
+
+                    $(".sidebarPageOne").hide();
+                    $(".sidebarPageTwo").show();
+                })
+                // When response is ready
+                .done(function(data) {
+                    getGraph(data, response.routes[i].legs["0"].steps[stepsIndex].transit.line.short_name, i);
+                })
+                // Api failure
+                .fail(function() {
+                    console.log( "error" );
+                })
+        }
+        else {
+            const walkingMinutes = `<img class="img-responsive resultImages" img src="./img/walking.png"><h5 class="displayResultsMin">${[response.routes[i].legs["0"].steps[stepsIndex].duration.text.replace("mins", "mins")]}</h5>`;
+            $(`#routeDetails_${i}`).append(walkingMinutes);
+        }
+}
+
+function getGraph(data, route, i){
+    data.route = route;
+    data.day = getInputDateAsDateObject().getDay();
+    var jsonString = JSON.stringify(data);
+    const graph = `<div class="row"><div id="chart_div_${i}" style="height: 200px; width: 300px;">If all went well, you should see a chart here</div></div>`;
+    $(`#routeDetails_${i}`).append(graph);
+    $.post("http://127.0.0.1:8000/api/get_graph_values", jsonString, function(backendResponse) {
+        console.log("imageresponse");            
+        console.log(backendResponse);
+        drawChart(backendResponse["hourlyPredictions"], `chart_div_${i}`);
+
+    });
+}
+
+function getTotalTravelMins(mins) {
+    mins.walking
+}
+
+
+
+
+function drawChart(predictions, containerID) {
+	let data = new google.visualization.DataTable();
+	data.addColumn('string', 'Hour');
+    data.addColumn('number', 'Minutes');
+	data.addColumn({role: 'style', type: 'string'});
+	let i;	
+    let now = getInputDateAsDateObject().getHours(); 
+    // hourNow - 5;
+	let zone;
+	let color;
+	for (i = 0; i < 19; i++) {
+		time = (i + 5) % 12;
+		if(time == 0)
+			time = "12"
+		if(i < 7)
+			zone = "AM";
+		else
+			zone = "PM";
+		if(i == now)
+			color = "#6699FF";
+		else
+			color = "silver";
+		data.addRow([time +' '+ zone, predictions[i], 'color: ' + color+ ';']);
+
+		};
+
+    let options = {
+        animation: {
+            duration: 2000,
+            easing: 'out',
+            startup: true
+        },
+        title: 'Hourly Journey Travel Times',
+        axisTitlesPosition: 'out',
+        backgroundColor: 'transparent',
+        curveType: 'function',
+        hAxis: {
+            title: "Time of Day"
+        },
+        legend: {
+            position: 'none'
+        },
+        vAxis: {
+			viewWindowMode: 'maximized',
+            format: 'decimal',
+            title: '\nJourney Time (mins)',
+            gridlines: {
+                color: 'transparent'
+            }
+        }
+    };
+
+    let chart = new google.visualization.ColumnChart(document.getElementById(containerID));
+
+    chart.draw(data, options);
+	predictions = [];
+}
+
+
+
+
+
 
 
 
@@ -157,6 +306,9 @@ function getInputDateAsDateObject(){
             else {
                 geoAddress(yourLocation, "#toStation", false);
             }
+            
+            
+            // $(`#fromStation`).empty();       // Remove old marker
             
         // Reference: https://developers.google.com/maps/documentation/javascript/examples/marker-animations
         // Function that makes the marker bounce on the map
@@ -195,13 +347,18 @@ function geoAddress(location, inputID, isFromPlace){
     geocoder.geocode({'location': location}, function(results, status){
         if (status == 'OK') {
             if (results[0]) {
-                var route = results[0]["address_components"].find(function(element){            // Gets street name
-                    return element.types.includes("route");})["long_name"];
-                var postalcode = results[0]["address_components"].find(function(element){       // Gets postal code
-                    return element.types.includes("postal_town");})["long_name"];
-                var country = results[0]["address_components"].find(function(element){          // Gets country 
-                    return element.types.includes("country", "political");})["long_name"];
-                $(inputID).val(`${route}, ${postalcode}, ${country}`);
+                try {
+                    var route = results[0]["address_components"].find(function(element){            // Gets street name
+                        return element.types.includes("route");})["long_name"];
+                    var postalcode = results[0]["address_components"].find(function(element){       // Gets postal code
+                        return element.types.includes("postal_town");})["long_name"];
+                    var country = results[0]["address_components"].find(function(element){          // Gets country 
+                        return element.types.includes("country", "political");})["long_name"];
+                    $(inputID).val(`${route}, ${postalcode}, ${country}`);
+                }
+                catch{
+                        alert("Unable to find your location. Please insert address manually.");
+                }
             }
         }
     });
@@ -285,16 +442,6 @@ function weatherIcons(){
         icons.play();
 }
 
-// Function that puts bus stations into dropdown menu
-// function fetchBusStations() {
-//     $.get("https://dublinbus.icu/api/bus_stations", function(data, status) {
-//         data["results"].forEach(function(busStation){
-//             $(".busStations").append(`<li><p class="busStation">${busStation["fullname"]}</p></li>`);
-//         });
-//         $("#busStops").on("click", this.currentTarget, updateDropDown);
-//     });
-// }
-
 function updateDropDown(element){
     // Reference: https://stackoverflow.com/questions/8482241/selecting-next-input
         $("#Bus").val(element.target.innerText);  
@@ -360,45 +507,6 @@ function createMarker(location) {
 
 
 
-// Sidebar´s second page
-// $(function() {
-//     $('nav#menu').mmenu();
-// });
-
-
-
-
-
-
-
-
-
-
-// function predict(){
-//     let data = {
-//         // hour:  $("#timePicker").val(),
-//         // day: $("#timePicker").val(),
-//         hour:  new Date().getHours(),
-//         day: new Date().getDay(),
-//         temp: tempNow,
-//         rain: rainNow,
-//         route: $("#Bus").val(),
-//         startStop: $("#fromStation").val(),
-//         endStop: $("#toStation").val(),
-//     };
-//     const jsonString= JSON.stringify(data);
-//     $.post("https://dublinbus.icu/api/make_prediction", jsonString)
-//         .done(function(data) {
-//             $("#prediciton").text(`Predicted travel time: ${data["result"]} minutes`);
-//         })
-//         .fail(function(data) {
-//             $("#prediciton").text("Unable to predict travel time");
-//         });
-
-//     $.get("https://dublinbus.icu/api/make_prediction", function(predict) {
-//         // keyrir þegar búið er að ná í gogn 
-//     });
-// }
 
 
 
@@ -416,119 +524,6 @@ function createMarker(location) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// Copyed from Peter
-// function makePredictionNow(){
-//     let data = {
-//         hour: hourNow,
-//         day: dayNow,
-//         temp: tempNow,
-//         rain: rainNow,
-//         route: document.getElementById("Bus").value,
-//         startStop: document.getElementById("fromStation").value,
-//         endStop: document.getElementById("toStation").value
-//     };
-
-//     fetch("https://dublinbus.icu/api/make_prediction", {
-//         method: "POST",
-//         headers: {"Content-Type": "application/json; charset=utf-8"},
-//         referrer: "no-referrer",
-//         body: JSON.stringify(data)
-//       })
-//           .then(function(response){
-//               return response.json(); // Currently only returning a single value. Using JSON to allow easier extension later
-//           })
-//           .then(function(prediction){
-//               document.getElementById("prediction").innerHTML = `Estimated time: <b>${prediction["result"]}</b> minutes`;
-//           })
-//           .catch(function(){
-//               document.getElementById("prediction").innerHTML = "Prediction server not available."
-//           });
-//   }
-  
-//   I ignored the getLatestWeather function from Peters test js
-// function getLatestWeather(){
-//     fetch("https://dublinbus.icu/api/current_weather")
-//         .then(function(response){
-//             return response.json();
-//         })
-//         .then(function(weather){
-//             tempNow = weather["temp"];
-//             rainNow = weather["precip_intensity"];
-//         })
-//         .then(function(){console.log(tempNow); console.log(rainNow)});
-// }
-
-// function routesDropdown(){
-//     allBuses.forEach(function(routeNum){
-//         let item = document.createElement("option");
-//         item.textContent = routeNum;
-//         item.value = routeNum;
-//         document.getElementById("busStops").appendChild(item);
-//     });
-// }
-
-// function getStopLocation(stopNumber){
-//     fetch("https://dublinbus.icu/api/stop_location", {
-//         method: "POST",
-//         headers: {"Content-Type": "application/json; charset=utf-8"},
-//         referrer: "no-referrer",
-//         body: JSON.stringify({stop: stopNumber})
-//     })
-//     .then(function(response){
-//         return response.json();
-//     })
-//     .then(function(myLatLng){
-//         new google.maps.Marker({
-//             position: myLatLng,
-//             map: map,
-//         });
-//     });
-// }
-
-
-
-// Initialize everything. Waits for document to fully load and then start running stuff
-// $(document).ready(function(e){
-//     setEventListeners();
-
-//     $('.clockpicker').clockpicker({
-//         donetext: "",
-//         autoclose: true
-//     });
-//     $( "#datepicker" ).datepicker({
-//         autoclose: true,
-//         format: "dd/mm/yyyy",
-//         startDate: '1d'
-//     });
-//     setInitialDateTime();
-//     // insertBusStations();
-//     setInitialClock()
-//     // fetchWeather();
-//     getLocation();
-//     // geoAddress();
-// });
 
 $(window).on("load", function(){
 
@@ -555,5 +550,8 @@ $(window).on("load", function(){
        $(".sidebarPageTwo").hide();
     });
 
+    google.charts.load('current', {
+        'packages': ['corechart']
+    });
 
 });

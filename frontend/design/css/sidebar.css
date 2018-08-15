@@ -6,13 +6,21 @@
     font-family: verdana;
     font-size: 12px;
     font-weight: 200;
-    background-color: white;
+    /* background-color: rgba(0, 0, 0, 0.10); */
+    background-color: #f5f5dc;
     position: fixed;
     top: 0px;
-    width: 340px;
+    width: 350px;
+    height: 100%;
     color:black;
     text-align: center;
+    /* overflow-y: scroll;
+    overflow-x: hidden; */
 }
+
+/* #sidebar {
+  overflow-y: hidden;} */
+
 
 /* The header of the sidebar */
 #header {
@@ -27,7 +35,7 @@
 
 /* Name of the website in the header */
 #header > div {
-  background-color: white;
+  background-color: #f5f5dc;
   color: black;
   padding-top: 20px;
   font-size: 16px;
@@ -127,8 +135,13 @@
 
 
 /* Colour of the Depart at\ Arrive by buttons */
-.btn.active {
+.btn.active,
+#menu-content > li:nth-child(4) > div{
   background-color: whitesmoke;
+}
+#menu-content > li:nth-child(4) > div > label:nth-child(2),
+#menu-content > li:nth-child(4) > div > label:nth-child(1) {
+  background-color: white;
 }
 
 /* Styling of the sidebar list */
@@ -143,7 +156,7 @@
 
 .nav-side-menu li {
   padding-left: 0px;
-  border-bottom: 1px solid white;
+  border-bottom: 1px solid #f5f5dc;
 }
 .nav-side-menu li a {
   text-decoration: none;
@@ -241,52 +254,28 @@ button {
   padding-left: 2em;
   position: inherit;
 }
-/* button:before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 1em;
-  width: 2px;
-  height: 2px;
-  border: none;
-  border-bottom: 0;
-  margin-top: -9px;
-  background: transparent;
-  -webkit-border-top-left-radius: 8px;
-  -webkit-border-top-right-radius: 8px;
-  -moz-border-radius: 8px 8px 0 0;
-  border-radius: 8px 8px 0 0;
-}
-button:after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 1em;
-  border-width: 12px 4px 0;
-  border-color: white transparent;
-  margin-top: -4px;
-} */
-button:hover {
-  background-color: rgba(0, 0, 0, 0.15);
-}
-
-#backToPageOne {
-  font-size: 20px;
-}
 
 .suggestedRoute {
   width: 100%;
   background: whitesmoke;
 }
 
+
 .sidebarPageTwo {
-  display: none;
+  display: none;}
+
+#scrollDown {
+  overflow-y: scroll;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .resultImages {
   display: inline;
   width: 20px; 
   height: 20px;
+  margin-left: 5px;
+  margin-right: 5px;
 }
 
 .detailedResultsImages {
@@ -297,19 +286,43 @@ button:hover {
 }
 
 .travelResults {
-  text-align: left;
-  margin-left: 30px;
+  text-align: center;
+  margin-left: 0px;
   line-height: 10px;
   margin-bottom: 0px;
   margin-top: 0px;
   font-size: 14px
 }
 
-#prediciton {
-  margin-bottom: 0px;
+
+.busName {
+  display: inline;
 }
 
-#predictionMin {
+.displayResultsMin  {
   display: inline;
-  margin-left: 7px;
+  margin-left: 2px;
 }
+
+#backToPageOne {
+  display: flex;
+  margin-left: 20px;
+  margin-top: 0px;
+  margin-bottom: 5px;
+  font-size: 20px;
+}
+
+.busImage {
+  margin-left: 5px;
+  margin-right: 2px;
+}
+
+.glyphicon-chevron-right {
+  color: darkblue;
+}
+
+/* #routeDetails_0 > div,
+#routeDetails_1 > div,
+#routeDetails_2 > div {
+  display:inline-block;
+} */
