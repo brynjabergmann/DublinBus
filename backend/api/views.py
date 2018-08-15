@@ -14,11 +14,7 @@ import sklearn
 # client = Client('https://1e979ddecb1641ce81a0468314902d26:e894e38ec1f64c43af6876f76a3d2959@sentry.io/1249736')
 
 
-def predict(values: dict):
-    first_stop_list = values["firstStops"]
-    last_stop_list = values["lastStops"]
-    user_time = values["timestamp"]
-
+def predict(first_stop_list: list, last_stop_list: list, user_time: int):
     weather = get_weather(user_time)
 
     all_itineraries = get_itineraries(first_stop_list, last_stop_list)
@@ -416,7 +412,8 @@ def stop_timer(username: str):
 
 @csrf_exempt
 def prediction_endpoint(request):
-    return JsonResponse(predict(json.loads(request.body.decode("utf-8"))))
+    req = json.loads(request.body.decode("utf-8"))
+    return JsonResponse(predict(req["firstStops"], req["lastStops"], req["timestamp"]))
 
 
 @csrf_exempt
