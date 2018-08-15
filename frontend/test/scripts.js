@@ -122,7 +122,7 @@ google.charts.load('current', {
     'packages': ['corechart']
 });
 
-function drawChart() {
+function drawChart(predictionsArray) {
 	let data = new google.visualization.DataTable();
 	data.addColumn('string', 'Hour');
     data.addColumn('number', 'Minutes');
@@ -132,18 +132,18 @@ function drawChart() {
 	let zone;
 	let color;
 	for (i = 0; i < 19; i++) {
-		time = (i + 5) % 12;
-		if(time == 0)
+		let time = (i + 5) % 12;
+		if(time === 0)
 			time = "12"
 		if(i < 7)
 			zone = "AM";
 		else
 			zone = "PM";
-		if(i == now)
+		if(i === now)
 			color = "#6699FF";
 		else
 			color = "silver";
-		data.addRow([time +' '+ zone, predictions[i], 'color: ' + color+ ';']);
+		data.addRow([time +' '+ zone, predictionsArray[i], 'color: ' + color+ ';']);
 
 		};
 
@@ -156,7 +156,6 @@ function drawChart() {
         title: 'Hourly Journey Travel Times',
         axisTitlesPosition: 'out',
         backgroundColor: 'transparent',
-        curveType: 'function',
         hAxis: {
             title: "Time of Day"
         },
@@ -164,7 +163,6 @@ function drawChart() {
             position: 'none'
         },
         vAxis: {
-			viewWindowMode: 'maximized',
             format: 'decimal',
             title: '\nJourney Time (mins)',
             gridlines: {
@@ -176,7 +174,6 @@ function drawChart() {
     let chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
 
     chart.draw(data, options);
-	predictions = [];
 }
 
 function stopTimer(){
@@ -364,3 +361,33 @@ document.addEventListener('DOMContentLoaded', function() {
     getLatestWeather();
 	dailyForecast();
 });
+
+function newMakePrediction(){
+    let dateString = document.getElementById("datepicker").value;
+    let timeString = document.getElementById("timePicker").value;
+
+    let datetimeString = `${dateString} ${timeString}`;
+
+    let timestamp = Math.floor(Date.parse(datetimeString) / 1000);
+
+    // @Brynja: These should be replaced with the lat & long coordinates you get from Google
+    let firstStopLocation = [53.309418194, -6.21877482979];
+    let lastStopLocation = [53.3406003809, -6.25848953123];
+
+    let postBody = {
+        "firstStop": firstStopLocation,
+        "lastStop": lastStopLocation,
+        "busRoute": "46A",  // @Brynja: This needs to be the route Google Maps has chosen for the prediction.
+        "timestamp": timestamp
+    };
+
+    fetch("http://127.0.0.1:8000/api/single-prediction", {
+        method: "POST",
+        body: JSON.stringify(postBody),
+        headers:{'Content-Type': 'application/json'}
+    })
+        .then(response => response.json())
+        .then(function(responseDict){
+            console.log(responseDict["prediction"])     // @Brynja: responseDict["prediction"] is predicted minutes for that segment of the journey.
+        });
+}

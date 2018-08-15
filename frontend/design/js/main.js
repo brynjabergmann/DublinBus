@@ -557,3 +557,115 @@ $(window).on("load", function(){
 
 
 });
+
+///////////////////////////////////
+// @Brynja: New code starts here //
+///////////////////////////////////
+
+function makeChart(){
+    let postBody = {
+        "route": {
+            "46A": {
+                "stops": [768, 792]
+            },
+            "39A": {
+                "stops": [768, 793]
+            },
+            "walk": 10      // @Brynja: Put the total amount of walking time here and it will be added to the chart times
+        },
+        "timestamp": 1534240959
+    };
+    fetch("http://127.0.0.1:8000/api/chart", {
+        method: "POST",
+        body: JSON.stringify(postBody),
+        headers:{'Content-Type': 'application/json'}
+    })
+        .then(response => response.json())
+        .then(function(responseDict){
+            let predictionsArray = responseDict["chart"];
+
+            let data = new google.visualization.DataTable();
+            data.addColumn('string', 'Hour');
+            data.addColumn('number', 'Minutes');
+            data.addColumn({role: 'style', type: 'string'});
+
+            let i;
+            let now = hourNow - 5;
+            let zone;
+            let color;
+
+            for (i = 0; i < 19; i++) {
+                let time = (i + 5) % 12;
+                if(time === 0)
+                    time = "12"
+                if(i < 7)
+                    zone = "AM";
+                else
+                    zone = "PM";
+                if(i === now)
+                    color = "#6699FF";
+                else
+                    color = "silver";
+                data.addRow([time +' '+ zone, predictionsArray[i], 'color: ' + color+ ';']);
+            }
+
+            let options = {
+                animation: {
+                    duration: 2000,
+                    easing: 'out',
+                    startup: true
+                },
+                title: 'Hourly Journey Travel Times',
+                axisTitlesPosition: 'out',
+                backgroundColor: 'transparent',
+                hAxis: {
+                    title: "Time of Day"
+                },
+                legend: {
+                    position: 'none'
+                },
+                vAxis: {
+                    format: 'decimal',
+                    title: '\nJourney Time (mins)',
+                    gridlines: {
+                        color: 'transparent'
+                    }
+                }
+            };
+
+            // @Brynja: I saw you have {{ Graph goes here }} in the HTML. The google charts code needs a <div> it can
+            // put the chart into using these two lines:
+            let chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
+            chart.draw(data, options);
+        })
+}
+
+function newMakePrediction(){
+    let dateString = document.getElementById("datepicker");
+    let timeString = document.getElementById("timePicker");
+
+    let datetimeString = `${dateString} ${timeString}`;
+
+    let timestamp = Math.floor(Date.parse(datetimeString) / 1000);
+
+    // @Brynja: These should be replaced with the lat & long coordinates you get from Google
+    let firstStopLocation = [53.309418194, -6.21877482979];
+    let lastStopLocation = [53.3406003809, -6.25848953123];
+
+    let postBody = {
+        "firstStop": firstStopLocation,
+        "lastStop": lastStopLocation,
+        "busRoute": "46A",  // @Brynja: This needs to be the route Google Maps has chosen for the prediction.
+        "timestamp": timestamp
+    };
+
+    fetch("http://127.0.0.1:8000/api/single-prediction", {
+        method: "POST",
+        body: JSON.stringify(postBody),
+        headers:{'Content-Type': 'application/json'}
+    })
+        .then(response => response.json())
+        .then(function(responseDict){
+            console.log(responseDict["prediction"])     // @Brynja: responseDict["prediction"] is predicted minutes for that segment of the journey.
+        });
+}

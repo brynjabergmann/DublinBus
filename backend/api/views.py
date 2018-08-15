@@ -280,7 +280,6 @@ def chart_values(route, timestamp):
     five_am = midnight + (3600 * 5)
     eleven_pm = midnight + (3600 * 23)
     for hour in range(five_am, eleven_pm + 1, 3600):
-        # TODO: Have front-end communicate the above required values BACK to Django
         weather = get_weather(hour)
         times.append(get_all_times([route], weather, hour)[0])
 
@@ -363,6 +362,30 @@ def is_school_holiday(timestamp: int):
     return False
 
 
+def get_stopnum_from_location(lat: float, lng: float):
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT stop_number FROM static_bus_data WHERE lat = %s AND lng = %s", [lat, lng])
+        row = cursor.fetchone()
+        if row:
+            return row[0]
+
+
+def predict_from_locations(first_stop_lat: float, first_stop_lng: float, last_stop_lat: float, last_stop_lng: float, bus_route: str, timestamp: int):
+    first_stop = get_stopnum_from_location(first_stop_lat, first_stop_lng)
+    last_stop = get_stopnum_from_location(last_stop_lat, last_stop_lng)
+    weather = get_weather(timestamp)
+    user_dt = dt.datetime.fromtimestamp(timestamp)
+    weekday = user_dt.weekday()
+    hour = user_dt.hour
+    temperature = weather["temp"]
+    rain = weather["precip_intensity"]
+    direction = get_direction(bus_route, first_stop)
+    school_holiday = is_school_holiday(timestamp)
+
+    e2e = end_to_end_prediction(weekday, hour, temperature, rain, bus_route, direction, school_holiday)
+    return get_segment(e2e[0], bus_route, direction, first_stop, last_stop, e2e[1])
+
+
 # TODO: Re-implement this functionality for benchmarking
 def start_timer(username: str, predicted_time: int):
     with open(f"{username.lower()}_timer.txt", "w") as f:
@@ -404,39 +427,18 @@ def chart_endpoint(request):
     return JsonResponse({"chart": chart_values(req["route"], req["timestamp"])})
 
 
-# TODO: Fold this into main prediction function
-@csrf_exempt    # Can remove in production, needed for testing
-def make_prediction_using_coordinates(request):
-    values = json.loads(request.body.decode('utf-8'))
-    with connection.cursor() as cursor:
-
-        cursor.execute("SELECT stops_served_by.stop_number FROM stops_served_by INNER JOIN static_bus_data ON stops_served_by.stop_number = static_bus_data.stoppointid WHERE stops_served_by.line_id = %s AND lat >= (%s * 0.999) AND lat <= (%s * 1.001) AND `long` <= (%s * 0.999) AND `long` >= (%s * 1.001) ORDER BY abs(lat - %s) AND abs(`long` - (%s)) LIMIT 1;"
-        , [str(values["route"]), 
-        float(values["From"]["Lat"]), 
-        float(values["From"]["Lat"]), 
-        float(values["From"]["Lng"]), 
-        float(values["From"]["Lng"]), 
-        float(values["From"]["Lat"]), 
-        float(values["From"]["Lng"])])
-
-        row = cursor.fetchone()
-        from_stoppointid = row[0]
-
-        cursor.execute("SELECT stops_served_by.stop_number FROM stops_served_by INNER JOIN static_bus_data ON stops_served_by.stop_number = static_bus_data.stoppointid WHERE stops_served_by.line_id = %s AND lat >= (%s * 0.999) AND lat <= (%s * 1.001) AND `long` <= (%s * 0.999) AND `long` >= (%s * 1.001) ORDER BY abs(lat - %s) AND abs(`long` - (%s)) LIMIT 1;"
-        , [str(values["route"]), 
-        float(values["To"]["Lat"]), 
-        float(values["To"]["Lat"]), 
-        float(values["To"]["Lng"]), 
-        float(values["To"]["Lng"]), 
-        float(values["To"]["Lat"]), 
-        float(values["To"]["Lng"])])
-
-        row = cursor.fetchone()
-        to_stoppointid = row[0]
-
-        values["startStop"] = from_stoppointid
-        values["endStop"] = to_stoppointid
-
-    # return make_prediction(values)
-    return make_prediction(values)
-    # return JsonResponse(values)
+@csrf_exempt
+def location_prediction_endpoint(request):
+    req = json.loads(request.body.decode("utf-8"))
+    return JsonResponse(
+        {
+            "prediction": predict_from_locations(
+                req["firstStop"][0],
+                req["firstStop"][1],
+                req["lastStop"][0],
+                req["lastStop"][1],
+                req["busRoute"],
+                req["timestamp"]
+            )
+        }
+    )
