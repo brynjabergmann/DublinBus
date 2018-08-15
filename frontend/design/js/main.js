@@ -77,7 +77,7 @@ function getInputDateAsDateObject(){
         console.log(jsonString);
 
          // Send data to api
-        $.post("http://127.0.0.1:8000/api/make_prediction_using_coordinates", jsonString, function(response) {
+        $.post("https://dublinbus.icu/api/make_prediction_using_coordinates", jsonString, function(response) {
             console.log( "success" );
             console.log("response: " + response);
             console.log(response);
@@ -250,7 +250,7 @@ function autocomplete(){
 }
 
 function fetchWeather(){
-    fetch("http://127.0.0.1:8000/api/current_weather")   // First make a GET request to our endpoint
+    fetch("https://dublinbus.icu/api/current_weather")   // First make a GET request to our endpoint
         .then(function(rawResponse){                    // Once that raw response is received, do something with it,
             return rawResponse.json();                  // in this case, take the string response and convert to a JSON object
         })
