@@ -69,7 +69,7 @@
   margin-right: 38px; */
   /*position:absolute;*/
   /*margin-top: 7px;*/
-  padding-top: 90px;
+  padding-top: 60px;
   margin-bottom: 7px;
   display: inline-block;
   vertical-align: middle;
@@ -80,6 +80,7 @@
 /* Margin left for the weather temperature */
 #weatherTemp {
   margin-left: 4px;
+    color: whitesmoke;
 }
 
 #weather > span > figure {
@@ -166,7 +167,6 @@
 
 .nav-side-menu li {
   padding-left: 0px;
-  border-bottom: 1px solid #f5f5dc;
 }
 .nav-side-menu li a {
   text-decoration: none;
@@ -196,12 +196,18 @@
   }
 
 }
+/*.accordion {*/
+    /*margin-top: 5px;*/
+    /*margin-bottom: 5px;*/
+
+/*}*/
 @media (min-width: 767px) {
   .nav-side-menu {
     height: 100%;
   }    
   .nav-side-menu .menu-list .menu-content {
     display: block;
+
   }
   #main {
       width:calc(100% - 300px);
@@ -248,6 +254,9 @@
 
 
 
+pageTwoOuter{
+  padding-top: 50px;
+}
 
 
 
@@ -270,14 +279,17 @@ button {
   width: 100%;
   background: whitesmoke;
 }
-
 .sidebarPageTwo {
-  display: none;}
+  display: none;
+  /*border-top: 1px solid whitesmoke;*/
+  /*border-bottom: 1px solid whitesmoke;*/
+}
 
 #scrollDown {
   overflow-y: scroll;
   overflow-x: hidden;
   overflow-y: auto;   /* virkar þetta? */
+
 }
 
 .resultImages {
@@ -317,11 +329,14 @@ button {
 #backToPageOne {
   display: flex;
   margin-left: 20px;
-  margin-top: 0px;
   margin-bottom: 5px;
   font-size: 20px;
+  color: whitesmoke;
 }
-
+.collapsed {
+  display: block;
+  color: green;
+}
 .busImage {
   margin-left: 5px;
   margin-right: 2px;
@@ -337,8 +352,21 @@ button {
   display:inline-block;
 } */
 
-
+.travelResults collapse in {
+  color: green;
+  background-color: transparent;
+  display: block;
+}
 .search {
   margin-top: 5px;
   margin-bottom: 5px;
+  border-bottom: 1px solid #f5f5dc;
+  border-top: 1px solid #f5f5dc;
+
 }
+
+.pageTwo {
+  border-bottom: 1px solid #f5f5dc;
+  border-top: 1px solid #f5f5dc;
+}
+

@@ -13,12 +13,12 @@ var routeThreeTotalTravelTime;
 // Direction reference: https://developers.google.com/maps/documentation/javascript/examples/directions-simple
 
 // Function that initialize and adds the map to the website
-function initMap() {                                
+function initMap() {
     var Dublin = {lat: 53.350140, lng: -6.266155}
     directionsService = new google.maps.DirectionsService;
     directionsDisplay = new google.maps.DirectionsRenderer;
     map = new google.maps.Map(                      
-        document.getElementById('map'), {zoom: 12, center: Dublin});
+        document.getElementById('map'), {zoom: 12, center: Dublin, mapTypeControl: false});
     directionsDisplay.setMap(map);                  // Connect route display to map
     console.log(directionsDisplay);
     console.log(directionsDisplay.routes)
@@ -241,8 +241,11 @@ function datetimeToTimestamp(){
                     }
                 }
                 $(".sidebarPageOne").hide();
+                $(".search").hide();
                 $(".sidebarPageTwo").show();
-                })
+                $(".pageTwo").show();
+                $(".pageTwoOuter").show();
+            })
                 // When response is ready
                 .done(function(data) {
                     updateTotalTravelTime(i);
@@ -719,8 +722,13 @@ $(window).on("load", function(){
     
     $("#backToPageOne").on("click", function(){
        $(".sidebarPageOne").show();
+       $(".search").show();
        $(".sidebarPageTwo").hide();
+       $(".pageTwo").hide();
+       $(".pageTwoOuter").hide();
+
     });
+
 
     google.charts.load('current', {
         'packages': ['corechart']
