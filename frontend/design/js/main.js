@@ -53,7 +53,7 @@ function timeStamp() {
 //         "timestamp": timestamp
 //     };
 
-//     fetch("http://127.0.0.1:8000/api/single-prediction", {
+//     fetch("https://dublinbus.icu/api/single-prediction", {
 //         method: "POST",
 //         body: JSON.stringify(postBody),
 //         headers:{'Content-Type': 'application/json'}
@@ -198,7 +198,7 @@ function datetimeToTimestamp(){
             {
                 routeThreeTotalTravelTime = 0;
             }
-            $.post("http://127.0.0.1:8000/api/location_prediction_endpoint", jsonString, function(backendResponse) {
+            $.post("https://dublinbus.icu/api/location_prediction_endpoint", jsonString, function(backendResponse) {
                 console.log("success");
                 console.log("response: " + backendResponse);
                 console.log(backendResponse);
@@ -322,7 +322,7 @@ function makeChart(postBody, steps, routeIndex){
     var jsonString = JSON.stringify(data);
     const graph = `<div class="row"><div id="chart_div_${i}" style="height: 200px; width: 300px;">If all went well, you should see a chart here</div></div>`;
     $(`#routeDetails_${i}`).append(graph);
-    $.post("http://127.0.0.1:8000/api/chart", jsonString, function(backendResponse) {
+    $.post("https://dublinbus.icu/api/chart", jsonString, function(backendResponse) {
         console.log("imageresponse");            
         console.log(backendResponse);
 
@@ -338,7 +338,7 @@ function getPredictionFromBackend(response, i, jsonString, stepsIndex, stepType)
         
         // Add element to html
         $(`#routeDetails_${i}`).append(detailBus);
-        $.post("http://127.0.0.1:8000/api/predict", jsonString, function(backendResponse) {
+        $.post("https://dublinbus.icu/api/predict", jsonString, function(backendResponse) {
                     console.log("success");
                     console.log("response: " + backendResponse);
                     console.log(backendResponse);
@@ -370,7 +370,7 @@ function getGraph(data, route, i){
     var jsonString = JSON.stringify(data);
     const graph = `<div class="row"><div id="chart_div_${i}" style="height: 200px; width: 300px;">If all went well, you should see a chart here</div></div>`;
     $(`#routeDetails_${i}`).append(graph);
-    $.post("http://127.0.0.1:8000/api/chart", jsonString, function(backendResponse) {
+    $.post("https://dublinbus.icu/api/chart", jsonString, function(backendResponse) {
         console.log("imageresponse");            
         console.log(backendResponse);
         drawChart(backendResponse["hourlyPredictions"], `chart_div_${i}`);
@@ -582,7 +582,7 @@ function autocomplete(){
 }
 
 function fetchWeather(){
-    fetch("http://127.0.0.1:8000/api/current_weather")   // First make a GET request to our endpoint
+    fetch("https://dublinbus.icu/api/current_weather")   // First make a GET request to our endpoint
         .then(function(rawResponse){                    // Once that raw response is received, do something with it,
             return rawResponse.json();                  // in this case, take the string response and convert to a JSON object
         })
