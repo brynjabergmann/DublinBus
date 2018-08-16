@@ -127,77 +127,48 @@
                     <span id="backToPageOne" class="glyphicon glyphicon glyphicon-arrow-left"></span>
                 </li>
 
-                <div id="scrollDown">
-                    <!-- Collapsible reference: https://getbootstrap.com/docs/4.0/components/collapse/ -->
-                    <li class="sidebarPageTwo">
-                        <div id="accordion">
-                            <div class="card">
-                                <div class="card-header" id="headingTwo">
-                                    <h5 class="mb-0">
-                                        <button id="route-0" class="btn collapsed suggestedRoute" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">                               
-                                        <h5 id="totalTravelMin_0"></h5>
-                                        </button>
-                                    </h5>
-                                </div>
-                                <div id="collapseTwo" class="collapse travelResults" aria-labelledby="headingTwo" data-parent="#accordion">
+                
+                <!-- Collapsible reference: https://getbootstrap.com/docs/4.0/components/collapse/ -->
+                <li class="sidebarPageTwo">
+                    <div id="accordion" class="panel-group" role="tablist" aria-multiselectable="true">
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="headingOne">
+                                <h5 class="panel-title">
+                                    <button id="route-0" class="btn collapsed suggestedRoute" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                    </button>
+                                </h5>
+                            </div>
+                            <div id="collapseOne" class="collapse travelResults" aria-labelledby="headingOne" data-parent="#accordion">
                                 <div id="routeDetails_0" class="card-body moreDetails">
-                                </div>
-                                </div>
-                            </div>
-
-
-
-                            <div class="card">
-                                <div class="card-header" id="headingThree">
-                                <h5 class="mb-0">
-                                    <button id="route-1" class="btn collapsed suggestedRoute" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                                        <h5 id="prediciton_1"></h5>
-                                        <img class="img-responsive resultImages" img src="./img/walking.png">
-                                        <span id="next" class="glyphicon glyphicon-chevron-right"></span>
-                                        <img class="img-responsive resultImages busImage" img src="./img/bus.png">
-                                        <h5 class="busName" id="busName_1"></h5>
-                                        <span id="next" class="glyphicon glyphicon-chevron-right"></span>
-                                        <img class="img-responsive resultImages" img src="./img/walking.png">
-                                        Leap and cash cost
-                                    </button>
-                                </h5>
-                                </div>
-                                <div id="collapseThree" class="collapse travelResults" aria-labelledby="headingThree" data-parent="#accordion">
-                                <div id="routeDetails_1" class="card-body moreDetails">
-                                    <img class="detailedResultsImages" img src="./img/walking.png"> <h5 class="displayResultsMin" id="walkingMinStep1_1"></h5> <br>
-                                    <img class="detailedResultsImages busImage" img src="./img/bus.png"><h5 class="displayResultsMin" id="predictionMin_1"></h5><br>
-                                    <img class="detailedResultsImages" img src="./img/walking.png"> <h5 class="displayResultsMin" id="walkingMinStep2_1"></h5> <br>
-                                    <div id="chart_div"style="height: 225px; width: 300px;">If all went well, you should see a chart here</div>
-                                </div>
-                                </div>
-                            </div>
-                            <div class="card">
-                                <div class="card-header" id="headingFour">
-                                <h5 class="mb-0">
-                                    <button id="route-2" class="btn collapsed suggestedRoute" data-toggle="collapse" data-target="#collapseFour" aria-expanded="false" aria-controls="collapseThree">
-                                        <h5 id="prediciton_2"></h5>
-                                        <img class="img-responsive resultImages" img src="./img/walking.png">
-                                        <span id="next" class="glyphicon glyphicon-chevron-right"></span>
-                                        <img class="img-responsive resultImages busImage" img src="./img/bus.png">
-                                        <h5 class="busName" id="busName_2"></h5>
-                                        <span id="next" class="glyphicon glyphicon-chevron-right"></span>
-                                        <img class="img-responsive resultImages" img src="./img/walking.png">
-                                        Leap and cash cost
-                                    </button>
-                                </h5>
-                                </div>
-                                <div id="collapseFour" class="collapse travelResults" aria-labelledby="headingFour" data-parent="#accordion">
-                                <div id="routeDetails_2" class="card-body moreDetails">
-                                    <img class="detailedResultsImages" img src="./img/walking.png"> <h5 class="displayResultsMin" id="walkingMinStep1_2"></h5> <br>
-                                    <img class="detailedResultsImages busImage" img src="./img/bus.png"><h5 class="displayResultsMin" id="predictionMin_2"></h5><br>
-                                    <img class="detailedResultsImages" img src="./img/walking.png"> <h5 class="displayResultsMin" id="walkingMinStep2_2"></h5> <br>
-                                    <div id="chart_div"style="height: 225px; width: 300px;">If all went well, you should see a chart here</div>
-                                </div>
                                 </div>
                             </div>
                         </div>
-                    </li>
-                </div>
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="headingTwo">
+                                <h5 class="panel-title">
+                                    <button id="route-1" class="btn collapsed suggestedRoute" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                    </button>
+                                </h5>
+                            </div>
+                            <div id="collapseTwo" class="collapse travelResults" aria-labelledby="headingTwo" data-parent="#accordion">
+                                <div id="routeDetails_1" class="card-body moreDetails">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="headingThree">
+                                <h5 class="panel-title">
+                                    <button id="route-2" class="btn collapsed suggestedRoute" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                    </button>
+                                </h5>
+                            </div>
+                            <div id="collapseThree" class="collapse travelResults" aria-labelledby="headingThree" data-parent="#accordion">
+                                <div id="routeDetails_2" class="card-body moreDetails">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
             </ul>
         </div>
     </div>

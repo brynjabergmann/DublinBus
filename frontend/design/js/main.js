@@ -20,8 +20,6 @@ function initMap() {
     map = new google.maps.Map(                      
         document.getElementById('map'), {zoom: 12, center: Dublin});
     directionsDisplay.setMap(map);                  // Connect route display to map
-    console.log(directionsDisplay);
-    console.log(directionsDisplay.routes)
 }
 
 
@@ -111,13 +109,12 @@ function datetimeToTimestamp(){
 
         // Hide unused result boxes
         for (var i = 3; i > number_of_bus_routes; i--) {
-            $(`route-${i - 1}`).show();            
+            $(`route-${i - 1}`).hide();            
         }
 
         // Create and display prediction for every route
         for (var i = 0; i < number_of_bus_routes; i++) {
 
-            
             // var object = new Object();
             // object.day = date.getDay();
             // object.hour = date.getHours();
@@ -185,7 +182,7 @@ function datetimeToTimestamp(){
                 }
             }
             const jsonString= JSON.stringify(postBody);
-            console.log(jsonString);
+            // console.log(jsonString);
             if(i === 0)
             {
                 routeOneTotalTravelTime = 0;
@@ -198,82 +195,8 @@ function datetimeToTimestamp(){
             {
                 routeThreeTotalTravelTime = 0;
             }
-            $.post("http://127.0.0.1:8000/api/location_prediction_endpoint", jsonString, function(backendResponse) {
-                console.log("success");
-                console.log("response: " + backendResponse);
-                console.log(backendResponse);
-                for(let j = 0; j < response.routes[i].legs[0].steps.length; j++)
-                {
-                    if(response.routes[i].legs[0].steps[j].travel_mode == "TRANSIT")
-                    {
-                        let predictedTime = backendResponse["predictions"][j];
-                        if(i === 0)
-                        {
-                            routeOneTotalTravelTime += +predictedTime;
-                        }
-                        if(i === 1)
-                        {
-                            routeTwoTotalTravelTime += +predictedTime;
-                        }
-                        if(i === 2)
-                        {
-                            routeThreeTotalTravelTime += +predictedTime;
-                        }
-                        const detailBus = `<img class="img-responsive resultImages busImage" img src="./img/bus.png"> <h5 class="displayResultsMin" id="predictionMin_${i}_${j}">${predictedTime}</h5>`;
-                        // Add element to html
-                        $(`#routeDetails_${i}`).append(detailBus);        
-                    }
-                    else {
-                        const walkingMinutes = `<img class="img-responsive resultImages" img src="./img/walking.png"><h5 class="displayResultsMin">${[response.routes[i].legs["0"].steps[j].duration.text.replace("mins", "mins")]}</h5>`;
-                        $(`#routeDetails_${i}`).append(walkingMinutes);
-                        if(i === 0)
-                        {
-                            routeOneTotalTravelTime += +parseInt(response.routes[i].legs["0"].steps[j].duration.text.replace("mins", "mins").replace(" ", ""));
-                        }
-                        if(i === 1)
-                        {
-                            routeTwoTotalTravelTime += +parseInt(response.routes[i].legs["0"].steps[j].duration.text.replace("mins", "mins").replace(" ", ""));
-                        }
-                        if(i === 2)
-                        {
-                            routeThreeTotalTravelTime += +parseInt(response.routes[i].legs["0"].steps[j].duration.text.replace("mins", "mins").replace(" ", ""));
-                        }
-                    }
-                }
-                $(".sidebarPageOne").hide();
-                $(".sidebarPageTwo").show();
-                })
-                // When response is ready
-                .done(function(data) {
-                    updateTotalTravelTime(i);
-                    makeChart(postBody, response.routes[i].legs[0].steps, i);
-                })
-            
-
-            // Get prediction and display detailed data for suggested routes
-            //Works if there is one request for each prediction
-            // for(let j = 0; j < response.routes[i].legs[0].steps.length; j++)
-            // {
-            //     getPredictionFromBackend (response, i, jsonString, j, response.routes[i].legs[0].steps[j].travel_mode); 
-            // }
-            // getPredictionFromBackend (response, i, jsonString);
+            predictRoute(response, jsonString, i, postBody);
         }
-
-        // The first 4 bus routes
-        console.log(response.routes["0"].legs["0"].steps[1].transit.line.short_name);
-        console.log(response.routes["1"].legs["0"].steps[1].transit.line.short_name);
-        console.log(response.routes["2"].legs["0"].steps[1].transit.line.short_name);
-        console.log(response.routes["3"].legs["0"].steps[1].transit.line.short_name);
-        // The lat and long for the origin bus stop
-        console.log(response.routes["0"].legs["0"].steps[1].start_location.lat());
-        console.log(response.routes["0"].legs["0"].steps[1].start_location.lng());
-        // The lat and long for the destination bus stop (if only one bus)
-        console.log(response.routes["0"].legs["0"].steps[1].end_location.lat());
-        console.log(response.routes["0"].legs["0"].steps[1].end_location.lng());
-        // The lat and long for the destination bus stop (if two buses)
-        console.log(response.routes["0"].legs["0"].steps[2].end_location.lat());
-        console.log(response.routes["0"].legs["0"].steps[2].end_location.lng());
-        
         directionsDisplay.setDirections(response);
       } 
       else {
@@ -282,30 +205,86 @@ function datetimeToTimestamp(){
     });
   }
 
+function predictRoute(response, jsonString, i, postBody){
+    $.post("http://127.0.0.1:8000/api/location_prediction_endpoint", jsonString, function(backendResponse) {
+        for(let j = 0; j < response.routes[i].legs[0].steps.length; j++)
+        {
+            if(response.routes[i].legs[0].steps[j].travel_mode === "TRANSIT")
+            {
+                let predictedTime = backendResponse["predictions"].shift();
+                if(i === 0)
+                {
+                    routeOneTotalTravelTime += +predictedTime;
+                }
+                if(i === 1)
+                {
+                    routeTwoTotalTravelTime += +predictedTime;
+                }
+                if(i === 2)
+                {
+                    routeThreeTotalTravelTime += +predictedTime;
+                }
+                const detailBus = `<img class="img-responsive resultImages busImage" img src="./img/bus.png"> <h5 class="displayResultsMin" id="predictionMin_${i}_${j}">${predictedTime} mins</h5>`;
+                // Add element to html
+                $(`#routeDetails_${i}`).append(detailBus);        
+            }
+            else {
+                const walkingMinutes = `<img class="img-responsive resultImages walkImage" img src="./img/walking.png"><h5 class="displayResultsMin">${[response.routes[i].legs["0"].steps[j].duration.text]}</h5>`;
+                $(`#routeDetails_${i}`).append(walkingMinutes);
+                if(i === 0)
+                {
+                    routeOneTotalTravelTime += +parseInt(response.routes[i].legs["0"].steps[j].duration.text.replace("mins", "").replace(" ", ""));
+                }
+                if(i === 1)
+                {
+                    routeTwoTotalTravelTime += +parseInt(response.routes[i].legs["0"].steps[j].duration.text.replace("mins", "").replace(" ", ""));
+                }
+                if(i === 2)
+                {
+                    routeThreeTotalTravelTime += +parseInt(response.routes[i].legs["0"].steps[j].duration.text.replace("mins", "").replace(" ", ""));
+                }
+            }
+        }
+        $(".sidebarPageOne").hide();
+        $(".sidebarPageTwo").show();
+        })
+        // When response is ready
+        .done(function(data) {
+            updateTotalTravelTime(i);
+            makeChart(postBody, response.routes[i].legs[0].steps, i);
+        })
+}
+
 function updateTotalTravelTime(i){
+    const travelTimeText = "Total Travel Time:";
     if(i === 0)
     {
-        // $("RouteOneTotalTravelTime").empty();
-        $("RouteOneTotalTravelTime").text(routeOneTotalTravelTime);
+        let totalTravelTime = `<h5>${travelTimeText} ${routeOneTotalTravelTime} minutes</h5>`
+        $(`#route-${i}`).prepend(totalTravelTime);
     }
     if(i === 1)
     {
-        $("RouteTwoTotalTravelTime").text(routeTwoTotalTravelTime);
+        let totalTravelTime = `<h5>${travelTimeText} ${routeTwoTotalTravelTime} minutes</h5>`
+        $(`#route-${i}`).prepend(totalTravelTime);
     }
     if(i === 2)
     {
-        $("RouteThreeTotalTravelTime").text(routeThreeTotalTravelTime);
+        let totalTravelTime = `<h5>${travelTimeText} ${routeThreeTotalTravelTime} minutes</h5>`
+        $(`#route-${i}`).prepend(totalTravelTime);
     }
 }
 
 function makeChart(postBody, steps, routeIndex){
     let body = new Object();
-    body.itinerary = [];
+    body.itinerary = new Object();
     for(let i = 0; i < postBody.length; i++)
     {
-        body.itinerary[postBody.busRoute].firstStop = postBody.firstStop;
-        body.itinerary[postBody.busRoute].lastStop = postBody.lastStop;
+        let route = new Object();
+        route.stops = [postBody[0].firstStop, postBody[0].lastStop];
+        const busName = postBody[0].busRoute;
+        body.itinerary[busName] = route;
     }
+
     let walking = 0;
     for(let i = 0; i < steps.length; i++){
         if(steps[i].travel_mode != "TRANSIT")
@@ -313,74 +292,16 @@ function makeChart(postBody, steps, routeIndex){
             walking += parseInt(steps[i].duration.text.replace("mins", "").replace(" ", ""));
         }
     }
-    body.itinerary.walk = walking;
+    body.walk = walking;
     body.timestamp = timeStamp();
-    
-    var jsonString = JSON.stringify(data);
-    const graph = `<div class="row"><div id="chart_div_${i}" style="height: 200px; width: 300px;">If all went well, you should see a chart here</div></div>`;
-    $(`#routeDetails_${i}`).append(graph);
+    console.log(body);
+    const jsonString = JSON.stringify(body);
+    let graph = `<div class="row"><div id="chart_div_${routeIndex}" style="height: 200px; width: 300px;"></div></div>`;
+    $(`#routeDetails_${routeIndex}`).append(graph);
     $.post("http://127.0.0.1:8000/api/chart", jsonString, function(backendResponse) {
-        console.log("imageresponse");            
-        console.log(backendResponse);
-
-        drawChart(backendResponse["hourlyPredictions"], `chart_div_${i}`);
+        drawChart(backendResponse["chart"], `chart_div_${routeIndex}`);
     });
 }
-
-function getPredictionFromBackend(response, i, jsonString, stepsIndex, stepType) {
-    
-    if(stepType == "TRANSIT")
-    {
-        const detailBus = `<img class="img-responsive resultImages busImage" img src="./img/bus.png"> <h5 class="displayResultsMin" id="predictionMin_${i}_${stepsIndex}"></h5>`;
-        
-        // Add element to html
-        $(`#routeDetails_${i}`).append(detailBus);
-        $.post("http://127.0.0.1:8000/api/predict", jsonString, function(backendResponse) {
-                    console.log("success");
-                    console.log("response: " + backendResponse);
-                    console.log(backendResponse);
-                    for(let k = 0; k < backendResponse.length; k++)
-                    {
-                        $(`#predictionMin_${i}_${stepsIndex}`).text(`${backendResponse["result"]} mins`);
-                    }
-                    $(".sidebarPageOne").hide();
-                    $(".sidebarPageTwo").show();
-                })
-                // When response is ready
-                .done(function(data) {
-                    getGraph(data, response.routes[i].legs["0"].steps[stepsIndex].transit.line.short_name, i);
-                })
-                // Api failure
-                .fail(function() {
-                    console.log( "error" );
-                })
-    }
-    else {
-        const walkingMinutes = `<img class="img-responsive resultImages" img src="./img/walking.png"><h5 class="displayResultsMin">${[response.routes[i].legs["0"].steps[stepsIndex].duration.text.replace("mins", "mins")]}</h5>`;
-        $(`#routeDetails_${i}`).append(walkingMinutes);
-    }
-}
-
-function getGraph(data, route, i){
-    data.route = route;
-    data.day = getInputDateAsDateObject().getDay();
-    var jsonString = JSON.stringify(data);
-    const graph = `<div class="row"><div id="chart_div_${i}" style="height: 200px; width: 300px;">If all went well, you should see a chart here</div></div>`;
-    $(`#routeDetails_${i}`).append(graph);
-    $.post("http://127.0.0.1:8000/api/chart", jsonString, function(backendResponse) {
-        console.log("imageresponse");            
-        console.log(backendResponse);
-        drawChart(backendResponse["hourlyPredictions"], `chart_div_${i}`);
-
-    });
-}
-
-function getTotalTravelMins(mins) {
-    mins.walking
-}
-
-
-
 
 function drawChart(predictions, containerID) {
 	let data = new google.visualization.DataTable();
@@ -393,7 +314,7 @@ function drawChart(predictions, containerID) {
 	let zone;
 	let color;
 	for (i = 0; i < 19; i++) {
-		time = (i + 5) % 12;
+		time = (i + 5) % 24;
 		if(time == 0)
 			time = "12"
 		if(i < 7)
@@ -404,7 +325,7 @@ function drawChart(predictions, containerID) {
 			color = "#6699FF";
 		else
 			color = "silver";
-		data.addRow([time +' '+ zone, predictions[i], 'color: ' + color+ ';']);
+		data.addRow([time.toString(), predictions[i], 'color: ' + color+ ';']);
 
 		};
 
@@ -540,40 +461,37 @@ function geoAddress(location, inputID, isFromPlace){
 
 // Reference: https://developers.google.com/maps/documentation/javascript/places-autocomplete
 function autocomplete(){
-    // var input = $('#fromStation');
     var inputFrom = document.getElementById('fromStation');
     var inputTo = document.getElementById('toStation');
 
     function addAutocomplete(input, fromOrTo) {
         var autocomplete = new google.maps.places.Autocomplete(input);
-        // Bind the map's bounds (viewport) property to the autocomplete object,
-            // so that the autocomplete requests use the current map bounds for the
-            // bounds option in the request.
-            autocomplete.bindTo('bounds', map);
-            autocomplete.setTypes(['address']);
-            // Set the data fields to return when the user selects a place.
-            autocomplete.setFields(
-                ['address_components', 'geometry']);
-            autocomplete.addListener('place_changed', function() {
-                var place = autocomplete.getPlace();
-                if(fromOrTo === "fromPlace"){
-                    fromPlace.lat = place.geometry.location.lat();
-                    fromPlace.lng = place.geometry.location.lng();
-                } else{
-                    toPlace.lat = place.geometry.location.lat();
-                    toPlace.lng = place.geometry.location.lng();
-                }
-                var address = '';
-                if (place.address_components) {
-                    address = [
-                    (place.address_components[0] && place.address_components[0].short_name || ''),
-                    (place.address_components[1] && place.address_components[1].short_name || ''),
-                    (place.address_components[2] && place.address_components[2].short_name || '')
-                    ].join(' ');
-                }
-            console.log(address);
+
+        autocomplete.bindTo('bounds', map);
+        autocomplete.setTypes(['address']);
+        autocomplete.setFields(         // Set the data fields to return when the user selects a place.
+            ['address_components', 'geometry']);
+        autocomplete.setOptions({strictBounds: true});
+        autocomplete.addListener('place_changed', function() {
+            var place = autocomplete.getPlace();
+            if(fromOrTo === "fromPlace"){
+                fromPlace.lat = place.geometry.location.lat();
+                fromPlace.lng = place.geometry.location.lng();
+            } else{
+                toPlace.lat = place.geometry.location.lat();
+                toPlace.lng = place.geometry.location.lng();
+            }
+            var address = '';
+            if (place.address_components) {
+                address = [
+                (place.address_components[0] && place.address_components[0].short_name || ''),
+                (place.address_components[1] && place.address_components[1].short_name || ''),
+                (place.address_components[2] && place.address_components[2].short_name || '')
+                ].join(' ');
+            }
         });
     }
+    
     addAutocomplete(inputFrom, "fromPlace");
     addAutocomplete(inputTo, "toPlace");
 }
@@ -713,10 +631,19 @@ $(window).on("load", function(){
     fetchWeather();
     getLocation($("#findLocationFrom"));
     getLocation($("#findLocationTo"));
-    // calculateAndDisplayRoute(directionsService, directionsDisplay);
     autocomplete();
     $("#searchButton").on("click", searchForRoute);
-    
+    $(".suggestedRoute").on("click", function(e){
+        if (e.target.id == "route-0") {
+            directionsDisplay.setRouteIndex(0);
+        }
+        if (e.target.id == "route-1") {
+            directionsDisplay.setRouteIndex(1);
+        }
+        if (e.target.id == "route-2") {
+            directionsDisplay.setRouteIndex(2);
+        }
+    });
     $("#backToPageOne").on("click", function(){
        $(".sidebarPageOne").show();
        $(".sidebarPageTwo").hide();

@@ -14,12 +14,7 @@
     height: 100%;
     color:black;
     text-align: center;
-    /* overflow-y: scroll;
-    overflow-x: hidden; */
 }
-
-/* #sidebar {
-  overflow-y: hidden;} */
 
 
 /* The header of the sidebar */
@@ -261,12 +256,7 @@ button {
 }
 
 .sidebarPageTwo {
-  display: none;}
-
-#scrollDown {
-  overflow-y: scroll;
-  overflow-x: hidden;
-  overflow-y: auto;   /* virkar þetta? */
+  display: none;
 }
 
 .resultImages {
@@ -320,8 +310,23 @@ button {
   color: darkblue;
 }
 
-/* #routeDetails_0 > div,
-#routeDetails_1 > div,
-#routeDetails_2 > div {
-  display:inline-block;
-} */
+.busImage,
+.walkImage {
+  margin-left: 7px;
+  margin-right: 2px;
+}
+
+.panel-heading {
+  padding-bottom: 0px;
+  padding-left: 0px;
+  padding-top: 0px;
+  padding-right: 0px;
+}
+
+.moreDetails {
+  margin-top: 10px;
+}
+
+#routeDetails_2 {
+  background-color: inherit;
+}
