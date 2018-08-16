@@ -166,9 +166,9 @@ def end_to_end_prediction(day_of_week: int, hour_of_day: int, temperature: float
     })
 
     if school_holiday:
-        pickle_file = f"api/models/GBR_off_school_2017_{bus_route}_{direction}.pkl"
+        pickle_file = f"api/models/GBR_off_school_2017_{bus_route.upper()}_{direction}.pkl"
     else:
-        pickle_file = f"api/models/GBR_school_2017_{bus_route}_{direction}.pkl"
+        pickle_file = f"api/models/GBR_school_2017_{bus_route.upper()}_{direction}.pkl"
 
     with open(pickle_file, "rb") as f:
         cucumber = pickle.load(f)
