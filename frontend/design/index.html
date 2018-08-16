@@ -41,8 +41,7 @@
     <!-- Sidebar. Reference from https://bootsnipp.com/snippets/BDKbE -->
     <div id="sidebar" class="nav-side-menu">
         <div id="header">
-            <div class="brand"> Dublin Bus </div>
-            <img class="img-responsive" img src="./img/websitelogo.png" style="width:62px; height:30px;">
+            <img id="headerImage" class="img-responsive center" img src="./img/logo_new.png">
         </div>
         <i class="fa fa-bars fa-2x toggle-btn" data-toggle="collapse" data-target="#menu-content">
             <span class="glyphicon glyphicon-menu-hamburger"></span>
@@ -61,6 +60,9 @@
                         </span>
                     </div>
                 </li>
+
+                <div class ="search">
+
                 <li class="sidebarPageOne">
                     <!-- Reference: https://getbootstrap.com/docs/3.3/components/#input-groups -->
                     <div class="input-group">
@@ -122,7 +124,13 @@
                     <!-- Search button -->
                     <button id="searchButton" class="btn btn-default rounded" type="button"><span class="glyphicon glyphicon-search"></span> Search </button> 
                 </li>
+
+
+                </div>
+
+
                 <!-- Page two of the sidebar -->
+                <div class="pageTwoOuter">
                 <li class="sidebarPageTwo">
                     <span id="backToPageOne" class="glyphicon glyphicon glyphicon-arrow-left"></span>
                 </li>
@@ -169,6 +177,7 @@
                         </div>
                     </div>
                 </li>
+                </div>
             </ul>
         </div>
     </div>

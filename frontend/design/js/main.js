@@ -13,12 +13,12 @@ var routeThreeTotalTravelTime;
 // Direction reference: https://developers.google.com/maps/documentation/javascript/examples/directions-simple
 
 // Function that initialize and adds the map to the website
-function initMap() {                                
+function initMap() {
     var Dublin = {lat: 53.350140, lng: -6.266155}
     directionsService = new google.maps.DirectionsService;
     directionsDisplay = new google.maps.DirectionsRenderer;
     map = new google.maps.Map(                      
-        document.getElementById('map'), {zoom: 12, center: Dublin});
+        document.getElementById('map'), {zoom: 12, center: Dublin, mapTypeControl: false});
     directionsDisplay.setMap(map);                  // Connect route display to map
 }
 
@@ -51,7 +51,7 @@ function timeStamp() {
 //         "timestamp": timestamp
 //     };
 
-//     fetch("http://127.0.0.1:8000/api/single-prediction", {
+//     fetch("https://dublinbus.icu/api/single-prediction", {
 //         method: "POST",
 //         body: JSON.stringify(postBody),
 //         headers:{'Content-Type': 'application/json'}
@@ -298,7 +298,7 @@ function makeChart(postBody, steps, routeIndex){
     const jsonString = JSON.stringify(body);
     let graph = `<div class="row"><div id="chart_div_${routeIndex}" style="height: 200px; width: 300px;"></div></div>`;
     $(`#routeDetails_${routeIndex}`).append(graph);
-    $.post("http://127.0.0.1:8000/api/chart", jsonString, function(backendResponse) {
+    $.post("https://dublinbus.icu/api/chart", jsonString, function(backendResponse) {
         drawChart(backendResponse["chart"], `chart_div_${routeIndex}`);
     });
 }
@@ -497,7 +497,7 @@ function autocomplete(){
 }
 
 function fetchWeather(){
-    fetch("http://127.0.0.1:8000/api/current_weather")   // First make a GET request to our endpoint
+    fetch("https://dublinbus.icu/api/current_weather")   // First make a GET request to our endpoint
         .then(function(rawResponse){                    // Once that raw response is received, do something with it,
             return rawResponse.json();                  // in this case, take the string response and convert to a JSON object
         })
@@ -646,8 +646,13 @@ $(window).on("load", function(){
     });
     $("#backToPageOne").on("click", function(){
        $(".sidebarPageOne").show();
+       $(".search").show();
        $(".sidebarPageTwo").hide();
+       $(".pageTwo").hide();
+       $(".pageTwoOuter").hide();
+
     });
+
 
     google.charts.load('current', {
         'packages': ['corechart']

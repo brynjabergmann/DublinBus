@@ -6,8 +6,8 @@
     font-family: verdana;
     font-size: 12px;
     font-weight: 200;
-    /* background-color: rgba(0, 0, 0, 0.10); */
-    background-color: #f5f5dc;
+    background-color: rgba(0, 0, 0, 0.75);
+    /*background-color: #f5f5dc;*/
     position: fixed;
     top: 0px;
     width: 350px;
@@ -19,20 +19,30 @@
 
 /* The header of the sidebar */
 #header {
+  margin-left: auto;
+  margin-right: auto;
+  width: 75%;
   margin-bottom:10px;
+  margin-top:7px;
+  height: 100px;
+  width: 347px;
+  max-width: 347px;
+
 }
 
 /* Bus image in the header */
-#header > img {
+#headerImage {
   display: inline-block;
   vertical-align: bottom;
+  height: auto;
+  width: 250px;
 }
 
 /* Name of the website in the header */
 #header > div {
   background-color: #f5f5dc;
   color: black;
-  padding-top: 20px;
+  margin-top: 20px;
   font-size: 16px;
   font-weight: bold;
   display: inline-block;
@@ -45,16 +55,10 @@
 }
 
 
-
-
-
-
 /* Styling for the weather container (image and temperature)*/
 #weather {
-  /* padding-left: 30px;
-  text-align: center;
-  margin-right: 38px; */
-  margin-top: 7px;
+  margin-top: 0px;
+  margin-top: 40px;
   margin-bottom: 7px;
   display: inline-block;
   vertical-align: middle;
@@ -65,6 +69,7 @@
 /* Margin left for the weather temperature */
 #weatherTemp {
   margin-left: 4px;
+    color: whitesmoke;
 }
 
 #weather > span > figure {
@@ -151,7 +156,6 @@
 
 .nav-side-menu li {
   padding-left: 0px;
-  border-bottom: 1px solid #f5f5dc;
 }
 .nav-side-menu li a {
   text-decoration: none;
@@ -166,6 +170,7 @@
   .nav-side-menu {
     width: 100%;
     margin-bottom: 10px;
+    height: auto;
   }
   .nav-side-menu .toggle-btn {
     display: block;
@@ -181,12 +186,18 @@
   }
 
 }
+/*.accordion {*/
+    /*margin-top: 5px;*/
+    /*margin-bottom: 5px;*/
+
+/*}*/
 @media (min-width: 767px) {
   .nav-side-menu {
     height: 100%;
   }    
   .nav-side-menu .menu-list .menu-content {
     display: block;
+
   }
   #main {
       width:calc(100% - 300px);
@@ -196,6 +207,7 @@
 
 
 .input-group date {
+  padding-top: 10px;
   width: 50px;
 }
 
@@ -218,7 +230,13 @@
   line-height: 1;
 }
 
-#datetimepickers > span > div:nth-child(2) > div
+/* #timepicker {
+  width: 150px !important;
+  float: right;
+  margin-bottom: 0%;
+  margin-right: 20px;
+  line-height: 1;
+} */
 
 #menu-content > li:nth-child(5) > div:nth-child(2) > div {
   width: 120px !important;
@@ -228,15 +246,9 @@
   align-content: center;
 }
 
-
-
-
-
-
-
-
-
-
+pageTwoOuter{
+  padding-top: 50px;
+}
 
 button {
   background: rgba(0, 0, 0, 0.25);
@@ -254,10 +266,13 @@ button {
   width: 100%;
   background: whitesmoke;
 }
-
 .sidebarPageTwo {
   display: none;
+  /*border-top: 1px solid whitesmoke;*/
+  /*border-bottom: 1px solid whitesmoke;*/
 }
+
+
 
 .resultImages {
   display: inline;
@@ -296,11 +311,14 @@ button {
 #backToPageOne {
   display: flex;
   margin-left: 20px;
-  margin-top: 0px;
-  margin-bottom: 5px;
+  margin-bottom: 15px;
   font-size: 20px;
+  color: whitesmoke;
 }
-
+.collapsed {
+  display: block;
+  color: green;
+}
 .busImage {
   margin-left: 5px;
   margin-right: 2px;
@@ -308,6 +326,30 @@ button {
 
 .glyphicon-chevron-right {
   color: darkblue;
+}
+
+/* #routeDetails_0 > div,
+#routeDetails_1 > div,
+#routeDetails_2 > div {
+  display:inline-block;
+} */
+
+.travelResults collapse in {
+  color: green;
+  background-color: transparent;
+  display: block;
+}
+.search {
+  margin-top: 5px;
+  margin-bottom: 5px;
+  border-bottom: 1px solid #f5f5dc;
+  border-top: 1px solid #f5f5dc;
+
+}
+
+.pageTwo {
+  border-bottom: 1px solid #f5f5dc;
+  border-top: 1px solid #f5f5dc;
 }
 
 .busImage,
@@ -329,4 +371,26 @@ button {
 
 #routeDetails_2 {
   background-color: inherit;
+}
+
+#menu-content > div.pageTwoOuter {
+  padding-top: 0px;
+  margin-top: 40px;
+}
+
+/* Hamburger box*/
+#sidebar > i {
+  background-color: aliceblue;
+}
+
+/* Hamburger */
+#sidebar > i > span {
+  font-size: 30px;
+}
+
+/* Chart design */
+#chart_div_0,
+#chart_div_1,
+#chart_div_2 {
+  display: inline-block;
 }
