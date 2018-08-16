@@ -437,7 +437,7 @@ def location_prediction_endpoint(request):
             request_dict["firstStop"][1],
             request_dict["lastStop"][0],
             request_dict["lastStop"][1],
-            request_dict["busRoute"],
+            request_dict["busRoute"].upper(),
             request_dict["timestamp"]
         ))
     return JsonResponse(
