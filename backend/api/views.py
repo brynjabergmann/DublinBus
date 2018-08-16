@@ -15,14 +15,20 @@ import sklearn
 
 
 def predict(first_stop_list: list, last_stop_list: list, user_time: int):
-    weather = get_weather(user_time)
+    """
+    Takes lists of possible start and end points and a desired time, returns the three fastest possible journeys.
+    """
 
+    weather = get_weather(user_time)
     all_itineraries = get_itineraries(first_stop_list, last_stop_list)
     all_journey_times = get_all_times(all_itineraries, weather, user_time)
 
+    # all_itineraries and all_journey_times will always be the same length,
+    # so this allows us to traverse through both lists simultaneously:
     for i in range(len(all_itineraries)):  # Add the total time to the results sent to the user
         all_itineraries[i]["total_time"] = all_journey_times[i]
 
+    # Blank response dict, to be filled in on next line
     result = {
         "itineraries": [
             # {
@@ -52,6 +58,9 @@ def predict(first_stop_list: list, last_stop_list: list, user_time: int):
 
 
 def get_itineraries(first_stop_list: list, last_stop_list: list):
+    """
+    Wrapper around the find_route method, to allow iteration through all possible combinations of first+last stops.
+    """
     itineraries = []
     for first_stop in first_stop_list:
         for last_stop in last_stop_list:
@@ -61,29 +70,40 @@ def get_itineraries(first_stop_list: list, last_stop_list: list):
 
 
 def get_all_times(all_possible_journeys: list, weather: dict, user_time: int):
+    """
+    Makes predictions for all itineraries in a provided list at the given time with the given weather
+    """
     timings = []
     temperature = weather["temp"]
     precipitation = weather["precip_intensity"]
 
     for journey in all_possible_journeys:
         total_time = 0
-        legs_of_journey = [*journey]
+        legs_of_journey = [*journey]    # [*dict] generates a list of all keys in that dict
+
         for i in range(len(legs_of_journey)):
-            bus_route = legs_of_journey[i]
+            bus_route = legs_of_journey[i]  # Since we need the value of the key, we have to do a numerical iteration.
 
             if "walk" in bus_route:
-                total_time += journey["walk"]
+                total_time += journey["walk"]   # Walking times will be a single int
             else:
                 direction = get_direction(bus_route, journey[bus_route]["stops"][0])
+
                 prediction = end_to_end_prediction(dt.datetime.fromtimestamp(user_time).weekday(),
                                                    dt.datetime.fromtimestamp(user_time - (user_time % 3600) + 3600).hour,
                                                    temperature,
                                                    precipitation,
                                                    bus_route,
                                                    direction,
-                                                   is_school_holiday(user_time))
-                total_time += get_segment(prediction[0], bus_route, direction, journey[bus_route]["stops"][0],
-                                          journey[bus_route]["stops"][1], prediction[1])
+                                                   is_school_holiday(user_time)
+                                                   )
+
+                total_time += get_segment(prediction[0],
+                                          bus_route,
+                                          direction,
+                                          journey[bus_route]["stops"][0],
+                                          journey[bus_route]["stops"][1]
+                                          )
         timings.append(total_time)
     return timings
 
@@ -99,8 +119,7 @@ def get_fastest_route_index(all_times: list):
     return best_route_index
 
 
-def get_segment(end_to_end: int, bus_route: str, direction: int, first_stop: int, last_stop: int, max_stops: int):
-    # TODO: Use calculated proportions.
+def get_segment(end_to_end: int, bus_route: str, direction: int, first_stop: int, last_stop: int):
     with connection.cursor() as cursor:
         cursor.execute(
             "SELECT stop_on_route FROM stops_served_by_two WHERE line_id = %s AND stop_number = %s AND direction = %s LIMIT 1;",
@@ -112,7 +131,11 @@ def get_segment(end_to_end: int, bus_route: str, direction: int, first_stop: int
             [bus_route, last_stop, direction])
         stop_two = cursor.fetchone()[0]
 
-    return int(end_to_end * ((stop_two - stop_one) / max_stops))
+    with open(f"api/proportions/{bus_route}_{direction}.json") as j:
+        all_proportions = json.load(j)
+        proportion_factor = all_proportions[stop_two] - all_proportions[stop_one]
+
+    return int(end_to_end * proportion_factor)
 
 
 def get_direction(bus_route: str, bus_stop: int):
@@ -166,9 +189,9 @@ def end_to_end_prediction(day_of_week: int, hour_of_day: int, temperature: float
     })
 
     if school_holiday:
-        pickle_file = f"api/models/GBR_off_school_2017_{bus_route}_{direction}.pkl"
+        pickle_file = f"api/models/off_school/{bus_route}_{direction}.pkl"
     else:
-        pickle_file = f"api/models/GBR_school_2017_{bus_route}_{direction}.pkl"
+        pickle_file = f"api/models/school/{bus_route}_{direction}.pkl"
 
     with open(pickle_file, "rb") as f:
         cucumber = pickle.load(f)
@@ -333,7 +356,7 @@ def next_bus(stop_number: int, bus_route: str, direction: int, timestamp: int):
         e2e = end_to_end_prediction(schedule_dt.weekday(), schedule_dt.hour, weather["temp"],
                                     weather["precip_intensity"], bus_route, direction, is_holiday)
         all_arrival_times.append(
-            schedule_dt + dt.timedelta(minutes=get_segment(e2e[0], bus_route, direction, 2039, stop_number, e2e[1])))
+            schedule_dt + dt.timedelta(minutes=get_segment(e2e[0], bus_route, direction, 2039, stop_number)))
 
     next_buses = []
     for index, arrival_time in enumerate(all_arrival_times):
@@ -382,7 +405,7 @@ def predict_from_locations(first_stop_lat: float, first_stop_lng: float, last_st
     school_holiday = is_school_holiday(timestamp)
 
     e2e = end_to_end_prediction(weekday, hour, temperature, rain, bus_route, direction, school_holiday)
-    return get_segment(e2e[0], bus_route, direction, first_stop, last_stop, e2e[1])
+    return get_segment(e2e[0], bus_route, direction, first_stop, last_stop)
 
 
 # TODO: Re-implement this functionality for benchmarking
