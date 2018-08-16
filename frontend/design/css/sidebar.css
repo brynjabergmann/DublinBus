@@ -260,14 +260,13 @@ button {
   background: whitesmoke;
 }
 
-
 .sidebarPageTwo {
   display: none;}
 
 #scrollDown {
   overflow-y: scroll;
   overflow-x: hidden;
-  overflow-y: auto;
+  overflow-y: auto;   /* virkar þetta? */
 }
 
 .resultImages {

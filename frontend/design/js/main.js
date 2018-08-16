@@ -24,7 +24,6 @@ function initMap() {
     console.log(directionsDisplay.routes)
 }
 
- 
 
 // Function that gets the date and time and turns it around 
 function getInputDateAsDateObject(){
@@ -34,6 +33,52 @@ function getInputDateAsDateObject(){
     // JavaScript needs date objects to have format yyyy/mm/dd hh:mm
     return new Date(`${dateArray[2]}/${dateArray[1]}/${dateArray[0]} ${time}`);
 }
+
+
+// Function that adds the date and time to one timestamp
+function timeStamp() {
+    return timestamp = Math.floor(getInputDateAsDateObject() / 1000);
+}
+
+
+// function newMakePrediction(){
+//     let timestamp = timeStamp();
+//     let firstStopLocation = [53.309418194, -6.21877482979]; // SAMPLE VALUES
+//     let lastStopLocation = [53.3406003809, -6.25848953123]; // SAMPLE VALUES
+
+//     let postBody = {
+//         "firstStop": firstStopLocation,
+//         "lastStop": lastStopLocation,
+//         "busRoute": "46A",  // SAMPLE VALUE
+//         "timestamp": timestamp
+//     };
+
+//     fetch("http://127.0.0.1:8000/api/single-prediction", {
+//         method: "POST",
+//         body: JSON.stringify(postBody),
+//         headers:{'Content-Type': 'application/json'}
+//     })
+//         .then(response => response.json())
+//         .then(function(responseDict){
+//             console.log(responseDict["prediction"])     // responseDict["prediction"] is predicted minutes for that segment of the journey.
+//         });
+// }
+
+// Not 100% sure how well this will work as a function, but if you have to, you can just copy this code where you need it.
+function datetimeToTimestamp(){
+    let dateString = document.getElementById("datepicker");
+    let timeString = document.getElementById("timePicker");
+
+    let datetimeString = `${dateString} ${timeString}`;
+
+    return Math.floor(Date.parse(datetimeString) / 1000);
+}
+
+
+
+
+
+
 
 
 
@@ -72,26 +117,27 @@ function getInputDateAsDateObject(){
         // Create and display prediction for every route
         for (var i = 0; i < number_of_bus_routes; i++) {
 
-            var object = new Object();
-            object.day = date.getDay();
-            object.hour = date.getHours();
-            object.temp = tempNow;
-            object.rain = rainNow;
             
-            object.route = response.routes[i].legs["0"].steps[1].transit.line.short_name;
+            // var object = new Object();
+            // object.day = date.getDay();
+            // object.hour = date.getHours();
+            // object.temp = tempNow;
+            // object.rain = rainNow;
+            
+            // object.route = response.routes[i].legs["0"].steps[1].transit.line.short_name;
 
-            object.From = { 
-                Lat: response.routes[i].legs["0"].steps[1].start_location.lat(),
-                Lng: response.routes[i].legs["0"].steps[1].start_location.lng()
-            }
-            object.To = {
-                Lat: response.routes[i].legs["0"].steps[1].end_location.lat(),
-                Lng: response.routes[i].legs["0"].steps[1].end_location.lng()
-            }
-            object.Date  = $("#datepicker input").val();
-            object.Time = $("#timePicker").val();
-            const jsonString= JSON.stringify(object);
-            console.log(jsonString);
+            // object.From = { 
+            //     Lat: response.routes[i].legs["0"].steps[1].start_location.lat(),
+            //     Lng: response.routes[i].legs["0"].steps[1].start_location.lng()
+            // }
+            // object.To = {
+            //     Lat: response.routes[i].legs["0"].steps[1].end_location.lat(),
+            //     Lng: response.routes[i].legs["0"].steps[1].end_location.lng()
+            // }
+            // object.Date  = $("#datepicker input").val();
+            // object.Time = $("#timePicker").val();
+            // const jsonString= JSON.stringify(object);
+            // console.log(jsonString);
             
             $(`#route-${i}`).empty();       // Remove old suggested data
             $(`#routeDetails_${i}`).empty();       // Remove old suggested data
@@ -99,7 +145,6 @@ function getInputDateAsDateObject(){
             // Display images for steps (walking or bus)
             for(let j = 0; j < response.routes[i].legs[0].steps.length; j++)
             {
-                
                 const buttonWalking = `<img class="img-responsive resultImages" img src="./img/walking.png">`;
                 const nextImage = `<span id="next" class="glyphicon glyphicon-chevron-right"></span>`;
                 if(response.routes[i].legs[0].steps[j].travel_mode == "TRANSIT")
@@ -116,11 +161,101 @@ function getInputDateAsDateObject(){
                     $(`#route-${i}`).append(nextImage);
                 }
             }
-            // Get prediction and display detailed data for suggested routes
+            let postBody = [];
             for(let j = 0; j < response.routes[i].legs[0].steps.length; j++)
             {
-                getPredictionFromBackend (response, i, jsonString, j, response.routes[i].legs[0].steps[j].travel_mode); 
+                if(response.routes[i].legs[0].steps[j].travel_mode == "TRANSIT")
+                {
+                    let timestamp = timeStamp();
+                    let start_lat = response.routes[i].legs["0"].steps[j].start_location.lat();
+                    let start_long = response.routes[i].legs["0"].steps[j].start_location.lng();
+                    let end_lat = response.routes[i].legs["0"].steps[j].end_location.lat();
+                    let end_long = response.routes[i].legs["0"].steps[j].end_location.lng();
+                    
+                    let busName = response.routes[i].legs["0"].steps[j].transit.line.short_name;
+                    let firstStopLocation = [start_lat, start_long];
+                    let lastStopLocation = [end_lat, end_long]; 
+                    let item = {
+                        "firstStop": firstStopLocation,
+                        "lastStop": lastStopLocation,
+                        "busRoute": busName,
+                        "timestamp": timestamp
+                    };
+                    postBody.push(item);
+                }
             }
+            const jsonString= JSON.stringify(object);
+            console.log(jsonString);
+            if(i === 0)
+            {
+                routeOneTotalTravelTime = 0;
+            }
+            if(i === 1)
+            {
+                routeTwoTotalTravelTime = 0;
+            }
+            if(i === 2)
+            {
+                routeThreeTotalTravelTime = 0;
+            }
+            $.post("http://127.0.0.1:8000/api/predict", jsonString, function(backendResponse) {
+                console.log("success");
+                console.log("response: " + backendResponse);
+                console.log(backendResponse);
+                for(let j = 0; j < response.routes[i].legs[0].steps.length; j++)
+                {
+                    if(response.routes[i].legs[0].steps[j].travel_mode == "TRANSIT")
+                    {
+                        let predictedTime = backendResponse.shift();
+                        if(i === 0)
+                        {
+                            routeOneTotalTravelTime += +predictedTime;
+                        }
+                        if(i === 1)
+                        {
+                            routeTwoTotalTravelTime += +predictedTime;
+                        }
+                        if(i === 2)
+                        {
+                            routeThreeTotalTravelTime += +predictedTime;
+                        }
+                        const detailBus = `<img class="img-responsive resultImages busImage" img src="./img/bus.png"> <h5 class="displayResultsMin" id="predictionMin_${i}_${j}">${predictedTime}</h5>`;
+                        // Add element to html
+                        $(`#routeDetails_${i}`).append(detailBus);        
+                    }
+                    else {
+                        const walkingMinutes = `<img class="img-responsive resultImages" img src="./img/walking.png"><h5 class="displayResultsMin">${[response.routes[i].legs["0"].steps[j].duration.text.replace("mins", "mins")]}</h5>`;
+                        $(`#routeDetails_${i}`).append(walkingMinutes);
+                        if(i === 0)
+                        {
+                            routeOneTotalTravelTime += +parseInt(response.routes[i].legs["0"].steps[j].duration.text.replace("mins", "mins").replace(" ", ""));
+                        }
+                        if(i === 1)
+                        {
+                            routeTwoTotalTravelTime += +parseInt(response.routes[i].legs["0"].steps[j].duration.text.replace("mins", "mins").replace(" ", ""));
+                        }
+                        if(i === 2)
+                        {
+                            routeThreeTotalTravelTime += +parseInt(response.routes[i].legs["0"].steps[j].duration.text.replace("mins", "mins").replace(" ", ""));
+                        }
+                    }
+                }
+                $(".sidebarPageOne").hide();
+                $(".sidebarPageTwo").show();
+                })
+                // When response is ready
+                .done(function(data) {
+                    updateTotalTravelTime(i);
+                    makeChart(postBody, response.routes[i].legs[0].steps, i);
+                })
+            
+
+            // Get prediction and display detailed data for suggested routes
+            //Works if there is one request for each prediction
+            // for(let j = 0; j < response.routes[i].legs[0].steps.length; j++)
+            // {
+            //     getPredictionFromBackend (response, i, jsonString, j, response.routes[i].legs[0].steps[j].travel_mode); 
+            // }
             // getPredictionFromBackend (response, i, jsonString);
         }
 
@@ -147,6 +282,50 @@ function getInputDateAsDateObject(){
     });
   }
 
+function updateTotalTravelTime(i){
+    if(i === 0)
+    {
+        // $("RouteOneTotalTravelTime").empty();
+        $("RouteOneTotalTravelTime").text(routeOneTotalTravelTime);
+    }
+    if(i === 1)
+    {
+        $("RouteTwoTotalTravelTime").text(routeTwoTotalTravelTime);
+    }
+    if(i === 2)
+    {
+        $("RouteThreeTotalTravelTime").text(routeThreeTotalTravelTime);
+    }
+}
+
+function makeChart(postBody, steps, routeIndex){
+    let body = new Object();
+    body.itinerary = [];
+    for(let i = 0; i < postBody.length; i++)
+    {
+        body.itinerary[postBody.busRoute].firstStop = postBody.firstStop;
+        body.itinerary[postBody.busRoute].lastStop = postBody.lastStop;
+    }
+    let walking = 0;
+    for(let i = 0; i < steps.length; i++){
+        if(steps[i].travel_mode != "TRANSIT")
+        {
+            walking += parseInt(steps[i].duration.text.replace("mins", "").replace(" ", ""));
+        }
+    }
+    body.itinerary.walk = walking;
+    body.timestamp = timeStamp();
+    
+    var jsonString = JSON.stringify(data);
+    const graph = `<div class="row"><div id="chart_div_${i}" style="height: 200px; width: 300px;">If all went well, you should see a chart here</div></div>`;
+    $(`#routeDetails_${i}`).append(graph);
+    $.post("http://127.0.0.1:8000/api/chart", jsonString, function(backendResponse) {
+        console.log("imageresponse");            
+        console.log(backendResponse);
+
+        drawChart(backendResponse["hourlyPredictions"], `chart_div_${i}`);
+    });
+}
 
 function getPredictionFromBackend(response, i, jsonString, stepsIndex, stepType) {
     
@@ -156,21 +335,14 @@ function getPredictionFromBackend(response, i, jsonString, stepsIndex, stepType)
         
         // Add element to html
         $(`#routeDetails_${i}`).append(detailBus);
-        $.post("http://127.0.0.1:8000/api/make_prediction_using_coordinates", jsonString, function(backendResponse) {
+        $.post("http://127.0.0.1:8000/api/predict", jsonString, function(backendResponse) {
                     console.log("success");
                     console.log("response: " + backendResponse);
                     console.log(backendResponse);
-                    
-                    // $(`#prediciton_${i}`).text(`Travel time: ${backendResponse["result"]} mins`);
-                    $(`#predictionMin_${i}_${stepsIndex}`).text(`${backendResponse["result"]} mins`);
-                    
-                    // $(`#walkingMinStep1_${i}`).text(`${[response.routes[i].legs["0"].steps["0"].duration.text.replace("mins", "mins")]}`);
-                    // $(`#walkingMinStep2_${i}`).text(`${[response.routes[i].legs["0"].steps["2"].duration.text.replace("mins", "mins")]}`);
-
-                    // $(`#totalTravelMins_${i}`).text;
-
-                    
-
+                    for(let k = 0; k < backendResponse.length; k++)
+                    {
+                        $(`#predictionMin_${i}_${stepsIndex}`).text(`${backendResponse["result"]} mins`);
+                    }
                     $(".sidebarPageOne").hide();
                     $(".sidebarPageTwo").show();
                 })
@@ -182,11 +354,11 @@ function getPredictionFromBackend(response, i, jsonString, stepsIndex, stepType)
                 .fail(function() {
                     console.log( "error" );
                 })
-        }
-        else {
-            const walkingMinutes = `<img class="img-responsive resultImages" img src="./img/walking.png"><h5 class="displayResultsMin">${[response.routes[i].legs["0"].steps[stepsIndex].duration.text.replace("mins", "mins")]}</h5>`;
-            $(`#routeDetails_${i}`).append(walkingMinutes);
-        }
+    }
+    else {
+        const walkingMinutes = `<img class="img-responsive resultImages" img src="./img/walking.png"><h5 class="displayResultsMin">${[response.routes[i].legs["0"].steps[stepsIndex].duration.text.replace("mins", "mins")]}</h5>`;
+        $(`#routeDetails_${i}`).append(walkingMinutes);
+    }
 }
 
 function getGraph(data, route, i){
@@ -195,7 +367,7 @@ function getGraph(data, route, i){
     var jsonString = JSON.stringify(data);
     const graph = `<div class="row"><div id="chart_div_${i}" style="height: 200px; width: 300px;">If all went well, you should see a chart here</div></div>`;
     $(`#routeDetails_${i}`).append(graph);
-    $.post("http://127.0.0.1:8000/api/get_graph_values", jsonString, function(backendResponse) {
+    $.post("http://127.0.0.1:8000/api/chart", jsonString, function(backendResponse) {
         console.log("imageresponse");            
         console.log(backendResponse);
         drawChart(backendResponse["hourlyPredictions"], `chart_div_${i}`);
@@ -307,7 +479,7 @@ function drawChart(predictions, containerID) {
                 geoAddress(yourLocation, "#toStation", false);
             }
             
-            
+            //eventListener...
             // $(`#fromStation`).empty();       // Remove old marker
             
         // Reference: https://developers.google.com/maps/documentation/javascript/examples/marker-animations
