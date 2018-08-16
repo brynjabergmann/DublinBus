@@ -39,49 +39,7 @@ function timeStamp() {
 }
 
 
-// function newMakePrediction(){
-//     let timestamp = timeStamp();
-//     let firstStopLocation = [53.309418194, -6.21877482979]; // SAMPLE VALUES
-//     let lastStopLocation = [53.3406003809, -6.25848953123]; // SAMPLE VALUES
-
-//     let postBody = {
-//         "firstStop": firstStopLocation,
-//         "lastStop": lastStopLocation,
-//         "busRoute": "46A",  // SAMPLE VALUE
-//         "timestamp": timestamp
-//     };
-
-//     fetch("https://dublinbus.icu/api/single-prediction", {
-//         method: "POST",
-//         body: JSON.stringify(postBody),
-//         headers:{'Content-Type': 'application/json'}
-//     })
-//         .then(response => response.json())
-//         .then(function(responseDict){
-//             console.log(responseDict["prediction"])     // responseDict["prediction"] is predicted minutes for that segment of the journey.
-//         });
-// }
-
-// Not 100% sure how well this will work as a function, but if you have to, you can just copy this code where you need it.
-function datetimeToTimestamp(){
-    let dateString = document.getElementById("datepicker");
-    let timeString = document.getElementById("timePicker");
-
-    let datetimeString = `${dateString} ${timeString}`;
-
-    return Math.floor(Date.parse(datetimeString) / 1000);
-}
-
-
-
-
-
-
-
-
-
   // Direction reference: https://developers.google.com/maps/documentation/javascript/examples/directions-simple
-
   // Function that calculates and displays routes
   function calculateAndDisplayRoute(directionsService, directionsDisplay) {
     var date = getInputDateAsDateObject();
@@ -109,34 +67,13 @@ function datetimeToTimestamp(){
 
         // Hide unused result boxes
         for (var i = 3; i > number_of_bus_routes; i--) {
-            $(`route-${i - 1}`).hide();            
+            // $(`route-${i - 1}`).hide();            
         }
 
         // Create and display prediction for every route
         for (var i = 0; i < number_of_bus_routes; i++) {
-
-            // var object = new Object();
-            // object.day = date.getDay();
-            // object.hour = date.getHours();
-            // object.temp = tempNow;
-            // object.rain = rainNow;
             
-            // object.route = response.routes[i].legs["0"].steps[1].transit.line.short_name;
-
-            // object.From = { 
-            //     Lat: response.routes[i].legs["0"].steps[1].start_location.lat(),
-            //     Lng: response.routes[i].legs["0"].steps[1].start_location.lng()
-            // }
-            // object.To = {
-            //     Lat: response.routes[i].legs["0"].steps[1].end_location.lat(),
-            //     Lng: response.routes[i].legs["0"].steps[1].end_location.lng()
-            // }
-            // object.Date  = $("#datepicker input").val();
-            // object.Time = $("#timePicker").val();
-            // const jsonString= JSON.stringify(object);
-            // console.log(jsonString);
-            
-            $(`#route-${i}`).empty();       // Remove old suggested data
+            $(`#route-${i}`).empty();               // Remove old suggested data
             $(`#routeDetails_${i}`).empty();       // Remove old suggested data
 
             // Display images for steps (walking or bus)
@@ -207,6 +144,7 @@ function datetimeToTimestamp(){
 
 function predictRoute(response, jsonString, i, postBody){
     $.post("http://127.0.0.1:8000/api/location_prediction_endpoint", jsonString, function(backendResponse) {
+        console.log(backendResponse);
         for(let j = 0; j < response.routes[i].legs[0].steps.length; j++)
         {
             if(response.routes[i].legs[0].steps[j].travel_mode === "TRANSIT")
@@ -280,8 +218,8 @@ function makeChart(postBody, steps, routeIndex){
     for(let i = 0; i < postBody.length; i++)
     {
         let route = new Object();
-        route.stops = [postBody[0].firstStop, postBody[0].lastStop];
-        const busName = postBody[0].busRoute;
+        route.stops = [postBody[i].firstStop, postBody[i].lastStop];
+        const busName = postBody[i].busRoute;
         body.itinerary[busName] = route;
     }
 
@@ -299,6 +237,7 @@ function makeChart(postBody, steps, routeIndex){
     let graph = `<div class="row"><div id="chart_div_${routeIndex}" style="height: 200px; width: 300px;"></div></div>`;
     $(`#routeDetails_${routeIndex}`).append(graph);
     $.post("https://dublinbus.icu/api/chart", jsonString, function(backendResponse) {
+        console.log(backendResponse);
         drawChart(backendResponse["chart"], `chart_div_${routeIndex}`);
     });
 }
@@ -400,8 +339,6 @@ function drawChart(predictions, containerID) {
                 geoAddress(yourLocation, "#toStation", false);
             }
             
-            //eventListener...
-            // $(`#fromStation`).empty();       // Remove old marker
             
         // Reference: https://developers.google.com/maps/documentation/javascript/examples/marker-animations
         // Function that makes the marker bounce on the map
@@ -648,9 +585,6 @@ $(window).on("load", function(){
        $(".sidebarPageOne").show();
        $(".search").show();
        $(".sidebarPageTwo").hide();
-       $(".pageTwo").hide();
-       $(".pageTwoOuter").hide();
-
     });
 
 
