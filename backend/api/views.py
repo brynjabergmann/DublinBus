@@ -69,7 +69,7 @@ def get_itineraries(first_stop_list: list, last_stop_list: list):
     return itineraries
 
 
-def get_all_times(all_possible_journeys: list, weather: dict, user_time: int):
+def get_all_times(all_possible_journeys: list, weather: dict, user_timestamp: int):
     """
     Makes predictions for all itineraries in a provided list at the given time with the given weather
     """
@@ -87,16 +87,20 @@ def get_all_times(all_possible_journeys: list, weather: dict, user_time: int):
             if "walk" in bus_route:
                 total_time += journey["walk"]   # Walking times will be a single int
             else:
+                user_dt = dt.datetime.fromtimestamp(user_timestamp)
                 direction = get_direction(bus_route, journey[bus_route]["stops"][0])
 
-                prediction = end_to_end_prediction(dt.datetime.fromtimestamp(user_time).weekday(),
-                                                   dt.datetime.fromtimestamp(user_time - (user_time % 3600) + 3600).hour,
-                                                   temperature,
-                                                   precipitation,
-                                                   bus_route,
-                                                   direction,
-                                                   is_school_holiday(user_time)
-                                                   )
+                prediction = load_prediction(bus_route, direction, user_dt.day, user_dt.month, user_dt.hour + 1)
+
+                # TODO: Move this to nighttime generator
+                # prediction = end_to_end_prediction(dt.datetime.fromtimestamp(user_timestamp).weekday(),
+                #                                    dt.datetime.fromtimestamp(user_timestamp - (user_timestamp % 3600) + 3600).hour,
+                #                                    temperature,
+                #                                    precipitation,
+                #                                    bus_route,
+                #                                    direction,
+                #                                    is_school_holiday(user_timestamp)
+                #                                    )
 
                 total_time += get_segment(prediction[0],
                                           bus_route,
@@ -133,7 +137,7 @@ def get_segment(end_to_end: int, bus_route: str, direction: int, first_stop: int
 
     with open(f"api/proportions/{bus_route}_{direction}.json") as j:
         all_proportions = json.load(j)
-        proportion_factor = all_proportions[stop_two] - all_proportions[stop_one]
+        proportion_factor = all_proportions[str(stop_two)] - all_proportions[str(stop_one)]
 
     return int(end_to_end * proportion_factor)
 
@@ -202,12 +206,23 @@ def end_to_end_prediction(day_of_week: int, hour_of_day: int, temperature: float
     return [prediction_minutes, max_stops]  # Predict time from start to finish
 
 
+def load_prediction(bus_route: str, direction: int, day: int, month: int, hour: int):
+    with open(f"{bus_route}_{direction}_{month}_{day}.json") as j:
+        return json.load(j)[hour]
+
+
+def generate_all_predictions():
+    with connection.cursor() as cursor:
+        cursor.execute()
+    return
+
+
 def find_route(first_stop: int, last_stop: int):
     with connection.cursor() as cursor:
         cursor.execute("""SELECT one.line_id
                           FROM
-                          (SELECT line_id FROM stops_served_by_two WHERE stop_number = %s) as one,
-                          (SELECT line_id FROM stops_served_by WHERE stop_number = %s) as two
+                            (SELECT line_id FROM stops_served_by_two WHERE stop_number = %s) as one,
+                            (SELECT line_id FROM stops_served_by_two WHERE stop_number = %s) as two
                           WHERE one.line_id = two.line_id;""",
                        [first_stop, last_stop])
         serves_both = list(cursor.fetchall())
@@ -382,7 +397,7 @@ def is_school_holiday(timestamp: int):
 
 def get_stopnum_from_location(bus_route: str, lat: float, lng: float):
     with connection.cursor() as cursor:
-        cursor.execute("""SELECT stop_number
+        cursor.execute("""SELECT static_bus_data.stop_number
                           FROM static_bus_data, stops_served_by_two
                           WHERE line_id = %s
                           AND static_bus_data.stop_number = stops_served_by_two.stop_number
@@ -395,8 +410,8 @@ def get_stopnum_from_location(bus_route: str, lat: float, lng: float):
 
 
 def predict_from_locations(first_stop_lat: float, first_stop_lng: float, last_stop_lat: float, last_stop_lng: float, bus_route: str, timestamp: int):
-    first_stop = get_stopnum_from_location(first_stop_lat, first_stop_lng)
-    last_stop = get_stopnum_from_location(last_stop_lat, last_stop_lng)
+    first_stop = get_stopnum_from_location(bus_route, first_stop_lat, first_stop_lng)
+    last_stop = get_stopnum_from_location(bus_route, last_stop_lat, last_stop_lng)
     weather = get_weather(timestamp)
     user_dt = dt.datetime.fromtimestamp(timestamp)
     weekday = user_dt.weekday()
