@@ -6,8 +6,8 @@
     font-family: verdana;
     font-size: 12px;
     font-weight: 200;
-    /* background-color: rgba(0, 0, 0, 0.10); */
-    background-color: #f5f5dc;
+    background-color: rgba(0, 0, 0, 0.75);
+    /*background-color: #f5f5dc;*/
     position: fixed;
     top: 0px;
     width: 350px;
@@ -24,7 +24,15 @@
 
 /* The header of the sidebar */
 #header {
+  margin-left: auto;
+  margin-right: auto;
+  width: 75%;
   margin-bottom:10px;
+  padding-top:7px;
+  height: 100px;
+  width: 347px;
+  max-width: 347px;
+
 }
 
 /* Bus image in the header */
@@ -59,7 +67,9 @@
   /* padding-left: 30px;
   text-align: center;
   margin-right: 38px; */
-  margin-top: 7px;
+  /*position:absolute;*/
+  /*margin-top: 7px;*/
+  padding-top: 90px;
   margin-bottom: 7px;
   display: inline-block;
   vertical-align: middle;
@@ -201,6 +211,7 @@
 
 
 .input-group date {
+  padding-top: 10px;
   width: 50px;
 }
 
@@ -325,3 +336,9 @@ button {
 #routeDetails_2 > div {
   display:inline-block;
 } */
+
+
+.search {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
