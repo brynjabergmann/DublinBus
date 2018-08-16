@@ -184,7 +184,7 @@ function datetimeToTimestamp(){
                     postBody.push(item);
                 }
             }
-            const jsonString= JSON.stringify(object);
+            const jsonString= JSON.stringify(postBody);
             console.log(jsonString);
             if(i === 0)
             {
@@ -198,7 +198,7 @@ function datetimeToTimestamp(){
             {
                 routeThreeTotalTravelTime = 0;
             }
-            $.post("http://127.0.0.1:8000/api/predict", jsonString, function(backendResponse) {
+            $.post("http://127.0.0.1:8000/api/location_prediction_endpoint", jsonString, function(backendResponse) {
                 console.log("success");
                 console.log("response: " + backendResponse);
                 console.log(backendResponse);
@@ -206,7 +206,7 @@ function datetimeToTimestamp(){
                 {
                     if(response.routes[i].legs[0].steps[j].travel_mode == "TRANSIT")
                     {
-                        let predictedTime = backendResponse.shift();
+                        let predictedTime = backendResponse["predictions"][j];
                         if(i === 0)
                         {
                             routeOneTotalTravelTime += +predictedTime;
