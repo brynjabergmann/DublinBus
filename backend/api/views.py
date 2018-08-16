@@ -380,13 +380,15 @@ def is_school_holiday(timestamp: int):
     return False
 
 
-def get_stopnum_from_location(lat: float, lng: float):
+def get_stopnum_from_location(bus_route: str, lat: float, lng: float):
     with connection.cursor() as cursor:
         cursor.execute("""SELECT stop_number
-                          FROM static_bus_data
-                          WHERE lat < %s + 0.0001 AND lat > %s - 0.0001
-                          AND lng < %s + 0.0001 AND lng > %s - 0.0001""",
-                       [lat, lat, lng, lng])
+                          FROM static_bus_data, stops_served_by_two
+                          WHERE line_id = %s
+                          AND static_bus_data.stop_number = stops_served_by_two.stop_number
+                          AND lat < %s + 0.001 AND lat > %s - 0.001
+                          AND lng < %s + 0.001 AND lng > %s - 0.001""",
+                       [bus_route, lat, lat, lng, lng])
         row = cursor.fetchone()
         if row:
             return row[0]
