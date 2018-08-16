@@ -6,30 +6,25 @@ import pickle
 import pandas as pd
 import datetime as dt
 import requests
-# from raven import Client
+# from raven import Client  # TODO: re-enable Raven for final push
 
 # IDEs might say this one is "unused", but once our models are unpickled they need sklearn:
 import sklearn
 
-
 # client = Client('https://1e979ddecb1641ce81a0468314902d26:e894e38ec1f64c43af6876f76a3d2959@sentry.io/1249736')
 
 
-def predict(values: dict):
-    first_stop_list = values["firstStops"]
-    last_stop_list = values["lastStops"]
-    user_time = values["timestamp"]
-
+def predict(first_stop_list: list, last_stop_list: list, user_time: int):
     weather = get_weather(user_time)
 
-    all_routes = get_all_routes(first_stop_list, last_stop_list)
-    all_journey_times = get_all_times(all_routes, weather, user_time)
+    all_itineraries = get_itineraries(first_stop_list, last_stop_list)
+    all_journey_times = get_all_times(all_itineraries, weather, user_time)
 
-    for i in range(len(all_routes)):  # Add the total time to the results sent to the user
-        all_routes[i]["total_time"] = all_journey_times[i]
+    for i in range(len(all_itineraries)):  # Add the total time to the results sent to the user
+        all_itineraries[i]["total_time"] = all_journey_times[i]
 
     result = {
-        "routes": [
+        "itineraries": [
             # {
             #   "46A": {
             #       "stops": [768, 792],
@@ -48,49 +43,47 @@ def predict(values: dict):
     }
 
     for i in range(min(len(all_journey_times), 3)):
-        fastest_route_index = get_fastest_route_index(all_journey_times)
-        result["routes"].append(all_routes[fastest_route_index])
-        del all_routes[fastest_route_index]
-        del all_journey_times[fastest_route_index]
+        fastest_journey_index = get_fastest_route_index(all_journey_times)
+        result["itineraries"].append(all_itineraries[fastest_journey_index])
+        del all_itineraries[fastest_journey_index]
+        del all_journey_times[fastest_journey_index]
 
     return result
 
 
-def get_all_routes(first_stop_list: list, last_stop_list: list):
-    paths = []
+def get_itineraries(first_stop_list: list, last_stop_list: list):
+    itineraries = []
     for first_stop in first_stop_list:
         for last_stop in last_stop_list:
-            for path in find_route(first_stop, last_stop):
-                paths.append(path)
-    return paths
+            for itinerary in find_route(first_stop, last_stop):
+                itineraries.append(itinerary)
+    return itineraries
 
 
-def get_all_times(all_possible_routes: list, weather: dict, user_time: int):
+def get_all_times(all_possible_journeys: list, weather: dict, user_time: int):
     timings = []
     temperature = weather["temp"]
     precipitation = weather["precip_intensity"]
 
-    for route in all_possible_routes:
+    for journey in all_possible_journeys:
         total_time = 0
-        parts_of_route = [*route]
-        for i in range(len(parts_of_route)):
-            bus_route = parts_of_route[i]
+        legs_of_journey = [*journey]
+        for i in range(len(legs_of_journey)):
+            bus_route = legs_of_journey[i]
 
             if "walk" in bus_route:
-                total_time += route[i]
+                total_time += journey["walk"]
             else:
-                direction = get_direction(bus_route, route[bus_route]["stops"][0])
+                direction = get_direction(bus_route, journey[bus_route]["stops"][0])
                 prediction = end_to_end_prediction(dt.datetime.fromtimestamp(user_time).weekday(),
-                                                   dt.datetime.fromtimestamp(
-                                                       user_time - (user_time % 3600) + 3600).hour,
-                                                   # TODO: This + 3600 is some DST fuckery that will ideally need to be dealt with.
+                                                   dt.datetime.fromtimestamp(user_time - (user_time % 3600) + 3600).hour,
                                                    temperature,
                                                    precipitation,
                                                    bus_route,
                                                    direction,
                                                    is_school_holiday(user_time))
-                total_time += get_segment(prediction[0], bus_route, direction, route[bus_route]["stops"][0],
-                                          route[bus_route]["stops"][1], prediction[1])
+                total_time += get_segment(prediction[0], bus_route, direction, journey[bus_route]["stops"][0],
+                                          journey[bus_route]["stops"][1], prediction[1])
         timings.append(total_time)
     return timings
 
@@ -107,7 +100,7 @@ def get_fastest_route_index(all_times: list):
 
 
 def get_segment(end_to_end: int, bus_route: str, direction: int, first_stop: int, last_stop: int, max_stops: int):
-    # TODO: Use calculated proportions - Further experiments needed.
+    # TODO: Use calculated proportions.
     with connection.cursor() as cursor:
         cursor.execute(
             "SELECT stop_on_route FROM stops_served_by_two WHERE line_id = %s AND stop_number = %s AND direction = %s LIMIT 1;",
@@ -246,13 +239,11 @@ def find_route(first_stop: int, last_stop: int):
                         )
         return two_part_journeys
 
-    # TODO: Walk between stops algorithm.
 
-
-def fare_finder(route: str, direction: int, first_stop: int, last_stop: int):
-    if "x" in route.lower():
+def fare_finder(bus_route: str, direction: int, first_stop: int, last_stop: int):
+    if "x" in bus_route.lower():
         return {"leap": 2.90, "cash": 3.65}
-    elif route == "90":
+    elif bus_route == "90":
         return {"leap": 1.50, "cash": 2.10}
     else:
         with connection.cursor() as cursor:
@@ -263,7 +254,7 @@ def fare_finder(route: str, direction: int, first_stop: int, last_stop: int):
                            (SELECT * FROM stops_served_by_two WHERE line_id = %s AND direction = %s) as all_stops
                            WHERE all_stops.stop_on_route >= first_stop.stop_on_route
                            AND all_stops.stop_on_route <= second_stop.stop_on_route;""",
-                           [route, direction, first_stop, route, direction, last_stop, route, direction])
+                           [bus_route, direction, first_stop, bus_route, direction, last_stop, bus_route, direction])
             num_stages = cursor.fetchone()[0]
 
         if num_stages < 4:
@@ -274,20 +265,25 @@ def fare_finder(route: str, direction: int, first_stop: int, last_stop: int):
             return {"leap": 2.15, "cash": 2.85}
 
 
-def chart_values(route, timestamp):
-    times = []
+def chart_values(itinerary: dict, timestamp: int):
+    for bus_route in [*itinerary]:
+        if bus_route != "walk":
+            itinerary[bus_route]["stops"][0] = get_stopnum_from_location(itinerary[bus_route]["stops"][0][0], itinerary[bus_route]["stops"][0][1])
+            itinerary[bus_route]["stops"][1] = get_stopnum_from_location(itinerary[bus_route]["stops"][1][0], itinerary[bus_route]["stops"][1][1])
+
     midnight = timestamp - (timestamp % 86400)
     five_am = midnight + (3600 * 5)
     eleven_pm = midnight + (3600 * 23)
+
+    times = []
     for hour in range(five_am, eleven_pm + 1, 3600):
-        # TODO: Have front-end communicate the above required values BACK to Django
         weather = get_weather(hour)
-        times.append(get_all_times([route], weather, hour)[0])
+        times.append(get_all_times([itinerary], weather, hour)[0])
 
     return times
 
 
-def next_bus(stop_number: int, route: str, direction: int, timestamp: int):
+def next_bus(stop_number: int, bus_route: str, direction: int, timestamp: int):
     # Note - This code works, but Dublin Bus's timetable endpoint is not consistently correct
     # Open https://data.smartdublin.ie/cgi-bin/rtpi/timetableinformation?type=week&stopid=2039&routeid=46A&format=json
     # and you will be able to see that as far as this system is concerned, the 46A stops running from Dun Laoghaire just
@@ -301,18 +297,16 @@ def next_bus(stop_number: int, route: str, direction: int, timestamp: int):
     year = user_dt.year
     month = user_dt.month
     date = user_dt.day
-    day = "Friday"  # TODO: Take this from timestamp
-
-    # first_stop_number =
+    day = user_dt.strftime("%A")
 
     timetable_json = requests.get(
-        f"https://data.smartdublin.ie/cgi-bin/rtpi/timetableinformation?type=week&stopid={stop_number}&routeid={route}&format=json").json()[
+        f"https://data.smartdublin.ie/cgi-bin/rtpi/timetableinformation?type=week&stopid={stop_number}&routeid={bus_route}&format=json").json()[
         "results"]
 
     if day == "Sunday":
         schedule = sorted(
-            [list(dict.fromkeys(x["departures"])) for x in timetable_json if x["enddayofweek"] == "Sunday"], key=len,
-            reverse=True)[:2]
+            [list(dict.fromkeys(x["departures"])) for x in timetable_json if x["enddayofweek"] == "Sunday"],
+            key=len, reverse=True)[:2]
     elif day == "Saturday":
         schedule = sorted(
             [list(dict.fromkeys(x["departures"])) for x in timetable_json if x["enddayofweek"] == "Saturday"], key=len,
@@ -337,9 +331,9 @@ def next_bus(stop_number: int, route: str, direction: int, timestamp: int):
         schedule_dt = dt.datetime.fromtimestamp(time)
         weather = get_weather(time)
         e2e = end_to_end_prediction(schedule_dt.weekday(), schedule_dt.hour, weather["temp"],
-                                    weather["precip_intensity"], route, direction, is_holiday)
+                                    weather["precip_intensity"], bus_route, direction, is_holiday)
         all_arrival_times.append(
-            schedule_dt + dt.timedelta(minutes=get_segment(e2e[0], route, direction, 2039, stop_number, e2e[1])))
+            schedule_dt + dt.timedelta(minutes=get_segment(e2e[0], bus_route, direction, 2039, stop_number, e2e[1])))
 
     next_buses = []
     for index, arrival_time in enumerate(all_arrival_times):
@@ -361,6 +355,34 @@ def is_school_holiday(timestamp: int):
             return True
 
     return False
+
+
+def get_stopnum_from_location(lat: float, lng: float):
+    with connection.cursor() as cursor:
+        cursor.execute("""SELECT stop_number
+                          FROM static_bus_data
+                          WHERE lat < %s + 0.0001 AND lat > %s - 0.0001
+                          AND lng < %s + 0.0001 AND lng > %s - 0.0001""",
+                       [lat, lat, lng, lng])
+        row = cursor.fetchone()
+        if row:
+            return row[0]
+
+
+def predict_from_locations(first_stop_lat: float, first_stop_lng: float, last_stop_lat: float, last_stop_lng: float, bus_route: str, timestamp: int):
+    first_stop = get_stopnum_from_location(first_stop_lat, first_stop_lng)
+    last_stop = get_stopnum_from_location(last_stop_lat, last_stop_lng)
+    weather = get_weather(timestamp)
+    user_dt = dt.datetime.fromtimestamp(timestamp)
+    weekday = user_dt.weekday()
+    hour = user_dt.hour
+    temperature = weather["temp"]
+    rain = weather["precip_intensity"]
+    direction = get_direction(bus_route, first_stop)
+    school_holiday = is_school_holiday(timestamp)
+
+    e2e = end_to_end_prediction(weekday, hour, temperature, rain, bus_route, direction, school_holiday)
+    return get_segment(e2e[0], bus_route, direction, first_stop, last_stop, e2e[1])
 
 
 # TODO: Re-implement this functionality for benchmarking
@@ -390,7 +412,8 @@ def stop_timer(username: str):
 
 @csrf_exempt
 def prediction_endpoint(request):
-    return JsonResponse(predict(json.loads(request.body.decode("utf-8"))))
+    req = json.loads(request.body.decode("utf-8"))
+    return JsonResponse(predict(req["firstStops"], req["lastStops"], req["timestamp"]))
 
 
 @csrf_exempt
@@ -401,90 +424,24 @@ def current_weather_endpoint(request):
 @csrf_exempt
 def chart_endpoint(request):
     req = json.loads(request.body.decode("utf-8"))
-    return JsonResponse(chart_values(req["route"], req["timestamp"]))
+    return JsonResponse({"chart": chart_values(req["itinerary"], req["timestamp"])})
 
 
-
-@csrf_exempt    # Can remove in production, needed for testing
-def make_prediction_using_coordinates(request):
-    values = json.loads(request.body.decode('utf-8'))
-    with connection.cursor() as cursor:
-
-        cursor.execute("SELECT stops_served_by.stop_number FROM stops_served_by INNER JOIN static_bus_data ON stops_served_by.stop_number = static_bus_data.stoppointid WHERE stops_served_by.line_id = %s AND lat >= (%s * 0.999) AND lat <= (%s * 1.001) AND `long` <= (%s * 0.999) AND `long` >= (%s * 1.001) ORDER BY abs(lat - %s) AND abs(`long` - (%s)) LIMIT 1;"
-        , [str(values["route"]), 
-        float(values["From"]["Lat"]), 
-        float(values["From"]["Lat"]), 
-        float(values["From"]["Lng"]), 
-        float(values["From"]["Lng"]), 
-        float(values["From"]["Lat"]), 
-        float(values["From"]["Lng"])])
-
-        row = cursor.fetchone()
-        from_stoppointid = row[0]
-
-        cursor.execute("SELECT stops_served_by.stop_number FROM stops_served_by INNER JOIN static_bus_data ON stops_served_by.stop_number = static_bus_data.stoppointid WHERE stops_served_by.line_id = %s AND lat >= (%s * 0.999) AND lat <= (%s * 1.001) AND `long` <= (%s * 0.999) AND `long` >= (%s * 1.001) ORDER BY abs(lat - %s) AND abs(`long` - (%s)) LIMIT 1;"
-        , [str(values["route"]), 
-        float(values["To"]["Lat"]), 
-        float(values["To"]["Lat"]), 
-        float(values["To"]["Lng"]), 
-        float(values["To"]["Lng"]), 
-        float(values["To"]["Lat"]), 
-        float(values["To"]["Lng"])])
-
-        row = cursor.fetchone()
-        to_stoppointid = row[0]
-
-        values["startStop"] = from_stoppointid
-        values["endStop"] = to_stoppointid
-        
-     
-
-
-
-    # return make_prediction(values)
-    return make_prediction(values)
-    # return JsonResponse(values)
-
-
-
-
-@csrf_exempt    # Can remove in production, needed for testing
-def make_prediction_using_coordinates(request):
-    values = json.loads(request.body.decode('utf-8'))
-    with connection.cursor() as cursor:
-
-        cursor.execute("SELECT stops_served_by.stop_number FROM stops_served_by INNER JOIN static_bus_data ON stops_served_by.stop_number = static_bus_data.stoppointid WHERE stops_served_by.line_id = %s AND lat >= (%s * 0.999) AND lat <= (%s * 1.001) AND `long` <= (%s * 0.999) AND `long` >= (%s * 1.001) ORDER BY abs(lat - %s) AND abs(`long` - (%s)) LIMIT 1;"
-        , [str(values["route"]), 
-        float(values["From"]["Lat"]), 
-        float(values["From"]["Lat"]), 
-        float(values["From"]["Lng"]), 
-        float(values["From"]["Lng"]), 
-        float(values["From"]["Lat"]), 
-        float(values["From"]["Lng"])])
-
-        row = cursor.fetchone()
-        from_stoppointid = row[0]
-
-        cursor.execute("SELECT stops_served_by.stop_number FROM stops_served_by INNER JOIN static_bus_data ON stops_served_by.stop_number = static_bus_data.stoppointid WHERE stops_served_by.line_id = %s AND lat >= (%s * 0.999) AND lat <= (%s * 1.001) AND `long` <= (%s * 0.999) AND `long` >= (%s * 1.001) ORDER BY abs(lat - %s) AND abs(`long` - (%s)) LIMIT 1;"
-        , [str(values["route"]), 
-        float(values["To"]["Lat"]), 
-        float(values["To"]["Lat"]), 
-        float(values["To"]["Lng"]), 
-        float(values["To"]["Lng"]), 
-        float(values["To"]["Lat"]), 
-        float(values["To"]["Lng"])])
-
-        row = cursor.fetchone()
-        to_stoppointid = row[0]
-
-        values["startStop"] = from_stoppointid
-        values["endStop"] = to_stoppointid
-        
-     
-
-
-
-    # return make_prediction(values)
-    return make_prediction(values)
-    # return JsonResponse(values)
-
+@csrf_exempt
+def location_prediction_endpoint(request):
+    req = json.loads(request.body.decode("utf-8"))
+    predictions = []
+    for request_dict in req:
+        predictions.append(predict_from_locations(
+            request_dict["firstStop"][0],
+            request_dict["firstStop"][1],
+            request_dict["lastStop"][0],
+            request_dict["lastStop"][1],
+            request_dict["busRoute"],
+            request_dict["timestamp"]
+        ))
+    return JsonResponse(
+        {
+            "predictions": predictions
+        }
+    )
