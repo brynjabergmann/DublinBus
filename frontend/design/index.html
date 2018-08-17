@@ -14,18 +14,15 @@
     <meta name="authors" content="Brynja Halldorsdottir, Mariyana Levova, Neil McKimm, Peter Hanrahan">
     <!-- The viewport sets the width of the page to follow the screen-width of the device and sets the initial zoom level when the page is first loaded by the browser -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <!-- Compiled and minified Bootstrap CSS -->
     <link rel="stylesheet" href="./css/libraries/bootstrap.min.css">
     <link rel="stylesheet" href="./css/libraries/bootstrap-theme.min.css">
-
     <!-- Externl style sheets -->
     <link type="text/css" rel="stylesheet" href="./css/main.css">
     <link type="text/css" rel="stylesheet" href="./css/sidebar.css">
     <link type="text/css" rel="stylesheet" href="./css/weathericons.css">
     <link type="text/css" rel="stylesheet" href="./css/libraries/bootstrap-datepicker3.min.css"> <!-- Bootstrap datepicker  -->
     <link type="text/css" rel="stylesheet" href="./css/libraries/bootstrap-clockpicker.min.css"> <!-- Bootstrap clockpicker  -->
-
     <!-- Tab logo for the website. Reference: https://stackoverflow.com/questions/9943771/adding-a-favicon-to-a-static-html-page -->
     <link rel="shortcut icon" type="image/ico" href="./favicon.ico" />
 
@@ -35,12 +32,19 @@
     <!--Id for the map. Reference from https://developers.google.com/maps/documentation/javascript/adding-a-google-map-->
     <div id="map"></div>
 
+    <!-- Twitter feed. Reference: https://www.html.am/html-codes/marquees/scrolling-text.cfm -->
+    <div id="twitterText">
+        <div class="scroll-left">
+            <p id="twitterMessage"></p>
+        </div>                    
+    </div>
+
     <!-- Sidebar. Reference from https://bootsnipp.com/snippets/BDKbE -->
     <div id="sidebar" class="nav-side-menu">
         <div id="header">
             <img id="headerImage" class="img-responsive center" img src="./img/logo_new.png">   <!-- Sidebar logo -->
         </div>
-        <i class="fa fa-bars fa-2x toggle-btn" data-toggle="collapse" data-target="#menu-content">  <!-- Mobile mode -->
+        <i id="sidebarToggleButton" class="fa fa-bars fa-2x toggle-btn" data-toggle="collapse" data-target="#menu-content">  <!-- Mobile mode -->
             <span class="glyphicon glyphicon-menu-hamburger"></span>
         </i>
         <div class="menu-list">
@@ -52,18 +56,15 @@
                                 <!-- Sky icons. Reference: https://github.com/darkskyapp/skycons -->
                                 <canvas class="icon" id="fog" width="30" height="30"></canvas>
                             </figure>
-                            <!-- The weather temperature -->
-                            <strong id = "weatherTemp"></strong>
+                            <strong id = "weatherTemp"></strong>    <!-- The weather temperature -->
                         </span>
                     </div>
                 </li>
-
                 <div class ="search">
-
                     <li class="sidebarPageOne">
                         <!-- Reference: https://getbootstrap.com/docs/3.3/components/#input-groups -->
                         <div class="input-group">
-                            <span class="input-group-addon">From</span>
+                            <span class="input-group-addon"> From </span>
                             <input type="text" class="form-control" aria-label placeholder="Choose a starting point..." id="fromStation">
                             <span class="input-group-btn" id="findLocationFrom">
                                 <!-- Hover text reference: https://getbootstrap.com/docs/4.1/components/tooltips/ -->
@@ -75,10 +76,9 @@
                     </li>
                     <li class="sidebarPageOne">
                         <div class="input-group">
-                            <span class="input-group-addon">To</span>
+                            <span class="input-group-addon"> To </span>
                             <input type="text" class="form-control" aria-label placeholder="Where do you want to go?" id="toStation">
                             <span class="input-group-btn" id="findLocationTo">
-                                <!-- Hover text reference: https://getbootstrap.com/docs/4.1/components/tooltips/ -->
                                 <button class="btn btn-default" type="button" data-toggle="tooltip" data-placement="bottom" title="Find my location">
                                     <img src="./img/markerImage.JPG">
                                 </button>
@@ -109,81 +109,80 @@
                     </li>
                     <li class="sidebarPageOne">
                         <!-- Search button -->
-                        <button id="searchButton" class="btn btn-default rounded" type="button"><span class="glyphicon glyphicon-search"></span> Search </button> 
+                        <button id="searchButton" class="btn btn-default rounded" type="button">
+                            <span class="glyphicon glyphicon-search"></span> Search 
+                        </button> 
                     </li>
-					<!-- SOURCE https://codemyui.com/pure-css-ampm-toggle-switch/-->
+					<!-- Night & day mode toggle. Reference: https://codemyui.com/pure-css-ampm-toggle-switch/-->
                     <li class="nightmode sidebarPageOne">
                         <div id="toggleWrapper">
                             <input type="checkbox" class="dn" id="dn" onchange="nightMode()"/>
                             <label for="dn" class="toggle">
-                            <span class="toggle__handler">
-                                <span class="crater crater--1"></span>
-                                <span class="crater crater--2"></span>
-                                <span class="crater crater--3"></span>
-                            </span>
-                            <span class="star star--1"></span>
-                            <span class="star star--2"></span>
-                            <span class="star star--3"></span>
-                            <span class="star star--4"></span>
-                            <span class="star star--5"></span>
-                            <span class="star star--6"></span>
+                                <span class="toggle__handler">
+                                    <span class="crater crater--1"></span>
+                                    <span class="crater crater--2"></span>
+                                    <span class="crater crater--3"></span>
+                                </span>
+                                <span class="star star--1"></span>
+                                <span class="star star--2"></span>
+                                <span class="star star--3"></span>
+                                <span class="star star--4"></span>
+                                <span class="star star--5"></span>
+                                <span class="star star--6"></span>
                             </label> 
                         </div>
                     </li>
                 </div>
 
-
                 <!-- Page two of the sidebar -->
                 <div class="pageTwoOuter">
-                <li class="sidebarPageTwo">
-                    <span id="backToPageOne" class="glyphicon glyphicon glyphicon-arrow-left"></span>
-                </li>
-
-                
-                <!-- Collapsible reference: https://getbootstrap.com/docs/4.0/components/collapse/ -->
-                <li class="sidebarPageTwo">
-                    <div id="accordion" class="panel-group" role="tablist" aria-multiselectable="true">
-                        <div class="panel panel-default">
-                            <div class="panel-heading" role="tab" id="headingOne">
-                                <h5 class="panel-title">
-                                    <button id="route-0" class="btn collapsed suggestedRoute" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-                                    </button>
-                                </h5>
-                            </div>
-                            <div id="collapseOne" class="collapse travelResults" aria-labelledby="headingOne" data-parent="#accordion">
-                                <div id="routeDetails_0" class="card-body moreDetails">
+                    <li class="sidebarPageTwo">
+                        <span id="backToPageOne" class="glyphicon glyphicon glyphicon-arrow-left"></span>
+                    </li>                
+                    <!-- Collapsible reference: https://getbootstrap.com/docs/4.0/components/collapse/ -->
+                    <li class="sidebarPageTwo">
+                        <div id="accordion" class="panel-group" role="tablist" aria-multiselectable="true">
+                            <div class="panel panel-default">
+                                <div class="panel-heading" role="tab" id="headingOne">
+                                    <h5 class="panel-title">
+                                        <button id="route-0" class="btn collapsed suggestedRoute" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                        </button>
+                                    </h5>
                                 </div>
-                                <div id="gFlag0"></div>
+                                <div id="collapseOne" class="collapse travelResults" aria-labelledby="headingOne" data-parent="#accordion">
+                                    <div id="routeDetails_0" class="card-body moreDetails">
+                                    </div>
+                                    <div id="gFlag0"></div>
+                                </div>
+                            </div>
+                            <div class="panel panel-default">
+                                <div class="panel-heading" role="tab" id="headingTwo">
+                                    <h5 class="panel-title">
+                                        <button id="route-1" class="btn collapsed suggestedRoute" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                        </button>
+                                    </h5>
+                                </div>
+                                <div id="collapseTwo" class="collapse travelResults" aria-labelledby="headingTwo" data-parent="#accordion">
+                                    <div id="routeDetails_1" class="card-body moreDetails">
+                                    </div>
+                                    <div id="gFlag1"></div>
+                                </div>
+                            </div>
+                            <div class="panel panel-default">
+                                <div class="panel-heading" role="tab" id="headingThree">
+                                    <h5 class="panel-title">
+                                        <button id="route-2" class="btn collapsed suggestedRoute" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                        </button>
+                                    </h5>
+                                </div>
+                                <div id="collapseThree" class="collapse travelResults" aria-labelledby="headingThree" data-parent="#accordion">
+                                    <div id="routeDetails_2" class="card-body moreDetails">
+                                    </div>
+                                    <div id="gFlag2"></div>
+                                </div>
                             </div>
                         </div>
-                        <div class="panel panel-default">
-                            <div class="panel-heading" role="tab" id="headingTwo">
-                                <h5 class="panel-title">
-                                    <button id="route-1" class="btn collapsed suggestedRoute" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                                    </button>
-                                </h5>
-                            </div>
-                            <div id="collapseTwo" class="collapse travelResults" aria-labelledby="headingTwo" data-parent="#accordion">
-                                <div id="routeDetails_1" class="card-body moreDetails">
-                                </div>
-                                <div id="gFlag1"></div>
-                            </div>
-                        </div>
-                        <div class="panel panel-default">
-                            <div class="panel-heading" role="tab" id="headingThree">
-                                <h5 class="panel-title">
-                                    <button id="route-2" class="btn collapsed suggestedRoute" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                                    </button>
-                                </h5>
-                            </div>
-                            <div id="collapseThree" class="collapse travelResults" aria-labelledby="headingThree" data-parent="#accordion">
-                                <div id="routeDetails_2" class="card-body moreDetails">
-                                </div>
-                                <div id="gFlag2"></div>
-                            </div>
-                        </div>
-                    </div>
-                </li>
+                    </li>
                 </div>
             </ul>
         </div>
@@ -201,10 +200,9 @@
     <script src="./js/libraries/bootstrap-datepicker.min.js"></script>
     <script src="./js/libraries/bootstrap-clockpicker.min.js"></script>
 
-
     <!-- Loading Raven.js -->
     <script src="https://cdn.ravenjs.com/3.26.4/raven.min.js" crossorigin="anonymous"></script>
-    <script>Raven.config('https://1e979ddecb1641ce81a0468314902d26@sentry.io/1249736').install();</script>
+    <script>Raven.config("https://1e979ddecb1641ce81a0468314902d26@sentry.io/1249736").install();</script>
 
     <!-- Link to external javascript file -->
     <script async defer src="./js/libraries/geolocate.jquery.min.js"></script>

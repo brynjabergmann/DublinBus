@@ -9,30 +9,30 @@ let routeTwoTotalTravelTime;
 let routeThreeTotalTravelTime;
 
 
+// Function that initialize and adds the map to the website
 // Map reference: https://developers.google.com/maps/documentation/javascript/adding-a-google-map
 // Direction reference: https://developers.google.com/maps/documentation/javascript/examples/directions-simple
-
-// Function that initialize and adds the map to the website
 function initMap() {
     let Dublin = {lat: 53.350140, lng: -6.266155}
     directionsService = new google.maps.DirectionsService;
     directionsDisplay = new google.maps.DirectionsRenderer;
     map = new google.maps.Map(
-    document.getElementById('map'), {
+    document.getElementById("map"), {
         zoom: 12,
         center: Dublin,
         mapTypeControl: false
     });
-    directionsDisplay.setMap(map);                  // Connect route display to map
+    directionsDisplay.setMap(map);    // Initializes directions rendering
 }
 
-// Function that initialize and adds the map to the website
+
+// Function that initialize and adds the map to the website - night mode
 function initMapNight() {
     let Dublin = {lat: 53.350140, lng: -6.266155}
     directionsService = new google.maps.DirectionsService;
     directionsDisplay = new google.maps.DirectionsRenderer;
     map = new google.maps.Map(
-    document.getElementById('map'), {
+    document.getElementById("map"), {
         zoom: 12,
         center: Dublin,
         mapTypeControl: false,
@@ -360,8 +360,9 @@ function initMapNight() {
   }
 ]
     });
-    directionsDisplay.setMap(map);                  // Connect route display to map
+    directionsDisplay.setMap(map); 
 }
+
 
 let checkbox = document.getElementById("dn");
 // Function to toggle between day and night mode
@@ -380,6 +381,7 @@ function day(){
 function night(){
 	initMapNight();
 }
+
 
 // Function that gets the date and time and turns it around 
 function getInputDateAsDateObject(){
@@ -499,13 +501,14 @@ function timeStamp() {
     });
   }
 
+
+// Function that gets and displays predictions for a route
 function predictRoute(response, jsonString, i, postBody){
     $.post("https://dublinbus.icu/api/location_prediction_endpoint", jsonString, function(backendResponse) {
         for(let j = 0; j < response.routes[i].legs[0].steps.length; j++)
         {
             if(response.routes[i].legs[0].steps[j].travel_mode === "TRANSIT")
             {
-                console.log(response.routes[i].legs[0].steps[j]);
                 let predictedTime = backendResponse["predictions"].shift();
 
                 // If our system is unable to make a prediction, fall back to using Google's result.
@@ -555,7 +558,10 @@ function predictRoute(response, jsonString, i, postBody){
         $(`#route-${i}`).append(price);
         $(".sidebarPageOne").hide();
         $(".sidebarPageTwo").show();
+        $(".search").hide();
+        $(".search").hide();
         })
+
         // When response is ready
         .done(function(data) {
             updateTotalTravelTime(i);
@@ -563,6 +569,8 @@ function predictRoute(response, jsonString, i, postBody){
         })
 }
 
+
+// Function that updates total travel time for a route
 function updateTotalTravelTime(i){
     const travelTimeText = "Total Travel Time:";
     if(i === 0)
@@ -582,6 +590,8 @@ function updateTotalTravelTime(i){
     }
 }
 
+
+// Function that fetches data for a chart and renders the chart
 function makeChart(postBody, steps, routeIndex){
     let body = new Object();
     body.itinerary = new Object();
@@ -610,6 +620,8 @@ function makeChart(postBody, steps, routeIndex){
     });
 }
 
+
+// Function that renders a chart
 function drawChart(predictions, containerID) {
 	let data = new google.visualization.DataTable();
 	data.addColumn("string", "Hour");
@@ -665,9 +677,9 @@ function drawChart(predictions, containerID) {
     chart.draw(data, options);
 }
 
-  //Reference: https://github.com/rodaine/jQuery-Geolocation/blob/master/demo.html
 
   // Function to get the users geo location
+  //Reference: https://github.com/rodaine/jQuery-Geolocation/blob/master/demo.html
   function getLocation($button){           
     let startCB = function() {   // CB = callback   
         $button
@@ -697,7 +709,6 @@ function drawChart(predictions, containerID) {
                 geoAddress(yourLocation, "#toStation", false);
             }
             
-            
         // Reference: https://developers.google.com/maps/documentation/javascript/examples/marker-animations
         // Function that makes the marker bounce on the map
         function toggleBounce() {
@@ -720,10 +731,8 @@ function drawChart(predictions, containerID) {
 };
 
 
-
-// Goecoding reference: https://developers.google.com/maps/documentation/javascript/examples/geocoding-reverse
-
 // Function to get the address for the users location
+// Goecoding reference: https://developers.google.com/maps/documentation/javascript/examples/geocoding-reverse
 function geoAddress(location, inputID, isFromPlace){
     if (isFromPlace) {          // isFromPlace is a boolean letiable
         fromPlace = location;   // Location set to From input
@@ -753,7 +762,7 @@ function geoAddress(location, inputID, isFromPlace){
 }
 
 
-
+// Function that enable autocomplete for startpoint and endpoint
 // Reference: https://developers.google.com/maps/documentation/javascript/places-autocomplete
 function autocomplete(){
     let inputFrom = document.getElementById("fromStation");
@@ -786,11 +795,12 @@ function autocomplete(){
             }
         });
     }
-    
     addAutocomplete(inputFrom, "fromPlace");
     addAutocomplete(inputTo, "toPlace");
 }
 
+
+// Function that fetches and updates weather (temperatur and icon)
 function fetchWeather(){
     fetch("https://dublinbus.icu/api/current_weather")   // First make a GET request to our endpoint
         .then(function(rawResponse){                    // Once that raw response is received, do something with it,
@@ -827,20 +837,19 @@ function weatherIcons(){
         icons.play();
 }
 
-function updateDropDown(element){
-    // Reference: https://stackoverflow.com/questions/8482241/selecting-next-input
-        $("#Bus").val(element.target.innerText);  
-}
 
-function searchForRoute(){         // Function for the search button (what happens after the user clicks on "Search")
+// Function for the search button (what happens after the user clicks on "Search")
+function searchForRoute(){         
     calculateAndDisplayRoute(directionsService, directionsDisplay);
 }
+
 
 // Function for the date picker
 function setInitialDateTime(){
     const date = new Date();
     $("#datepicker input").val(`${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`);
 }
+
 
 // Function for the clock picker
 function setInitialClock(){
@@ -855,16 +864,22 @@ function setInitialClock(){
 }
 
 
-function createMarker(location) {
-    let marker = new google.maps.Marker({
-        position: location, 
-        map: map,
-        draggable: true,
-        animation: google.maps.Animation.DROP
+// Function that fetches twitter messages from AA Roadwatch and displays the messages
+function updateTwitter(){
+    $.get("https://dublinbus.icu/api/roadwatch", function (data){
+        let locations = data.locations.pop();
+        let twitterMessage = "";
+        for (let i = 0; i < locations.length; i++) {
+            twitterMessage = `${twitterMessage} :: ${locations[i][1]}`
+        }
+        let message = `${twitterMessage}`;
+        $("#twitterMessage").text(message);
     });
+
 }
 
 
+// Function that displays traffic delays on map
 function roadwatchTwitter() {
     fetch("https://dublinbus.icu/api/roadwatch")
         .then(response => response.json())
@@ -876,7 +891,6 @@ function roadwatchTwitter() {
                     fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${address},+Dublin,+Ireland&key=AIzaSyDiKC3_2ysW4r1tTKw3sST9L3CyXQRb7f8`)
                         .then(response => response.json())
                         .then(function (locationJSON) {
-                            console.log(locationJSON);
                             let marker = new google.maps.Marker({
                                 position: new google.maps.LatLng(locationJSON.results[0].geometry.location.lat, locationJSON.results[0].geometry.location.lng),
                                 map: map,
@@ -891,6 +905,7 @@ function roadwatchTwitter() {
 }
 
 
+// Function that starts running when everything is ready.
 $(window).on("load", function(){
 
     $(".clockpicker").clockpicker({
@@ -926,8 +941,7 @@ $(window).on("load", function(){
        $(".search").show();
        $(".sidebarPageTwo").hide();
     });
-
-
+    updateTwitter();
     google.charts.load("current", {
         "packages": ["corechart"]
     });

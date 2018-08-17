@@ -1,21 +1,35 @@
 /* Set the size of the div element that contains the map */
 #map {
-    height: 100vh;  /* The height is 400 pixels */
-    width: 100%;  /* The width is the width of the web page */
+    height: 100vh;
+    width: 100%;
     }
     
-    .container1 {
-        margin-right: 0%;
-        padding-right: 0%;
-        padding-left: 0px;
-        margin-top: 0%;
-        margin-bottom: 0%;
-      }
-    
-      #next {
-        font-size: 10px;
-      }
+.container1 {
+    margin-right: 0%;
+    padding-right: 0%;
+    padding-left: 0px;
+    margin-top: 0%;
+    margin-bottom: 0%;
+  }
 
+  #next {
+    font-size: 10px;
+  }
+
+
+  /* Styling for twitter feed */
+  #twitterText {
+    z-index: 5;
+    position: fixed;
+    left: 30%;
+    bottom: 0;
+    height: 7%;
+    width: 60%;
+    background-color: lightslategrey;
+  }
+
+
+/* Night & day mode toggle styling. Reference: https://codemyui.com/pure-css-ampm-toggle-switch */
 .toggleWrapper {
   position: absolute;
   top: 50%;
@@ -25,6 +39,7 @@
   transform: translate3d(-50%, -50%, 0);
   bottom: 0;
 }
+
 .toggleWrapper input {
   position: absolute;
   left: -99em;
@@ -40,16 +55,18 @@
   border-radius: 84px;
   transition: background-color 200ms cubic-bezier(0.445, 0.05, 0.55, 0.95);
 }
+
 .toggle:before {
-  content: 'AM';
+  content: "AM";
   color: #ffffff;;
   position: absolute;
   left: -50px;
   top: 15px;
   font-size: 18px;
 }
+
 .toggle:after {
-  content: 'PM';
+  content: "PM";
   position: absolute;
   right: -48px;
   top: 15px;
@@ -71,6 +88,7 @@
   transition: all 400ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
   transform: rotate(-45deg);
 }
+
 .toggle__handler .crater {
   position: absolute;
   background-color: #E8CDA5;
@@ -78,18 +96,21 @@
   transition: opacity 200ms ease-in-out;
   border-radius: 100%;
 }
+
 .toggle__handler .crater--1 {
   top: 18px;
   left: 10px;
   width: 4px;
   height: 4px;
 }
+
 .toggle__handler .crater--2 {
   top: 20px;
   left: 22px;
   width: 6px;
   height: 6px;
 }
+
 .toggle__handler .crater--3 {
   top: 10px;
   left: 25px;
@@ -165,45 +186,56 @@
 input:checked + .toggle {
   background-color: #749DD6;
 }
+
 input:checked + .toggle:before {
   color: #749ED7;
 }
+
 input:checked + .toggle:after {
   color: #ffffff;
 }
+
 input:checked + .toggle .toggle__handler {
   background-color: #FFE5B5;
   transform: translate3d(29px, 0, 0) rotate(0);
 }
+
 input:checked + .toggle .toggle__handler .crater {
   opacity: 1;
 }
+
 input:checked + .toggle .star--1 {
   width: 2px;
   height: 2px;
 }
+
 input:checked + .toggle .star--2 {
   width: 4px;
   height: 4px;
   transform: translate3d(-5px, 0, 0);
 }
+
 input:checked + .toggle .star--3 {
   width: 2px;
   height: 2px;
   transform: translate3d(-7px, 0, 0);
 }
+
 input:checked + .toggle .star--4,
 input:checked + .toggle .star--5,
 input:checked + .toggle .star--6 {
   opacity: 1;
   transform: translate3d(0, 0, 0);
 }
+
 input:checked + .toggle .star--4 {
   transition: all 300ms 200ms cubic-bezier(0.445, 0.05, 0.55, 0.95);
 }
+
 input:checked + .toggle .star--5 {
   transition: all 300ms 300ms cubic-bezier(0.445, 0.05, 0.55, 0.95);
 }
+
 input:checked + .toggle .star--6 {
   transition: all 300ms 400ms cubic-bezier(0.445, 0.05, 0.55, 0.95);
 }
@@ -212,7 +244,54 @@ input:checked + .toggle .star--6 {
   width: 70px;
   height: 39px;
 }
+
 #toggleWrapper > label > span.toggle__handler {
   width: 33px;
   height: 33px;
+}
+
+
+/* Styling for twitter feed. Reference: https://www.html.am/html-codes/marquees/scrolling-text.cfm */
+.scroll-left {
+ height: 50px;	
+ overflow: hidden;
+ position: relative;
+}
+
+.scroll-left p {
+ position: absolute;
+ width: 100%;
+ height: 100%;
+ margin: 0;
+ line-height: 50px;
+ text-align: center;
+ /* Starting position */
+ -moz-transform:translateX(100%);
+ -webkit-transform:translateX(100%);	
+ transform:translateX(100%);
+ /* Apply animation to this element */	
+ -moz-animation: scroll-left 10s linear infinite;
+ -webkit-animation: scroll-left 10s linear infinite;
+ animation: scroll-left 10s linear infinite;
+}
+/* Move it (define the animation) */
+@-moz-keyframes scroll-left {
+ 0%   { -moz-transform: translateX(100%); }
+ 100% { -moz-transform: translateX(-100%); }
+}
+@-webkit-keyframes scroll-left {
+ 0%   { -webkit-transform: translateX(100%); }
+ 100% { -webkit-transform: translateX(-100%); }
+}
+@keyframes scroll-left {
+ 0%   { 
+ -moz-transform: translateX(100%); /* Browser bug fix */
+ -webkit-transform: translateX(100%); /* Browser bug fix */
+ transform: translateX(100%); 		
+ }
+ 100% { 
+ -moz-transform: translateX(-100%); /* Browser bug fix */
+ -webkit-transform: translateX(-100%); /* Browser bug fix */
+ transform: translateX(-100%); 
+ }
 }
