@@ -493,6 +493,30 @@ def stop_timer(username: str):
     return {"prediction": prediction, "actual": actual, "percentage": percentage}
 
 
+def rtpi(bus_route, stop_on_route, direction):
+    """ Function to scrape RTPI data for the next three bus arrivals for a given stop and route combination """
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT stop_number FROM stops_served_by_two WHERE line_id = %s AND stop_on_route = %s AND direction = %s LIMIT 1;", [bus_route, stop_on_route, direction])
+        stop_id = cursor.fetchone()[0]
+
+    url = f"https://data.smartdublin.ie/cgi-bin/rtpi/realtimebusinformation?stopid={stop_id}&routeid={bus_route}&format=json"
+    rawData = requests.get(url)
+    if rawData.status_code == 200:
+        data = json.loads(rawData.text)
+        next_three_buses = []
+        results = data["results"]
+
+        for item in results:
+            duetime = item["duetime"]
+            if duetime == "Due":
+                duetime == 0
+            next_three_buses.append(f"{duetime} mins")
+            if len(next_three_buses) == 3:
+                break
+
+    return next_three_buses
+
+
 # # # # # # # # # #
 #  WEB ENDPOINTS  #
 # # # # # # # # # #
@@ -519,6 +543,7 @@ def location_prediction_endpoint(request):
     req = json.loads(request.body.decode("utf-8"))
     predictions = []
     fares = []
+    next_buses = []
     for request_dict in req:
         try:
             details = location_based_details(
@@ -529,21 +554,22 @@ def location_prediction_endpoint(request):
                 request_dict["lastStop"][1]
             )
             predictions.append(predict(request_dict["busRoute"], details[0], details[1], details[2], request_dict["timestamp"]))
-
             fares.append(fare_finder(request_dict["busRoute"].upper(), details[0], details[1], details[2]))
+            next_buses = rtpi(request_dict["busRoute"], details[1], details[0])
         except:
             predictions.append(-100)
             fares.append(-100)
     return JsonResponse(
         {
             "predictions": predictions,
-            "fares": fares
+            "fares": fares,
+            "next_buses": next_buses
         }
     )
 
 
 def roadwatch_endpoint(request):
-    tweet_locations = roadwatch.banner_tweets_regex()
     return JsonResponse({
-        "locations": tweet_locations
+        "locations": roadwatch.banner_tweets_regex(),
+        "tweets": roadwatch.banner_tweets()
     })
