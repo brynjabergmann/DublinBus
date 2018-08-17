@@ -390,3 +390,7 @@ button {
 #chart_div_2 {
   display: inline-block;
 }
+
+.pricing {
+  color: #DC143C;
+}

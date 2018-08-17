@@ -426,7 +426,6 @@ def chart_endpoint(request):
     req = json.loads(request.body.decode("utf-8"))
     return JsonResponse({"chart": chart_values(req["itinerary"], req["timestamp"])})
 
-
 @csrf_exempt
 def location_prediction_endpoint(request):
     req = json.loads(request.body.decode("utf-8"))
@@ -440,8 +439,15 @@ def location_prediction_endpoint(request):
             request_dict["busRoute"].upper(),
             request_dict["timestamp"]
         ))
+    fares = []
+    for r in req:
+        first_stop = get_stopnum_from_location(r["firstStop"][0], r["firstStop"][1])
+        last_stop = get_stopnum_from_location(r["lastStop"][0], r["lastStop"][1])
+        direction = get_direction(r["busRoute"].upper(), first_stop)
+        fares.append(fare_finder(r["busRoute"].upper(), direction, first_stop, last_stop))
     return JsonResponse(
         {
-            "predictions": predictions
+            "predictions": predictions,
+            "fares": fares
         }
     )

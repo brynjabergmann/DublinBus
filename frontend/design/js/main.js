@@ -57,7 +57,6 @@ function timeStamp() {
     // Callback function for route
     function(response, status) {     
       if (status === 'OK') {
-        console.log(response);
 
         // Shows max three suggested routes/result boxes
         var number_of_bus_routes = 3;
@@ -119,7 +118,7 @@ function timeStamp() {
                 }
             }
             const jsonString= JSON.stringify(postBody);
-            // console.log(jsonString);
+            
             if(i === 0)
             {
                 routeOneTotalTravelTime = 0;
@@ -144,7 +143,6 @@ function timeStamp() {
 
 function predictRoute(response, jsonString, i, postBody){
     $.post("http://127.0.0.1:8000/api/location_prediction_endpoint", jsonString, function(backendResponse) {
-        console.log(backendResponse);
         for(let j = 0; j < response.routes[i].legs[0].steps.length; j++)
         {
             if(response.routes[i].legs[0].steps[j].travel_mode === "TRANSIT")
@@ -183,6 +181,15 @@ function predictRoute(response, jsonString, i, postBody){
                 }
             }
         }
+        let leapPrice = 0;
+        let cashPrice = 0;
+        for(let j = 0; j < backendResponse.fares.length; j++){
+            leapPrice += +backendResponse.fares[j]["leap"]; //-j if 1 euro cheaper in the next bus;
+            cashPrice += +backendResponse.fares[j]["cash"];
+        }
+        
+        let price = `<h6 class="pricing">Leap: <span class="glyphicon glyphicon-euro">${leapPrice}</span> Cash: <span class="glyphicon glyphicon-euro">${cashPrice}</span></h6>`;
+        $(`#route-${i}`).append(price);
         $(".sidebarPageOne").hide();
         $(".sidebarPageTwo").show();
         })
@@ -232,12 +239,10 @@ function makeChart(postBody, steps, routeIndex){
     }
     body.walk = walking;
     body.timestamp = timeStamp();
-    console.log(body);
     const jsonString = JSON.stringify(body);
     let graph = `<div class="row"><div id="chart_div_${routeIndex}" style="height: 200px; width: 300px;"></div></div>`;
     $(`#routeDetails_${routeIndex}`).append(graph);
     $.post("https://dublinbus.icu/api/chart", jsonString, function(backendResponse) {
-        console.log(backendResponse);
         drawChart(backendResponse["chart"], `chart_div_${routeIndex}`);
     });
 }
@@ -293,11 +298,8 @@ function drawChart(predictions, containerID) {
             }
         }
     };
-
     let chart = new google.visualization.ColumnChart(document.getElementById(containerID));
-
     chart.draw(data, options);
-	predictions = [];
 }
 
 
@@ -475,7 +477,6 @@ function updateDropDown(element){
 }
 
 function searchForRoute(){         // Function for the search button (what happens after the user clicks on "Search")
-    console.log("searching");
     calculateAndDisplayRoute(directionsService, directionsDisplay);
 }
 
@@ -498,31 +499,6 @@ function setInitialClock(){
 }
 
 
-
-// Function for the nearest bus stops
-// Reference: https://stackoverflow.com/questions/9340800/detect-the-nearest-transit-stop-from-the-given-location
-// function getNearestBusStop(center){
-    
-//     var callback = function(results, status) {
-//         // console.log(results);
-//         if (status == "OK") {
-//             // for (var i = 0; i < results.length; i++) {
-//             for (var i = 0; i < 5; i++) {
-//                 createMarker({ lat: results[i].geometry.location.lat(), lng: results[i].geometry.location.lng()});
-//             }
-//         }
-//     }
-//     var request = {
-//         location: center,
-//         radius: 1200,
-//         types: ["bus_station"]
-//     };
-//     service = new google.maps.places.PlacesService(map);
-//     service.search(request, callback);
-// }
-
-
-
 function createMarker(location) {
     var marker = new google.maps.Marker({
         position: location, 
@@ -531,25 +507,6 @@ function createMarker(location) {
         animation: google.maps.Animation.DROP
     });
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 $(window).on("load", function(){
