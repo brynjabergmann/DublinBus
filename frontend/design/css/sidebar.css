@@ -216,6 +216,10 @@
   font-weight: 800;
 }
 
+#searchButton {
+  margin-bottom: 20px;
+}
+
 /* Styling the hamburger that appears on pages smaller than 767px */
 .glyphicon-menu-hamburger {
   font-size: 25px;
@@ -393,4 +397,9 @@ button {
 
 .pricing {
   color: #DC143C;
+}
+
+/* Hidden check box for nightmode */
+#dn {
+  display: none;
 }
