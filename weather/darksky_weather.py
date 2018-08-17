@@ -11,7 +11,7 @@ import sys
 
 def dbConnect():
     
-    """Function to connect to the database"""
+    """ Function to connect to the database """
     
     try:
         db = pymysql.connect(
@@ -27,7 +27,7 @@ def dbConnect():
     
 def insertDb(data, db):
     
-    """Function to insert the data into the database"""
+    """ Function to insert data into the database """
     
     try:
         cursor = db.cursor()
@@ -46,27 +46,19 @@ def insertDb(data, db):
 
 def main():
 
-    """Function to connect to the API and call the above functions to run the scraper"""
+    """ Function to connect to the API and call the above functions to run the scraper """
 
     url = "https://api.darksky.net/forecast/9a91b8d12a4a4a97d2c0bba6c5d18870/53.3498,-6.2603?units=si"
     db = dbConnect()
-    print("Connected!")
-    
     rawData = requests.get(url)
-    print(rawData.status_code)
-
     if rawData.status_code == 200:
-        data = json.loads(rawData.text)
-        print("Working")
-         
+        data = json.loads(rawData.text)         
         description = data["currently"]["summary"]
         temp = data["currently"]["temperature"]
         icon = data["currently"]["icon"]
         rain_intensity = data["currently"]["precipIntensity"]
-        
         data = [description, temp, icon, rain_intensity]
         insertDb(data, db)
-
              
 if __name__ == "__main__":
     main()

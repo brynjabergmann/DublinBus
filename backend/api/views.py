@@ -15,7 +15,7 @@ import sklearn
 # client = Client('https://1e979ddecb1641ce81a0468314902d26:e894e38ec1f64c43af6876f76a3d2959@sentry.io/1249736')
 
 
-def predict(first_stop_list: list, last_stop_list: list, user_time: int):
+def old_predict(first_stop_list: list, last_stop_list: list, user_time: int):
     """
     Takes lists of possible start and end points and a desired time, returns the three fastest possible journeys.
     """
@@ -124,29 +124,29 @@ def get_fastest_route_index(all_times: list):
 
 
 def get_segment(end_to_end: int, bus_route: str, direction: int, first_stop: int, last_stop: int):
-    with connection.cursor() as cursor:
-        cursor.execute(
-            "SELECT stop_on_route FROM stops_served_by_two WHERE line_id = %s AND stop_number = %s AND direction = %s LIMIT 1;",
-            [bus_route, first_stop, direction])
-        stop_one = cursor.fetchone()[0]
-
-        cursor.execute(
-            "SELECT stop_on_route FROM stops_served_by_two WHERE line_id = %s AND stop_number = %s AND direction = %s LIMIT 1;",
-            [bus_route, last_stop, direction])
-        stop_two = cursor.fetchone()[0]
+    # with connection.cursor() as cursor:
+    #     cursor.execute(
+    #         "SELECT stop_on_route FROM stops_served_by_two WHERE line_id = %s AND stop_number = %s AND direction = %s LIMIT 1;",
+    #         [bus_route, first_stop, direction])
+    #     stop_one = cursor.fetchone()[0]
+    #
+    #     cursor.execute(
+    #         "SELECT stop_on_route FROM stops_served_by_two WHERE line_id = %s AND stop_number = %s AND direction = %s LIMIT 1;",
+    #         [bus_route, last_stop, direction])
+    #     stop_two = cursor.fetchone()[0]
 
     with open(f"api/proportions/{bus_route.upper()}_{direction}.json") as j:
         all_proportions = json.load(j)
-        proportion_factor = all_proportions[str(stop_two)] - all_proportions[str(stop_one)]
+        proportion_factor = all_proportions[str(last_stop)] - all_proportions[str(first_stop)]
 
     return int(end_to_end * proportion_factor)
 
 
-def get_direction(bus_route: str, bus_stop: int):
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT direction FROM stops_served_by_two WHERE line_id = %s AND stop_number = %s;",
-                       [bus_route, bus_stop])
-        return cursor.fetchone()[0]
+# def get_direction(bus_route: str, bus_stop: int):
+#     with connection.cursor() as cursor:
+#         cursor.execute("SELECT direction FROM stops_served_by_two WHERE line_id = %s AND stop_number = %s;",
+#                        [bus_route, bus_stop])
+#         return cursor.fetchone()[0]
 
 
 def get_weather(timestamp: int):
@@ -158,18 +158,21 @@ def get_weather(timestamp: int):
         return {"temp": 10, "precip_intensity": 0}
 
     # No need for an Else, because this won't be reached if we return a value
-    with connection.cursor() as cursor:
-        if now_hour == utc_user_hour:
-            cursor.execute(
-                "SELECT temp, icon, precip_intensity FROM DarkSky_current_weather ORDER BY timestamp DESC LIMIT 1;")
-            row = cursor.fetchone()
-        else:
-            cursor.execute(
-                "SELECT temp, icon, precip_intensity FROM DarkSky_hourly_weather_prediction WHERE time = %s;",
-                [utc_user_hour])
-            row = cursor.fetchone()
+    try:
+        with connection.cursor() as cursor:
+            if now_hour == utc_user_hour:
+                cursor.execute(
+                    "SELECT temp, icon, precip_intensity FROM DarkSky_current_weather ORDER BY timestamp DESC LIMIT 1;")
+                row = cursor.fetchone()
+            else:
+                cursor.execute(
+                    "SELECT temp, icon, precip_intensity FROM DarkSky_hourly_weather_prediction WHERE time = %s;",
+                    [utc_user_hour])
+                row = cursor.fetchone()
+        return {"temp": row[0], "icon": row[1], "precip_intensity": row[2]}
+    except:
+        return {"temp": 10, "precip_intensity": 0}
 
-    return {"temp": row[0], "icon": row[1], "precip_intensity": row[2]}
 
 
 def end_to_end_prediction(day_of_week: int, hour_of_day: int, temperature: float, precipitation: float, bus_route: str,
@@ -286,13 +289,12 @@ def fare_finder(bus_route: str, direction: int, first_stop: int, last_stop: int)
     else:
         with connection.cursor() as cursor:
             cursor.execute("""SELECT SUM(is_stage_marker)
-                           FROM
-                           (SELECT stop_on_route FROM stops_served_by_two WHERE line_id = %s AND direction = %s AND stop_number = %s) as first_stop,
-                           (SELECT stop_on_route FROM stops_served_by_two WHERE line_id = %s AND direction = %s AND stop_number = %s) as second_stop,
-                           (SELECT * FROM stops_served_by_two WHERE line_id = %s AND direction = %s) as all_stops
-                           WHERE all_stops.stop_on_route >= first_stop.stop_on_route
-                           AND all_stops.stop_on_route <= second_stop.stop_on_route;""",
-                           [bus_route, direction, first_stop, bus_route, direction, last_stop, bus_route, direction])
+                                FROM stops_served_by_two
+                                WHERE line_id = %s
+                                  AND direction = %s
+                                  AND stop_on_route >= %s
+                                  AND stop_on_route <= %s;""",
+                           [bus_route, direction, first_stop, last_stop])
             num_stages = cursor.fetchone()[0]
 
         if num_stages < 4:
@@ -304,22 +306,30 @@ def fare_finder(bus_route: str, direction: int, first_stop: int, last_stop: int)
 
 
 def chart_values(itinerary: dict, timestamp: int):
-    for bus_route in [*itinerary]:
-        if bus_route != "walk":
-            direction = direction_from_location(bus_route, itinerary[bus_route]["stops"][0][0], itinerary[bus_route]["stops"][0][1])
-            itinerary[bus_route]["stops"][0] = get_stopnum_from_location(bus_route, direction, itinerary[bus_route]["stops"][0][0], itinerary[bus_route]["stops"][0][1])
-            itinerary[bus_route]["stops"][1] = get_stopnum_from_location(bus_route, direction, itinerary[bus_route]["stops"][1][0], itinerary[bus_route]["stops"][1][1])
-
     midnight = timestamp - (timestamp % 86400)
     five_am = midnight + (3600 * 5)
     eleven_pm = midnight + (3600 * 23)
+    total_times = [0] * 19
 
-    times = []
-    for hour in range(five_am, eleven_pm + 1, 3600):
-        weather = get_weather(hour)
-        times.append(get_all_times([itinerary], weather, hour)[0])
+    for bus_route in [*itinerary]:
+        if bus_route != "walk":
+            one_leg_times = []
+            details = location_based_details(
+                bus_route,
+                itinerary[bus_route]["stops"][0][0],
+                itinerary[bus_route]["stops"][0][1],
+                itinerary[bus_route]["stops"][1][0],
+                itinerary[bus_route]["stops"][1][1]
+            )
+            for hour in range(five_am, eleven_pm + 1, 3600):
+                one_leg_times.append(predict(bus_route, details[0], details[1], details[2], hour))
 
-    return times
+            for i in range(len(one_leg_times)):
+                total_times[i] += one_leg_times[i]
+        else:
+            total_times = [x + itinerary["walk"] for x in total_times]
+
+    return total_times
 
 
 def next_bus(stop_number: int, bus_route: str, direction: int, timestamp: int):
@@ -419,16 +429,39 @@ def direction_from_location(bus_route: str, lat: float, lng: float):
                           AND static_bus_data.stop_number = stops_served_by_two.stop_number
                           AND lat < %s + 0.001 AND lat > %s - 0.001
                           AND lng < %s + 0.001 AND lng > %s - 0.001
-                          ORDER BY stop_on_route
+                          ORDER BY stop_on_route ASC
                           LIMIT 1""",
                        [bus_route, lat, lat, lng, lng])
-        return cursor.fetchone()[0]
+        x = cursor.fetchone()[0]
+        return x
 
 
-def predict_from_locations(first_stop_lat: float, first_stop_lng: float, last_stop_lat: float, last_stop_lng: float, bus_route: str, timestamp: int):
-    direction = direction_from_location(bus_route, first_stop_lat, first_stop_lng)
-    first_stop = get_stopnum_from_location(bus_route, direction, first_stop_lat, first_stop_lng)
-    last_stop = get_stopnum_from_location(bus_route, direction, last_stop_lat, last_stop_lng)
+def location_based_details(bus_route: str, lat_one: float, lng_one: float, lat_two: float, lng_two: float):
+    with connection.cursor() as cursor:
+        cursor.execute("""SELECT one_direction, one_stop_on_route, two_stop_on_route FROM
+                            (SELECT static_bus_data.stop_number as one_stop, direction as one_direction, stop_on_route as one_stop_on_route
+                            FROM static_bus_data, stops_served_by_two
+                            WHERE line_id = %s
+                                AND static_bus_data.stop_number = stops_served_by_two.stop_number
+                                AND lat < %s + 0.001 AND lat > %s - 0.001
+                                AND lng < %s + 0.001 AND lng > %s - 0.001) as one,
+                            (SELECT static_bus_data.stop_number as two_stop, direction as two_direction, stop_on_route as two_stop_on_route
+                            FROM static_bus_data, stops_served_by_two
+                            WHERE line_id = %s
+                                AND static_bus_data.stop_number = stops_served_by_two.stop_number
+                                AND lat < %s + 0.001 AND lat > %s - 0.001
+                                AND lng < %s + 0.001 AND lng > %s - 0.001) as two
+                            WHERE one_direction = two_direction
+                            AND two_stop_on_route > one_stop_on_route;""",
+                       [bus_route, lat_one, lat_one, lng_one, lng_one, bus_route, lat_two, lat_two, lng_two, lng_two])
+        row = cursor.fetchone()
+        return row
+
+
+def predict(bus_route, direction, first_stop, last_stop, timestamp: int):
+    # direction = direction_from_location(bus_route, first_stop_lat, first_stop_lng)
+    # first_stop = get_stopnum_from_location(bus_route, direction, first_stop_lat, first_stop_lng)
+    # last_stop = get_stopnum_from_location(bus_route, direction, last_stop_lat, last_stop_lng)
     weather = get_weather(timestamp)
     user_dt = dt.datetime.fromtimestamp(timestamp)
     weekday = user_dt.weekday()
@@ -441,13 +474,11 @@ def predict_from_locations(first_stop_lat: float, first_stop_lng: float, last_st
     return get_segment(e2e[0], bus_route, direction, first_stop, last_stop)
 
 
-# TODO: Re-implement this functionality for benchmarking
 def start_timer(username: str, predicted_time: int):
     with open(f"{username.lower()}_timer.txt", "w") as f:
         f.write(f"{predicted_time}\n{dt.datetime.now().timestamp()}")
 
 
-# TODO: This too
 def stop_timer(username: str):
     with open(f"{username.lower()}_timer.txt") as f:
         x = f.read().splitlines()
@@ -462,6 +493,30 @@ def stop_timer(username: str):
     return {"prediction": prediction, "actual": actual, "percentage": percentage}
 
 
+def rtpi(bus_route, stop_on_route, direction):
+    """ Function to scrape RTPI data for the next three bus arrivals for a given stop and route combination """
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT stop_number FROM stops_served_by_two WHERE line_id = %s AND stop_on_route = %s AND direction = %s LIMIT 1;", [bus_route, stop_on_route, direction])
+        stop_id = cursor.fetchone()[0]
+
+    url = f"https://data.smartdublin.ie/cgi-bin/rtpi/realtimebusinformation?stopid={stop_id}&routeid={bus_route}&format=json"
+    rawData = requests.get(url)
+    if rawData.status_code == 200:
+        data = json.loads(rawData.text)
+        next_three_buses = []
+        results = data["results"]
+
+        for item in results:
+            duetime = item["duetime"]
+            if duetime == "Due":
+                duetime == 0
+            next_three_buses.append(f"{duetime} mins")
+            if len(next_three_buses) == 3:
+                break
+
+    return next_three_buses
+
+
 # # # # # # # # # #
 #  WEB ENDPOINTS  #
 # # # # # # # # # #
@@ -469,7 +524,7 @@ def stop_timer(username: str):
 @csrf_exempt
 def prediction_endpoint(request):
     req = json.loads(request.body.decode("utf-8"))
-    return JsonResponse(predict(req["firstStops"], req["lastStops"], req["timestamp"]))
+    return JsonResponse(old_predict(req["firstStops"], req["lastStops"], req["timestamp"]))
 
 
 @csrf_exempt
@@ -488,33 +543,33 @@ def location_prediction_endpoint(request):
     req = json.loads(request.body.decode("utf-8"))
     predictions = []
     fares = []
+    next_buses = []
     for request_dict in req:
         try:
-            predictions.append(predict_from_locations(
+            details = location_based_details(
+                request_dict["busRoute"].upper(),
                 request_dict["firstStop"][0],
                 request_dict["firstStop"][1],
                 request_dict["lastStop"][0],
-                request_dict["lastStop"][1],
-                request_dict["busRoute"].upper(),
-                request_dict["timestamp"]
-            ))
-            direction = direction_from_location(request_dict["busRoute"], request_dict["firstStop"][0], request_dict["firstStop"][1])
-            first_stop = get_stopnum_from_location(request_dict["busRoute"].upper(), direction, request_dict["firstStop"][0], request_dict["firstStop"][1])
-            last_stop = get_stopnum_from_location(request_dict["busRoute"].upper(), direction, request_dict["lastStop"][0], request_dict["lastStop"][1])
-            fares.append(fare_finder(request_dict["busRoute"].upper(), direction, first_stop, last_stop))
+                request_dict["lastStop"][1]
+            )
+            predictions.append(predict(request_dict["busRoute"], details[0], details[1], details[2], request_dict["timestamp"]))
+            fares.append(fare_finder(request_dict["busRoute"].upper(), details[0], details[1], details[2]))
+            next_buses = rtpi(request_dict["busRoute"], details[1], details[0])
         except:
             predictions.append(-100)
             fares.append(-100)
     return JsonResponse(
         {
             "predictions": predictions,
-            "fares": fares
+            "fares": fares,
+            "next_buses": next_buses
         }
     )
 
 
 def roadwatch_endpoint(request):
-    tweet_locations = roadwatch.banner_tweets_regex()
     return JsonResponse({
-        "locations": tweet_locations
+        "locations": roadwatch.banner_tweets_regex(),
+        "tweets": roadwatch.banner_tweets()
     })

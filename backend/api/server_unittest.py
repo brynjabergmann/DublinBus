@@ -37,8 +37,6 @@ class server_test(unittest.TestCase):
 
         self.assertTrue(len(views.get_all_routes(first_stop_list, last_stop_list)) == 9)
 
-
-
     def test_get_all_times(self):
         timings = []
 
@@ -62,7 +60,7 @@ class server_test(unittest.TestCase):
 
         prediction_inputs = views.end_to_end_prediction.prediction_inputs
         print(prediction_inputs)
-
+        
 
     def test_is_school_holiday(self):
         timestamp_holiday_2018 = 1515000000
