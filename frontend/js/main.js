@@ -550,7 +550,7 @@ function predictRoute(response, jsonString, i, postBody){
             leapPrice += +backendResponse.fares[j]["leap"]; //-j if 1 euro cheaper in the next bus;
             cashPrice += +backendResponse.fares[j]["cash"];
         }
-        
+
         let price = `<h6 class="pricing">Leap: <span class="glyphicon glyphicon-euro">${leapPrice}</span> Cash: <span class="glyphicon glyphicon-euro">${cashPrice}</span></h6>`;
         $(`#route-${i}`).append(price);
         $(".sidebarPageOne").hide();
@@ -615,20 +615,20 @@ function drawChart(predictions, containerID) {
 	data.addColumn("string", "Hour");
     data.addColumn("number", "Minutes");
 	data.addColumn({role: "style", type: "string"});
-	let i;	
-    let now = getInputDateAsDateObject().getHours(); 
+	let i;
+    let now = getInputDateAsDateObject().getHours();
     // hourNow - 5;
 	let zone;
 	let color;
 	for (i = 0; i < 19; i++) {
-		time = (i + 5) % 24;
-		if(time == 0)
+		let time = (i + 5) % 24;
+		if(time === 0)
 			time = "12"
 		if(i < 7)
 			zone = "AM";
 		else
 			zone = "PM";
-		if(i == now)
+		if(i === now)
 			color = "#6699FF";
 		else
 			color = "silver";
@@ -659,7 +659,9 @@ function drawChart(predictions, containerID) {
             gridlines: {
                 color: "transparent"
             }
-        }
+        },
+        width: 350,
+        height: 200
     };
     let chart = new google.visualization.ColumnChart(document.getElementById(containerID));
     chart.draw(data, options);
@@ -668,23 +670,23 @@ function drawChart(predictions, containerID) {
   //Reference: https://github.com/rodaine/jQuery-Geolocation/blob/master/demo.html
 
   // Function to get the users geo location
-  function getLocation($button){           
-    let startCB = function() {   // CB = callback   
+  function getLocation($button){
+    let startCB = function() {   // CB = callback
         $button
-            .attr("disabled", "disabled"); 
+            .attr("disabled", "disabled");
     }
-    let finishCB = function() {     
+    let finishCB = function() {
         $button
-            .removeAttr("disabled"); 
+            .removeAttr("disabled");
     }
-    let errorCB = function(error) { 
-        console.log( "Error " + error.code + ":" + error.message ); 
+    let errorCB = function(error) {
+        console.log( "Error " + error.code + ":" + error.message );
     }
     let successCB = function(p) {
         let location = "Latitude: " + p.coords.latitude + "<br/>" + "Longitude: " + p.coords.longitude;
         let yourLocation = {lat: p.coords.latitude, lng: p.coords.longitude}
         let marker = new google.maps.Marker({
-            position: yourLocation, 
+            position: yourLocation,
             map: map,
             draggable: true,
             animation: google.maps.Animation.DROP
@@ -696,14 +698,14 @@ function drawChart(predictions, containerID) {
             else {
                 geoAddress(yourLocation, "#toStation", false);
             }
-            
-            
+
+
         // Reference: https://developers.google.com/maps/documentation/javascript/examples/marker-animations
         // Function that makes the marker bounce on the map
         function toggleBounce() {
             if (marker.getAnimation() !== null) {
               marker.setAnimation(null);
-            } 
+            }
             else {
               marker.setAnimation(google.maps.Animation.BOUNCE);
             }
@@ -740,7 +742,7 @@ function geoAddress(location, inputID, isFromPlace){
                         return element.types.includes("route");})["long_name"];
                     let postalcode = results[0]["address_components"].find(function(element){       // Gets postal code
                         return element.types.includes("postal_town");})["long_name"];
-                    let country = results[0]["address_components"].find(function(element){          // Gets country 
+                    let country = results[0]["address_components"].find(function(element){          // Gets country
                         return element.types.includes("country", "political");})["long_name"];
                     $(inputID).val(`${route}, ${postalcode}, ${country}`);
                 }
@@ -786,7 +788,7 @@ function autocomplete(){
             }
         });
     }
-    
+
     addAutocomplete(inputFrom, "fromPlace");
     addAutocomplete(inputTo, "toPlace");
 }
@@ -829,7 +831,7 @@ function weatherIcons(){
 
 function updateDropDown(element){
     // Reference: https://stackoverflow.com/questions/8482241/selecting-next-input
-        $("#Bus").val(element.target.innerText);  
+        $("#Bus").val(element.target.innerText);
 }
 
 function searchForRoute(){         // Function for the search button (what happens after the user clicks on "Search")
@@ -847,7 +849,7 @@ function setInitialClock(){
     const time = new Date();
     if(+time.getMinutes() < +10)
     {
-        $("#timePicker").val(`${time.getHours()}:0${time.getMinutes()}`);    
+        $("#timePicker").val(`${time.getHours()}:0${time.getMinutes()}`);
     }
     else{
         $("#timePicker").val(`${time.getHours()}:${time.getMinutes()}`);
@@ -857,7 +859,7 @@ function setInitialClock(){
 
 function createMarker(location) {
     let marker = new google.maps.Marker({
-        position: location, 
+        position: location,
         map: map,
         draggable: true,
         animation: google.maps.Animation.DROP
