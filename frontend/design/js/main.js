@@ -147,22 +147,27 @@ function predictRoute(response, jsonString, i, postBody){
         {
             if(response.routes[i].legs[0].steps[j].travel_mode === "TRANSIT")
             {
+                console.log(response.routes[i].legs[0].steps[j]);
                 let predictedTime = backendResponse["predictions"].shift();
-                if(i === 0)
-                {
+
+                // If our system is unable to make a prediction, fall back to using Google's result.
+                if (predictedTime === -100){
+                    predictedTime = +parseInt(response.routes[i].legs["0"].steps[j].duration.text.replace(" mins", ""));
+                    document.getElementById(`gFlag${i}`).innerHTML = "This route is incompatible with our dataset. These results have been supplied by Google's Transit API"
+                }
+
+                if (i === 0) {
                     routeOneTotalTravelTime += +predictedTime;
                 }
-                if(i === 1)
-                {
+                if (i === 1) {
                     routeTwoTotalTravelTime += +predictedTime;
                 }
-                if(i === 2)
-                {
+                if (i === 2) {
                     routeThreeTotalTravelTime += +predictedTime;
                 }
                 const detailBus = `<img class="img-responsive resultImages busImage" img src="./img/bus.png"> <h5 class="displayResultsMin" id="predictionMin_${i}_${j}">${predictedTime} mins</h5>`;
                 // Add element to html
-                $(`#routeDetails_${i}`).append(detailBus);        
+                $(`#routeDetails_${i}`).append(detailBus);
             }
             else {
                 const walkingMinutes = `<img class="img-responsive resultImages walkImage" img src="./img/walking.png"><h5 class="displayResultsMin">${[response.routes[i].legs["0"].steps[j].duration.text]}</h5>`;
@@ -506,6 +511,32 @@ function createMarker(location) {
         draggable: true,
         animation: google.maps.Animation.DROP
     });
+}
+
+
+function roadwatchTwitter() {
+    fetch("https://dublinbus.icu/api/roadwatch")
+        .then(response => response.json())
+        .then(function (roadwatchJSON){
+            let delayArrays = roadwatchJSON["locations"];
+            for (let i = 0; i < 3; i++){
+                for (let j = 0; j < delayArrays[i].length; i++){
+                    let address = delayArrays[i][j][0].replace(" ", "+");
+                    fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${address},+Dublin,+Ireland&key=AIzaSyDiKC3_2ysW4r1tTKw3sST9L3CyXQRb7f8`)
+                        .then(response => response.json())
+                        .then(function (locationJSON) {
+                            console.log(locationJSON);
+                            let marker = new google.maps.Marker({
+                                position: new google.maps.LatLng(locationJSON.results[0].geometry.location.lat, locationJSON.results[0].geometry.location.lng),
+                                map: map,
+                                title: "Delays here",
+                                icon: "./img/delays.png"
+                            });
+                            marker.setMap(map);
+                        });
+                }
+            }
+        });
 }
 
 

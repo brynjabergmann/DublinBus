@@ -3,6 +3,7 @@ import json
 import time
 import re
 
+
 def banner_tweets_regex():
     """
     Method that accesses the AARoadwatch Twitter feed and analyses the text in each tweet
@@ -10,7 +11,7 @@ def banner_tweets_regex():
     :return: tweets
     """
 
-    with open("twitter_auth.json") as f:
+    with open("api/twitter_auth.json") as f:
         twitter_auth = json.loads(f.read())
         consumer_key = twitter_auth["consumer_key"]
         consumer_secret = twitter_auth["consumer_secret"]
@@ -28,7 +29,7 @@ def banner_tweets_regex():
     now = str(time.strftime("%a"))
     dublin_tweets_raw = []
     fixed_traffic = []
-    i=0
+    i = 0
     current_day = str(time.strftime("%a"))
 
     for t in tweets:
@@ -120,7 +121,7 @@ def banner_tweets():
     :return: dublin_tweets
     """
 
-    with open("twitter_auth.json") as f:
+    with open("api/twitter_auth.json") as f:
         twitter_auth = json.loads(f.read())
         consumer_key = twitter_auth["consumer_key"]
         consumer_secret = twitter_auth["consumer_secret"]

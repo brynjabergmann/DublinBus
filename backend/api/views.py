@@ -6,6 +6,7 @@ import pickle
 import pandas as pd
 import datetime as dt
 import requests
+from . import roadwatch
 # from raven import Client  # TODO: re-enable Raven for final push
 
 # IDEs might say this one is "unused", but once our models are unpickled they need sklearn:
@@ -90,17 +91,16 @@ def get_all_times(all_possible_journeys: list, weather: dict, user_timestamp: in
                 user_dt = dt.datetime.fromtimestamp(user_timestamp)
                 direction = get_direction(bus_route, journey[bus_route]["stops"][0])
 
-                prediction = load_prediction(bus_route, direction, user_dt.day, user_dt.month, user_dt.hour + 1)
+                # prediction = load_prediction(bus_route, direction, user_dt.day, user_dt.month, user_dt.hour + 1)
 
-                # TODO: Move this to nighttime generator
-                # prediction = end_to_end_prediction(dt.datetime.fromtimestamp(user_timestamp).weekday(),
-                #                                    dt.datetime.fromtimestamp(user_timestamp - (user_timestamp % 3600) + 3600).hour,
-                #                                    temperature,
-                #                                    precipitation,
-                #                                    bus_route,
-                #                                    direction,
-                #                                    is_school_holiday(user_timestamp)
-                #                                    )
+                prediction = end_to_end_prediction(dt.datetime.fromtimestamp(user_timestamp).weekday(),
+                                                   dt.datetime.fromtimestamp(user_timestamp - (user_timestamp % 3600) + 3600).hour,
+                                                   temperature,
+                                                   precipitation,
+                                                   bus_route,
+                                                   direction,
+                                                   is_school_holiday(user_timestamp)
+                                                   )
 
                 total_time += get_segment(prediction[0],
                                           bus_route,
@@ -304,11 +304,11 @@ def fare_finder(bus_route: str, direction: int, first_stop: int, last_stop: int)
 
 
 def chart_values(itinerary: dict, timestamp: int):
-    # TODO: FIX DIRECTION
     for bus_route in [*itinerary]:
         if bus_route != "walk":
-            itinerary[bus_route]["stops"][0] = get_stopnum_from_location(bus_route, itinerary[bus_route]["stops"][0][0], itinerary[bus_route]["stops"][0][1])
-            itinerary[bus_route]["stops"][1] = get_stopnum_from_location(itinerary[bus_route]["stops"][1][0], itinerary[bus_route]["stops"][1][1])
+            direction = direction_from_location(bus_route, itinerary[bus_route]["stops"][0][0], itinerary[bus_route]["stops"][0][1])
+            itinerary[bus_route]["stops"][0] = get_stopnum_from_location(bus_route, direction, itinerary[bus_route]["stops"][0][0], itinerary[bus_route]["stops"][0][1])
+            itinerary[bus_route]["stops"][1] = get_stopnum_from_location(bus_route, direction, itinerary[bus_route]["stops"][1][0], itinerary[bus_route]["stops"][1][1])
 
     midnight = timestamp - (timestamp % 86400)
     five_am = midnight + (3600 * 5)
@@ -489,21 +489,32 @@ def location_prediction_endpoint(request):
     predictions = []
     fares = []
     for request_dict in req:
-        predictions.append(predict_from_locations(
-            request_dict["firstStop"][0],
-            request_dict["firstStop"][1],
-            request_dict["lastStop"][0],
-            request_dict["lastStop"][1],
-            request_dict["busRoute"].upper(),
-            request_dict["timestamp"]
-        ))
-        direction = direction_from_location(request_dict["busRoute"], request_dict["firstStop"][0], request_dict["firstStop"][1])
-        first_stop = get_stopnum_from_location(request_dict["busRoute"].upper(), direction, request_dict["firstStop"][0], request_dict["firstStop"][1])
-        last_stop = get_stopnum_from_location(request_dict["busRoute"].upper(), direction, request_dict["lastStop"][0], request_dict["lastStop"][1])
-        fares.append(fare_finder(request_dict["busRoute"].upper(), direction, first_stop, last_stop))
+        try:
+            predictions.append(predict_from_locations(
+                request_dict["firstStop"][0],
+                request_dict["firstStop"][1],
+                request_dict["lastStop"][0],
+                request_dict["lastStop"][1],
+                request_dict["busRoute"].upper(),
+                request_dict["timestamp"]
+            ))
+            direction = direction_from_location(request_dict["busRoute"], request_dict["firstStop"][0], request_dict["firstStop"][1])
+            first_stop = get_stopnum_from_location(request_dict["busRoute"].upper(), direction, request_dict["firstStop"][0], request_dict["firstStop"][1])
+            last_stop = get_stopnum_from_location(request_dict["busRoute"].upper(), direction, request_dict["lastStop"][0], request_dict["lastStop"][1])
+            fares.append(fare_finder(request_dict["busRoute"].upper(), direction, first_stop, last_stop))
+        except:
+            predictions.append(-100)
+            fares.append(-100)
     return JsonResponse(
         {
             "predictions": predictions,
             "fares": fares
         }
     )
+
+
+def roadwatch_endpoint(request):
+    tweet_locations = roadwatch.banner_tweets_regex()
+    return JsonResponse({
+        "locations": tweet_locations
+    })
