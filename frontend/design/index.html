@@ -15,11 +15,11 @@
     <!-- The viewport sets the width of the page to follow the screen-width of the device and sets the initial zoom level when the page is first loaded by the browser -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Latest compiled and minified Bootstrap CSS -->
+    <!-- Compiled and minified Bootstrap CSS -->
     <link rel="stylesheet" href="./css/libraries/bootstrap.min.css">
     <link rel="stylesheet" href="./css/libraries/bootstrap-theme.min.css">
 
-    <!--  Link to an externl style sheet -->
+    <!-- Externl style sheets -->
     <link type="text/css" rel="stylesheet" href="./css/main.css">
     <link type="text/css" rel="stylesheet" href="./css/sidebar.css">
     <link type="text/css" rel="stylesheet" href="./css/weathericons.css">
@@ -29,21 +29,18 @@
     <!-- Tab logo for the website. Reference: https://stackoverflow.com/questions/9943771/adding-a-favicon-to-a-static-html-page -->
     <link rel="shortcut icon" type="image/ico" href="./favicon.ico" />
 
-    <!-- IF WE WANT TO IMPORT A SPECIFIC GOOGLE FONT WE CAN USE THIS AND THEN CHANGE "Comfortaa" TO WHATEVER WE WANT -->
-    <!-- <link href="https://fonts.googleapis.com/css?family=Comfortaa" rel="stylesheet"> -->
 </head>
-
   <body>
-    <!-- <page-content-wrapper></page-content-wrapper> -->
+
     <!--Id for the map. Reference from https://developers.google.com/maps/documentation/javascript/adding-a-google-map-->
     <div id="map"></div>
 
     <!-- Sidebar. Reference from https://bootsnipp.com/snippets/BDKbE -->
     <div id="sidebar" class="nav-side-menu">
         <div id="header">
-            <img id="headerImage" class="img-responsive center" img src="./img/logo_new.png">
+            <img id="headerImage" class="img-responsive center" img src="./img/logo_new.png">   <!-- Sidebar logo -->
         </div>
-        <i class="fa fa-bars fa-2x toggle-btn" data-toggle="collapse" data-target="#menu-content">
+        <i class="fa fa-bars fa-2x toggle-btn" data-toggle="collapse" data-target="#menu-content">  <!-- Mobile mode -->
             <span class="glyphicon glyphicon-menu-hamburger"></span>
         </i>
         <div class="menu-list">
@@ -51,8 +48,8 @@
                 <li class="sidebarPageOne">
                     <div id="weather">
                         <span>
-                            <!-- Reference: https://github.com/darkskyapp/skycons -->
                             <figure>
+                                <!-- Sky icons. Reference: https://github.com/darkskyapp/skycons -->
                                 <canvas class="icon" id="fog" width="30" height="30"></canvas>
                             </figure>
                             <!-- The weather temperature -->
@@ -124,8 +121,6 @@
                     <!-- Search button -->
                     <button id="searchButton" class="btn btn-default rounded" type="button"><span class="glyphicon glyphicon-search"></span> Search </button> 
                 </li>
-
-
                 </div>
 
 
