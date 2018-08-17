@@ -37,11 +37,7 @@ def banner_tweets_regex():
 
         if m and t.text.startswith("#DUBLIN") and t.created_at.startswith(current_day):
             reg = re.search(r'(?:\bon the\b\s|\bon\b\s|from\s|in\s)(.*)\. More|\.', t.text)
-<<<<<<< HEAD
-            if reg:
-=======
             if reg.group(1):
->>>>>>> twitter
                 # Issues with regex for certain string slices
                 # using str.replace() fixed this for the most part but will have to monitor
                 reg_group = reg.group(1).replace("on ","")
@@ -54,17 +50,10 @@ def banner_tweets_regex():
         else:
             pass
         i += 1
-<<<<<<< HEAD
-    roads = []
-    m_roads = []
-    n_roads = []
-    m_test = []
-=======
 
     roads = []
     m_roads = []  # Motorways
     n_roads = []  # National roads
->>>>>>> twitter
     for i in range(len(dublin_tweets_raw)):
         m_details = []
         n_details = []
@@ -75,10 +64,6 @@ def banner_tweets_regex():
             dublin_tweets_raw[i])
         roads_regex = re.search(r'(?:\bon the\b\s|\bon\b\s)(.*)\. More|\.', dublin_tweets_raw[i])
 
-<<<<<<< HEAD
-
-=======
->>>>>>> twitter
         if n_regex and n_regex.group(1):
             n_roads.append(n_regex.group(0))
             # n_regex.group()
@@ -92,11 +77,7 @@ def banner_tweets_regex():
             n_details.append(dublin_tweets_raw[i])
             n_roads.append(n_details)
 
-<<<<<<< HEAD
-        elif m_regex.group(1): 
-=======
         elif m_regex.group(1):
->>>>>>> twitter
             # m_regex.group()
             # 1 = whole matched statement e.g. M50 southbound at J6
             # 2 = road name e.g. M50
@@ -116,35 +97,6 @@ def banner_tweets_regex():
             roads.append(roads_details)
         else:
             pass
-<<<<<<< HEAD
-    print(fixed_traffic[0][0])
-    print(len(roads),len(fixed_traffic))
-
-    deletion_list = [] # List to keep track of indexes to be removed from roads
-    for i in range(len(roads)):
-        for j in range(len(fixed_traffic)):
-            if roads[i][0].lower() == fixed_traffic[j][0].lower():
-                print("True", roads[i][0].lower(), fixed_traffic[j][0].lower())
-                deletion_list.append(i)
-            else:
-                print("False", roads[i][0].lower(), fixed_traffic[j][0].lower())
-    #roads.reverse() # Had to reverse roads to start from the end of the list
-                            # This is to ensure the most recent tweet is displayed if there is an error in RegEx
-    roads = [x for i, x in enumerate(roads) if i not in deletion_list]
-    #print(len(roads))
-    #print(roads)
-    #print(len(roads))
-    #pprint.pprint(dublin_tweets_raw)
-    #pprint.pprint(fixed_traffic)
-    #pprint.pprint(roads)
-    #pprint.pprint(m_roads)
-    #pprint.pprint(n_roads)
-    #pprint.pprint(m_roads)
-    return roads
-# fixed tweets and roads > contained in then delete both
-
-print(banner_tweets_regex())
-=======
     # Below is useful for debugging
     #print(len(roads),len(fixed_traffic))
 
