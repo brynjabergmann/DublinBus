@@ -14,8 +14,18 @@
     height: 100%;
     color:black;
     text-align: center;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    top: 0;
+    bottom: 0;
 }
 
+#sidebar > .sidebarPageOne {
+  overflow-y: hidden;
+  overflow-x: hidden;
+  top: 0;
+  bottom: 0;
+}
 
 /* The header of the sidebar */
 #header {
@@ -89,22 +99,9 @@
 }
 
 
-
-
-
-
-
-
-/* Styling of the markers */
-#menu-content > li:nth-child(4) > div > div > button {
-
-}
-
 /* Styling of the marker buttons */
 #findLocationFrom > button > img,
 #findLocationTo > button > img {
-/* #menu-content > li:nth-child(3) > div > span.input-group-btn > button > img,
-#menu-content > li:nth-child(4) > div > span.input-group-btn > button > img { */
   display: inline-block;
   height: 20px;
   padding: 0;
@@ -118,12 +115,6 @@
 #findLocationTo > button {
   background: white;
 }
-
-
-
-
-
-
 
 
 /* Styling of the selection buttons */
@@ -167,6 +158,7 @@
   padding-right: 20px;
 }
 
+/* Stying of the mobile mode */
 @media (max-width: 767px) {
   .nav-side-menu {
     width: 100%;
@@ -191,6 +183,7 @@
   }
 }
 
+/* Stying of the mobile mode */
 @media (min-width: 767px) {
   .nav-side-menu {
     height: 100%;
@@ -217,6 +210,10 @@
 /* Styling of the search button */
 #searchButton > span {
   font-weight: 800;
+}
+
+#searchButton {
+  margin-bottom: 20px;
 }
 
 /* Styling the hamburger that appears on pages smaller than 767px */
@@ -265,11 +262,11 @@ button {
   width: 100%;
   background: whitesmoke;
 }
+
+
 .sidebarPageTwo {
   display: none;
 }
-
-
 
 .resultImages {
   display: inline;
@@ -396,7 +393,7 @@ button {
   color: #DC143C;
 }
 
-#gFlag0, #gFlag1, #gFlag2 {
-  color: red;
-  line-height: 1em;
+/* Hidden check box for nightmode */
+#dn {
+  display: none;
 }

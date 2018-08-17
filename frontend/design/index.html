@@ -60,67 +60,76 @@
 
                 <div class ="search">
 
-                <li class="sidebarPageOne">
-                    <!-- Reference: https://getbootstrap.com/docs/3.3/components/#input-groups -->
-                    <div class="input-group">
-                        <span class="input-group-addon">From</span>
-                        <input type="text" class="form-control" aria-label placeholder="Choose a starting point..." id="fromStation">
-                        <span class="input-group-btn" id="findLocationFrom">
-                            <!-- Hover text reference: https://getbootstrap.com/docs/4.1/components/tooltips/ -->
-                            <button class="btn btn-default" type="button" data-toggle="tooltip" data-placement="bottom" title="Find my location">
-                                <img src="./img/markerImage.JPG">
-                            </button>
-                        </span>
-                    </div>
-                </li>
-                <li class="sidebarPageOne">
-                    <div class="input-group">
-                        <span class="input-group-addon">To</span>
-                        <input type="text" class="form-control" aria-label placeholder="Where do you want to go?" id="toStation">
-                        <span class="input-group-btn" id="findLocationTo">
-                            <!-- Hover text reference: https://getbootstrap.com/docs/4.1/components/tooltips/ -->
-                            <button class="btn btn-default" type="button" data-toggle="tooltip" data-placement="bottom" title="Find my location">
-                                <img src="./img/markerImage.JPG">
-                            </button>
-                        </span>
-                    </div>
-                </li>
-                <!-- <li class="sidebarPageOne">
-                    <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                        <label class="btn btn-secondary active">
-                            <input type="radio" name="options" id="option1" autocomplete="off" checked> Depart at
-                        </label>
-                        <label class="btn btn-secondary">
-                            <input type="radio" name="options" id="option2" autocomplete="off"> Arrive by
-                        </label>
-                    </div>
-                </li> -->
-                <li class="sidebarPageOne" id="datetimepickers">
-                    <span>
-                        <div class="datetime-group">
-                            <!-- Date picker. Reference: http://bootstrap-datepicker.readthedocs.io/en/latest/index.html -->
-                            <div class="input-group date" data-provide="datepicker" id="datepicker">
-                                <input type="text" class="form-control"  autocomplete="off">
-                                <div class="input-group-addon">
-                                    <span class="glyphicon glyphicon-th"></span>
+                    <li class="sidebarPageOne">
+                        <!-- Reference: https://getbootstrap.com/docs/3.3/components/#input-groups -->
+                        <div class="input-group">
+                            <span class="input-group-addon">From</span>
+                            <input type="text" class="form-control" aria-label placeholder="Choose a starting point..." id="fromStation">
+                            <span class="input-group-btn" id="findLocationFrom">
+                                <!-- Hover text reference: https://getbootstrap.com/docs/4.1/components/tooltips/ -->
+                                <button class="btn btn-default" type="button" data-toggle="tooltip" data-placement="bottom" title="Find my location">
+                                    <img src="./img/markerImage.JPG">
+                                </button>
+                            </span>
+                        </div>
+                    </li>
+                    <li class="sidebarPageOne">
+                        <div class="input-group">
+                            <span class="input-group-addon">To</span>
+                            <input type="text" class="form-control" aria-label placeholder="Where do you want to go?" id="toStation">
+                            <span class="input-group-btn" id="findLocationTo">
+                                <!-- Hover text reference: https://getbootstrap.com/docs/4.1/components/tooltips/ -->
+                                <button class="btn btn-default" type="button" data-toggle="tooltip" data-placement="bottom" title="Find my location">
+                                    <img src="./img/markerImage.JPG">
+                                </button>
+                            </span>
+                        </div>
+                    </li>
+                    <li class="sidebarPageOne" id="datetimepickers">
+                        <span>
+                            <div class="datetime-group">
+                                <!-- Date picker. Reference: http://bootstrap-datepicker.readthedocs.io/en/latest/index.html -->
+                                <div class="input-group date" data-provide="datepicker" id="datepicker">
+                                    <input type="text" class="form-control"  autocomplete="off">
+                                    <div class="input-group-addon">
+                                        <span class="glyphicon glyphicon-th"></span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="datetime-group">
-                            <!-- Time picker. Reference: http://weareoutman.github.io/clockpicker/ -->
-                            <div class="input-group clockpicker">
-                                <input type="text" class="form-control" id="timePicker" autocomplete="off">
-                                <div class="input-group-addon">
-                                    <span class="glyphicon glyphicon-time"></span> <!--The clock icon-->
+                            <div class="datetime-group">
+                                <!-- Time picker. Reference: http://weareoutman.github.io/clockpicker/ -->
+                                <div class="input-group clockpicker">
+                                    <input type="text" class="form-control" id="timePicker" autocomplete="off">
+                                    <div class="input-group-addon">
+                                        <span class="glyphicon glyphicon-time"></span> <!--The clock icon-->
+                                    </div>
                                 </div>
                             </div>
+                        </span>
+                    </li>
+                    <li class="sidebarPageOne">
+                        <!-- Search button -->
+                        <button id="searchButton" class="btn btn-default rounded" type="button"><span class="glyphicon glyphicon-search"></span> Search </button> 
+                    </li>
+					<!-- SOURCE https://codemyui.com/pure-css-ampm-toggle-switch/-->
+                    <li class="nightmode sidebarPageOne">
+                        <div id="toggleWrapper">
+                            <input type="checkbox" class="dn" id="dn" onchange="nightMode()"/>
+                            <label for="dn" class="toggle">
+                            <span class="toggle__handler">
+                                <span class="crater crater--1"></span>
+                                <span class="crater crater--2"></span>
+                                <span class="crater crater--3"></span>
+                            </span>
+                            <span class="star star--1"></span>
+                            <span class="star star--2"></span>
+                            <span class="star star--3"></span>
+                            <span class="star star--4"></span>
+                            <span class="star star--5"></span>
+                            <span class="star star--6"></span>
+                            </label> 
                         </div>
-                    </span>
-                </li>
-                <li class="sidebarPageOne">
-                    <!-- Search button -->
-                    <button id="searchButton" class="btn btn-default rounded" type="button"><span class="glyphicon glyphicon-search"></span> Search </button> 
-                </li>
+                    </li>
                 </div>
 
 
