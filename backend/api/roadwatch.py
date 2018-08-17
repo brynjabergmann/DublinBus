@@ -149,16 +149,3 @@ def banner_tweets():
             pass
         i += 1
     return dublin_tweets
-
-
-
-
-
-#print(banner_tweets_regex())
-#print(banner_tweets())
-
-# Below is just showing how to access the information. If any of the three roads 2D arrays are empty, it means the
-# traffic has been cleared
-
-#banner_tweets = banner_tweets_regex()
-#roads, m_roads, n_roads, fixed_traffic = banner_tweets[0], banner_tweets[1], banner_tweets[2], banner_tweets[3]

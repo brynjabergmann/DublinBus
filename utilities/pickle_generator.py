@@ -15,7 +15,7 @@ pd.set_option('display.max_columns', 500)
 with open("credentials.json") as f:
     credentials = json.loads(f.read())
 
-host = credentials["host"]
+host = credentials["db_host"]
 user = credentials["db_user"]
 password = credentials["db_pass"]
 db = credentials["db_name"]

@@ -11,16 +11,24 @@ import pymysql.cursors
 import datetime
 import sys
 
+with open("credentials.json") as f:
+    credentials = json.loads(f.read())
+
+db_host = credentials["db_host"]
+db_user = credentials["db_user"]
+db_password = credentials["db_pass"]
+db_name = credentials["db_name"]
+
 def dbConnect():
     
-    """Function to connect to the database"""
+    """ Function to connect to the database """
     
     try:
         db = pymysql.connect(
-            host='localhost',
-            user='superfint',
-            passwd='Team 8 Project',
-            db='dublin_bus'
+            host = db_host,
+            user = db_user,
+            password = db_password,
+            db = db_name
         )
         
     except Exception as e: 
@@ -29,7 +37,7 @@ def dbConnect():
     
 def insertDb(data, db):
     
-    """Function to insert the data into the database"""
+    """ Function to insert data into the database """
     
     try:
         cursor = db.cursor()
@@ -48,7 +56,7 @@ def insertDb(data, db):
         
 def truncateDb(db):
     
-    """Function to truncate the data from the database"""
+    """ Function to truncate the data from the database """
     
     try:
         cursor = db.cursor()
@@ -63,21 +71,14 @@ def truncateDb(db):
         
 def main():
 
-    """Function to connect to the API and call the above functions to run the scraper"""
+    """ Function to connect to the API and call the above functions to run the scraper """
 
     url = "https://api.darksky.net/forecast/9a91b8d12a4a4a97d2c0bba6c5d18870/53.3498,-6.2603?units=si&extend=hourly&exclude=daily,flags,minutely"
-    db = dbConnect()
-    print("Connected!")
-    
+    db = dbConnect()    
     rawData = requests.get(url)
-    print(rawData.status_code)
-
     if rawData.status_code == 200:
         data = json.loads(rawData.text)
-        print("Working")
-        
         truncateDb(db)
-         
         for i in range(168):
             time = data["hourly"]["data"][i]["time"]
             description = data["hourly"]["data"][i]["summary"]
@@ -89,7 +90,6 @@ def main():
             hour = datetime.datetime.fromtimestamp(time).strftime('%H')
             day_of_week = calendar.day_name[datetime.datetime.fromtimestamp(time).weekday()]
             dow = datetime.datetime.fromtimestamp(time).weekday()
-
             data[i] = [time, day_of_week, description, temp, icon, precip_intensity, hour, month, date, dow]
             insertDb(data[i], db)
     
