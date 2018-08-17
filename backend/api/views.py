@@ -304,9 +304,10 @@ def fare_finder(bus_route: str, direction: int, first_stop: int, last_stop: int)
 
 
 def chart_values(itinerary: dict, timestamp: int):
+    # TODO: FIX DIRECTION
     for bus_route in [*itinerary]:
         if bus_route != "walk":
-            itinerary[bus_route]["stops"][0] = get_stopnum_from_location(itinerary[bus_route]["stops"][0][0], itinerary[bus_route]["stops"][0][1])
+            itinerary[bus_route]["stops"][0] = get_stopnum_from_location(bus_route, itinerary[bus_route]["stops"][0][0], itinerary[bus_route]["stops"][0][1])
             itinerary[bus_route]["stops"][1] = get_stopnum_from_location(itinerary[bus_route]["stops"][1][0], itinerary[bus_route]["stops"][1][1])
 
     midnight = timestamp - (timestamp % 86400)
@@ -395,30 +396,45 @@ def is_school_holiday(timestamp: int):
     return False
 
 
-def get_stopnum_from_location(bus_route: str, lat: float, lng: float):
+def get_stopnum_from_location(bus_route: str, direction: int, lat: float, lng: float):
     with connection.cursor() as cursor:
         cursor.execute("""SELECT static_bus_data.stop_number
                           FROM static_bus_data, stops_served_by_two
                           WHERE line_id = %s
                           AND static_bus_data.stop_number = stops_served_by_two.stop_number
+                          AND direction = %s
                           AND lat < %s + 0.001 AND lat > %s - 0.001
                           AND lng < %s + 0.001 AND lng > %s - 0.001""",
-                       [bus_route, lat, lat, lng, lng])
+                       [bus_route, direction, lat, lat, lng, lng])
         row = cursor.fetchone()
         if row:
             return row[0]
 
 
+def direction_from_location(bus_route: str, lat: float, lng: float):
+    with connection.cursor() as cursor:
+        cursor.execute("""SELECT stops_served_by_two.direction
+                          FROM static_bus_data, stops_served_by_two
+                          WHERE line_id = %s
+                          AND static_bus_data.stop_number = stops_served_by_two.stop_number
+                          AND lat < %s + 0.001 AND lat > %s - 0.001
+                          AND lng < %s + 0.001 AND lng > %s - 0.001
+                          ORDER BY stop_on_route
+                          LIMIT 1""",
+                       [bus_route, lat, lat, lng, lng])
+        return cursor.fetchone()[0]
+
+
 def predict_from_locations(first_stop_lat: float, first_stop_lng: float, last_stop_lat: float, last_stop_lng: float, bus_route: str, timestamp: int):
-    first_stop = get_stopnum_from_location(bus_route, first_stop_lat, first_stop_lng)
-    last_stop = get_stopnum_from_location(bus_route, last_stop_lat, last_stop_lng)
+    direction = direction_from_location(bus_route, first_stop_lat, first_stop_lng)
+    first_stop = get_stopnum_from_location(bus_route, direction, first_stop_lat, first_stop_lng)
+    last_stop = get_stopnum_from_location(bus_route, direction, last_stop_lat, last_stop_lng)
     weather = get_weather(timestamp)
     user_dt = dt.datetime.fromtimestamp(timestamp)
     weekday = user_dt.weekday()
     hour = user_dt.hour
     temperature = weather["temp"]
     rain = weather["precip_intensity"]
-    direction = get_direction(bus_route, first_stop)
     school_holiday = is_school_holiday(timestamp)
 
     e2e = end_to_end_prediction(weekday, hour, temperature, rain, bus_route, direction, school_holiday)
@@ -466,10 +482,12 @@ def chart_endpoint(request):
     req = json.loads(request.body.decode("utf-8"))
     return JsonResponse({"chart": chart_values(req["itinerary"], req["timestamp"])})
 
+
 @csrf_exempt
 def location_prediction_endpoint(request):
     req = json.loads(request.body.decode("utf-8"))
     predictions = []
+    fares = []
     for request_dict in req:
         predictions.append(predict_from_locations(
             request_dict["firstStop"][0],
@@ -479,12 +497,10 @@ def location_prediction_endpoint(request):
             request_dict["busRoute"].upper(),
             request_dict["timestamp"]
         ))
-    fares = []
-    for r in req:
-        first_stop = get_stopnum_from_location(r["firstStop"][0], r["firstStop"][1])
-        last_stop = get_stopnum_from_location(r["lastStop"][0], r["lastStop"][1])
-        direction = get_direction(r["busRoute"].upper(), first_stop)
-        fares.append(fare_finder(r["busRoute"].upper(), direction, first_stop, last_stop))
+        direction = direction_from_location(request_dict["busRoute"], request_dict["firstStop"][0], request_dict["firstStop"][1])
+        first_stop = get_stopnum_from_location(request_dict["busRoute"].upper(), direction, request_dict["firstStop"][0], request_dict["firstStop"][1])
+        last_stop = get_stopnum_from_location(request_dict["busRoute"].upper(), direction, request_dict["lastStop"][0], request_dict["lastStop"][1])
+        fares.append(fare_finder(request_dict["busRoute"].upper(), direction, first_stop, last_stop))
     return JsonResponse(
         {
             "predictions": predictions,
