@@ -399,3 +399,8 @@ button {
 .pricing {
   color: #DC143C;
 }
+
+/* Hidden check box for nightmode */
+#dn {
+  display: none;
+}
