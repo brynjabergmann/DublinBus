@@ -18,7 +18,7 @@ function initMap() {
     directionsService = new google.maps.DirectionsService;
     directionsDisplay = new google.maps.DirectionsRenderer;
     map = new google.maps.Map(                      
-        document.getElementById('map'), {zoom: 12, center: Dublin, mapTypeControl: false});
+        document.getElementById("map"), {zoom: 12, center: Dublin, mapTypeControl: false});
     directionsDisplay.setMap(map);                  // Connect route display to map
 }
 
@@ -56,7 +56,7 @@ function timeStamp() {
     }, 
     // Callback function for route
     function(response, status) {     
-      if (status === 'OK') {
+      if (status === "OK") {
 
         // Shows max three suggested routes/result boxes
         var number_of_bus_routes = 3;
@@ -249,9 +249,9 @@ function makeChart(postBody, steps, routeIndex){
 
 function drawChart(predictions, containerID) {
 	let data = new google.visualization.DataTable();
-	data.addColumn('string', 'Hour');
-    data.addColumn('number', 'Minutes');
-	data.addColumn({role: 'style', type: 'string'});
+	data.addColumn("string", "Hour");
+    data.addColumn("number", "Minutes");
+	data.addColumn({role: "style", type: "string"});
 	let i;	
     let now = getInputDateAsDateObject().getHours(); 
     // hourNow - 5;
@@ -269,32 +269,32 @@ function drawChart(predictions, containerID) {
 			color = "#6699FF";
 		else
 			color = "silver";
-		data.addRow([time.toString(), predictions[i], 'color: ' + color+ ';']);
+		data.addRow([time.toString(), predictions[i], "color: " + color+ ";"]);
 
 		};
 
     let options = {
         animation: {
             duration: 2000,
-            easing: 'out',
+            easing: "out",
             startup: true
         },
-        title: 'Hourly Journey Travel Times',
-        axisTitlesPosition: 'out',
-        backgroundColor: 'transparent',
-        curveType: 'function',
+        title: "Hourly Journey Travel Times",
+        axisTitlesPosition: "out",
+        backgroundColor: "transparent",
+        curveType: "function",
         hAxis: {
             title: "Time of Day"
         },
         legend: {
-            position: 'none'
+            position: "none"
         },
         vAxis: {
-			viewWindowMode: 'maximized',
-            format: 'decimal',
-            title: '\nJourney Time (mins)',
+			viewWindowMode: "maximized",
+            format: "decimal",
+            title: "\nJourney Time (mins)",
             gridlines: {
-                color: 'transparent'
+                color: "transparent"
             }
         }
     };
@@ -315,17 +315,17 @@ function drawChart(predictions, containerID) {
   function getLocation($button){           
     var startCB = function() {   // CB = callback   
         $button
-            .attr('disabled', 'disabled'); 
+            .attr("disabled", "disabled"); 
     }
     var finishCB = function() {     
         $button
-            .removeAttr('disabled'); 
+            .removeAttr("disabled"); 
     }
     var errorCB = function(error) { 
-        console.log( 'Error ' + error.code + ':' + error.message ); 
+        console.log( "Error " + error.code + ":" + error.message ); 
     }
     var successCB = function(p) {
-        var location = 'Latitude: ' + p.coords.latitude + '<br/>' + 'Longitude: ' + p.coords.longitude;
+        var location = "Latitude: " + p.coords.latitude + "<br/>" + "Longitude: " + p.coords.longitude;
         var yourLocation = {lat: p.coords.latitude, lng: p.coords.longitude}
         var marker = new google.maps.Marker({
             position: yourLocation, 
@@ -376,8 +376,8 @@ function geoAddress(location, inputID, isFromPlace){
         toPlace = location;     // Location set to To input
     }
     var geocoder = new google.maps.Geocoder();
-    geocoder.geocode({'location': location}, function(results, status){
-        if (status == 'OK') {
+    geocoder.geocode({"location": location}, function(results, status){
+        if (status == "OK") {
             if (results[0]) {
                 try {
                     var route = results[0]["address_components"].find(function(element){            // Gets street name
@@ -400,18 +400,18 @@ function geoAddress(location, inputID, isFromPlace){
 
 // Reference: https://developers.google.com/maps/documentation/javascript/places-autocomplete
 function autocomplete(){
-    var inputFrom = document.getElementById('fromStation');
-    var inputTo = document.getElementById('toStation');
+    var inputFrom = document.getElementById("fromStation");
+    var inputTo = document.getElementById("toStation");
 
     function addAutocomplete(input, fromOrTo) {
         var autocomplete = new google.maps.places.Autocomplete(input);
 
-        autocomplete.bindTo('bounds', map);
-        autocomplete.setTypes(['address']);
+        autocomplete.bindTo("bounds", map);
+        autocomplete.setTypes(["address"]);
         autocomplete.setFields(         // Set the data fields to return when the user selects a place.
-            ['address_components', 'geometry']);
+            ["address_components", "geometry"]);
         autocomplete.setOptions({strictBounds: true});
-        autocomplete.addListener('place_changed', function() {
+        autocomplete.addListener("place_changed", function() {
             var place = autocomplete.getPlace();
             if(fromOrTo === "fromPlace"){
                 fromPlace.lat = place.geometry.location.lat();
@@ -420,13 +420,13 @@ function autocomplete(){
                 toPlace.lat = place.geometry.location.lat();
                 toPlace.lng = place.geometry.location.lng();
             }
-            var address = '';
+            var address = "";
             if (place.address_components) {
                 address = [
-                (place.address_components[0] && place.address_components[0].short_name || ''),
-                (place.address_components[1] && place.address_components[1].short_name || ''),
-                (place.address_components[2] && place.address_components[2].short_name || '')
-                ].join(' ');
+                (place.address_components[0] && place.address_components[0].short_name || ""),
+                (place.address_components[1] && place.address_components[1].short_name || ""),
+                (place.address_components[2] && place.address_components[2].short_name || "")
+                ].join(" ");
             }
         });
     }
@@ -518,7 +518,7 @@ $(window).on("load", function(){
     $( "#datepicker" ).datepicker({
         autoclose: true,
         format: "dd/mm/yyyy",
-        startDate: '1d'
+        startDate: "1d"
     });
     setInitialDateTime();
     setInitialClock();
@@ -545,8 +545,8 @@ $(window).on("load", function(){
     });
 
 
-    google.charts.load('current', {
-        'packages': ['corechart']
+    google.charts.load("current", {
+        "packages": ["corechart"]
     });
 
 });
