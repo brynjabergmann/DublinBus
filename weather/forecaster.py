@@ -11,24 +11,16 @@ import pymysql.cursors
 import datetime
 import sys
 
-with open("credentials.json") as f:
-    credentials = json.loads(f.read())
-
-db_host = credentials["db_host"]
-db_user = credentials["db_user"]
-db_password = credentials["db_pass"]
-db_name = credentials["db_name"]
-
 def dbConnect():
     
     """ Function to connect to the database """
     
     try:
         db = pymysql.connect(
-            host = db_host,
-            user = db_user,
-            password = db_password,
-            db = db_name
+            host='localhost',
+            user='superfint',
+            password='Team 8 Project',
+            db='dublin_bus'
         )
         
     except Exception as e: 
