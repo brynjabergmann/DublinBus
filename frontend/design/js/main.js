@@ -1,12 +1,12 @@
-// Global variables
-var map;
-var directionsService; // Find directions from a to b
-var directionsDisplay; // Displays route on map
-var fromPlace = {}; 
-var toPlace = {};
-var routeOneTotalTravelTime;
-var routeTwoTotalTravelTime;
-var routeThreeTotalTravelTime;
+// Global letiabless
+let map;
+let directionsService; // Find directions from a to b
+let directionsDisplay; // Displays route on map
+let fromPlace = {}; 
+let toPlace = {};
+let routeOneTotalTravelTime;
+let routeTwoTotalTravelTime;
+let routeThreeTotalTravelTime;
 
 
 // Map reference: https://developers.google.com/maps/documentation/javascript/adding-a-google-map
@@ -14,7 +14,7 @@ var routeThreeTotalTravelTime;
 
 // Function that initialize and adds the map to the website
 function initMap() {
-    var Dublin = {lat: 53.350140, lng: -6.266155}
+    let Dublin = {lat: 53.350140, lng: -6.266155}
     directionsService = new google.maps.DirectionsService;
     directionsDisplay = new google.maps.DirectionsRenderer;
     map = new google.maps.Map(
@@ -28,7 +28,7 @@ function initMap() {
 
 // Function that initialize and adds the map to the website
 function initMapNight() {
-    var Dublin = {lat: 53.350140, lng: -6.266155}
+    let Dublin = {lat: 53.350140, lng: -6.266155}
     directionsService = new google.maps.DirectionsService;
     directionsDisplay = new google.maps.DirectionsRenderer;
     map = new google.maps.Map(
@@ -363,7 +363,17 @@ function initMapNight() {
     directionsDisplay.setMap(map);                  // Connect route display to map
 }
 
+let checkbox = document.getElementById("dn");
 // Function to toggle between day and night mode
+function nightMode(){
+   if(checkbox.checked){
+       initMapNight();
+         }
+   else {
+       initMap();
+         }
+    };
+
 function day(){
 	initMap();
 }
@@ -373,9 +383,9 @@ function night(){
 
 // Function that gets the date and time and turns it around 
 function getInputDateAsDateObject(){
-    var date = $("#datepicker input").val();  
-    var time = $("#timePicker").val();
-    var dateArray = date.split("/");
+    let date = $("#datepicker input").val();  
+    let time = $("#timePicker").val();
+    let dateArray = date.split("/");
     // JavaScript needs date objects to have format yyyy/mm/dd hh:mm
     return new Date(`${dateArray[2]}/${dateArray[1]}/${dateArray[0]} ${time}`);
 }
@@ -390,7 +400,7 @@ function timeStamp() {
   // Direction reference: https://developers.google.com/maps/documentation/javascript/examples/directions-simple
   // Function that calculates and displays routes
   function calculateAndDisplayRoute(directionsService, directionsDisplay) {
-    var date = getInputDateAsDateObject();
+    let date = getInputDateAsDateObject();
     directionsService.route({
       origin: document.getElementById("fromStation").value,
       destination: document.getElementById("toStation").value,
@@ -407,18 +417,18 @@ function timeStamp() {
       if (status === 'OK') {
 
         // Shows max three suggested routes/result boxes
-        var number_of_bus_routes = 3;
+        let number_of_bus_routes = 3;
         if (response.routes.length < 3) {
             number_of_bus_routes = response.routes.length;
         }
 
         // Hide unused result boxes
-        for (var i = 3; i > number_of_bus_routes; i--) {
+        for (let i = 3; i > number_of_bus_routes; i--) {
             // $(`route-${i - 1}`).hide();            
         }
 
         // Create and display prediction for every route
-        for (var i = 0; i < number_of_bus_routes; i++) {
+        for (let i = 0; i < number_of_bus_routes; i++) {
             
             $(`#route-${i}`).empty();               // Remove old suggested data
             $(`#routeDetails_${i}`).empty();       // Remove old suggested data
@@ -654,21 +664,21 @@ function drawChart(predictions, containerID) {
 
   // Function to get the users geo location
   function getLocation($button){           
-    var startCB = function() {   // CB = callback   
+    let startCB = function() {   // CB = callback   
         $button
             .attr('disabled', 'disabled'); 
     }
-    var finishCB = function() {     
+    let finishCB = function() {     
         $button
             .removeAttr('disabled'); 
     }
-    var errorCB = function(error) { 
+    let errorCB = function(error) { 
         console.log( 'Error ' + error.code + ':' + error.message ); 
     }
-    var successCB = function(p) {
-        var location = 'Latitude: ' + p.coords.latitude + '<br/>' + 'Longitude: ' + p.coords.longitude;
-        var yourLocation = {lat: p.coords.latitude, lng: p.coords.longitude}
-        var marker = new google.maps.Marker({
+    let successCB = function(p) {
+        let location = 'Latitude: ' + p.coords.latitude + '<br/>' + 'Longitude: ' + p.coords.longitude;
+        let yourLocation = {lat: p.coords.latitude, lng: p.coords.longitude}
+        let marker = new google.maps.Marker({
             position: yourLocation, 
             map: map,
             draggable: true,
@@ -710,22 +720,22 @@ function drawChart(predictions, containerID) {
 
 // Function to get the address for the users location
 function geoAddress(location, inputID, isFromPlace){
-    if (isFromPlace) {          // isFromPlace is a boolean variable
+    if (isFromPlace) {          // isFromPlace is a boolean letiable
         fromPlace = location;   // Location set to From input
     }
     else {
         toPlace = location;     // Location set to To input
     }
-    var geocoder = new google.maps.Geocoder();
+    let geocoder = new google.maps.Geocoder();
     geocoder.geocode({'location': location}, function(results, status){
         if (status == 'OK') {
             if (results[0]) {
                 try {
-                    var route = results[0]["address_components"].find(function(element){            // Gets street name
+                    let route = results[0]["address_components"].find(function(element){            // Gets street name
                         return element.types.includes("route");})["long_name"];
-                    var postalcode = results[0]["address_components"].find(function(element){       // Gets postal code
+                    let postalcode = results[0]["address_components"].find(function(element){       // Gets postal code
                         return element.types.includes("postal_town");})["long_name"];
-                    var country = results[0]["address_components"].find(function(element){          // Gets country 
+                    let country = results[0]["address_components"].find(function(element){          // Gets country 
                         return element.types.includes("country", "political");})["long_name"];
                     $(inputID).val(`${route}, ${postalcode}, ${country}`);
                 }
@@ -741,11 +751,11 @@ function geoAddress(location, inputID, isFromPlace){
 
 // Reference: https://developers.google.com/maps/documentation/javascript/places-autocomplete
 function autocomplete(){
-    var inputFrom = document.getElementById('fromStation');
-    var inputTo = document.getElementById('toStation');
+    let inputFrom = document.getElementById('fromStation');
+    let inputTo = document.getElementById('toStation');
 
     function addAutocomplete(input, fromOrTo) {
-        var autocomplete = new google.maps.places.Autocomplete(input);
+        let autocomplete = new google.maps.places.Autocomplete(input);
 
         autocomplete.bindTo('bounds', map);
         autocomplete.setTypes(['address']);
@@ -753,7 +763,7 @@ function autocomplete(){
             ['address_components', 'geometry']);
         autocomplete.setOptions({strictBounds: true});
         autocomplete.addListener('place_changed', function() {
-            var place = autocomplete.getPlace();
+            let place = autocomplete.getPlace();
             if(fromOrTo === "fromPlace"){
                 fromPlace.lat = place.geometry.location.lat();
                 fromPlace.lng = place.geometry.location.lng();
@@ -761,7 +771,7 @@ function autocomplete(){
                 toPlace.lat = place.geometry.location.lat();
                 toPlace.lng = place.geometry.location.lng();
             }
-            var address = '';
+            let address = '';
             if (place.address_components) {
                 address = [
                 (place.address_components[0] && place.address_components[0].short_name || ''),
@@ -801,7 +811,7 @@ function fetchWeather(){
 
 //Function for the weather icons. Reference: https://github.com/darkskyapp/skycons
 function weatherIcons(){
-    var icons = new Skycons(),
+    let icons = new Skycons(),
             list  = [
                 "clear-day", "clear-night", "partly-cloudy-day",
                 "partly-cloudy-night", "cloudy", "rain", "sleet", "snow", "wind",
@@ -841,7 +851,7 @@ function setInitialClock(){
 
 
 function createMarker(location) {
-    var marker = new google.maps.Marker({
+    let marker = new google.maps.Marker({
         position: location, 
         map: map,
         draggable: true,

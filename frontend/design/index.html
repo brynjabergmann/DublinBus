@@ -124,15 +124,10 @@
                         <!-- Search button -->
                         <button id="searchButton" class="btn btn-default rounded" type="button"><span class="glyphicon glyphicon-search"></span> Search </button> 
                     </li>
-                    <!-- <li>
-                        <h5 class="text-center" style="color:beige">Toggle night/day mode</h5>
-                        <img src="./img/night.png" height="50px" width="50px" onclick="night()" alt="A picture of a moon">
-                        <img src="./img/day.png" height="50px" width="50px" onclick="day()" alt="A picture of a sun">
-                    </li> -->
-
-                    <li class="night">
+					<!-- SOURCE https://codemyui.com/pure-css-ampm-toggle-switch/-->
+                    <li class="nightmode">
                         <div id="toggleWrapper">
-                            <input type="checkbox" class="dn" id="dn"/>
+                            <input type="checkbox" class="dn" id="dn" onchange="nightMode()"/>
                             <label for="dn" class="toggle">
                             <span class="toggle__handler">
                                 <span class="crater crater--1"></span>
