@@ -142,7 +142,7 @@ function timeStamp() {
   }
 
 function predictRoute(response, jsonString, i, postBody){
-    $.post("http://127.0.0.1:8000/api/location_prediction_endpoint", jsonString, function(backendResponse) {
+    $.post("https://dublinbus.icu/api/location_prediction_endpoint", jsonString, function(backendResponse) {
         for(let j = 0; j < response.routes[i].legs[0].steps.length; j++)
         {
             if(response.routes[i].legs[0].steps[j].travel_mode === "TRANSIT")
