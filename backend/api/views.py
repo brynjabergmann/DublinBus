@@ -135,7 +135,7 @@ def get_segment(end_to_end: int, bus_route: str, direction: int, first_stop: int
             [bus_route, last_stop, direction])
         stop_two = cursor.fetchone()[0]
 
-    with open(f"api/proportions/{bus_route}_{direction}.json") as j:
+    with open(f"api/proportions/{bus_route.upper()}_{direction}.json") as j:
         all_proportions = json.load(j)
         proportion_factor = all_proportions[str(stop_two)] - all_proportions[str(stop_one)]
 
@@ -193,9 +193,9 @@ def end_to_end_prediction(day_of_week: int, hour_of_day: int, temperature: float
     })
 
     if school_holiday:
-        pickle_file = f"api/models/off_school/{bus_route}_{direction}.pkl"
+        pickle_file = f"api/models/off_school/{bus_route.upper()}_{direction}.pkl"
     else:
-        pickle_file = f"api/models/school/{bus_route}_{direction}.pkl"
+        pickle_file = f"api/models/school/{bus_route.upper()}_{direction}.pkl"
 
     with open(pickle_file, "rb") as f:
         cucumber = pickle.load(f)
