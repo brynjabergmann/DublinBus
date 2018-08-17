@@ -10,7 +10,7 @@ import django
 import os
 #os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.backend.settings")
 #django.setup()
-
+settings.configure()
 
 
 class server_test(unittest.TestCase):
@@ -61,6 +61,8 @@ class server_test(unittest.TestCase):
         days_list[day_of_week] = 1
 
         prediction_inputs = views.end_to_end_prediction.prediction_inputs
+        print(prediction_inputs)
+
 
     def test_is_school_holiday(self):
         timestamp_holiday_2018 = 1515000000
@@ -73,6 +75,7 @@ class server_test(unittest.TestCase):
         self.assertTrue(views.is_school_holiday(timestamp_holiday_2019))
         self.assertFalse(views.is_school_holiday(timestamp_non_holiday_2019))
 
+
     def test_fare_finder(self):
         route = "46a"
         direction = 1
@@ -83,11 +86,14 @@ class server_test(unittest.TestCase):
         self.assertTrue(views.fare_finder(route, direction, first_stop, last_stop)["cash"] == 3.30)
         self.assertTrue(views.fare_finder(route, direction, first_stop, last_stop)["leap"] == 2.60)
 
+
     def test_chart_values(self):
+        # Waiting on backend
         route = "46a"
         timestamp = dt.datetime.timestamp(dt.datetime.now())
 
         self.assertTrue(len(views.chart_values(route, timestamp)) == 15)
+
 
     def test_next_bus(self):
         stop_number = 264
@@ -99,7 +105,8 @@ class server_test(unittest.TestCase):
         current_month = dt.datetime.now().month
         current_day = dt.datetime.now().day
         current_weekday = dt.date.today().strftime("%A")
-        self.assertEqual()
+        # Not finished on backend so cant test
+
 
 if __name__ == "__main__":
     unittest.main()
