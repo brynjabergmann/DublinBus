@@ -163,7 +163,7 @@
   .nav-side-menu {
     width: 100%;
     margin-bottom: 10px;
-    height: auto;
+    height: 110px;
   }
   .nav-side-menu .toggle-btn {
     display: block;
