@@ -557,6 +557,7 @@ $(window).on("load", function(){
     getLocation($("#findLocationFrom"));
     getLocation($("#findLocationTo"));
     autocomplete();
+    roadwatchTwitter();
     $("#searchButton").on("click", searchForRoute);
     $(".suggestedRoute").on("click", function(e){
         if (e.target.id == "route-0") {
