@@ -394,3 +394,8 @@ button {
 .pricing {
   color: #DC143C;
 }
+
+#gFlag0, #gFlag1, #gFlag2 {
+  color: red;
+  line-height: 1em;
+}
